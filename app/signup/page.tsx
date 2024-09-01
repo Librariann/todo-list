@@ -1,17 +1,19 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import ThemeToggleStandalone from '../components/ThemeToggleStandalone';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import ThemeToggleStandalone from "../components/ThemeToggleStandalone";
 
 export default function SignupPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    name: "",
+    phoneNumber: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -19,24 +21,49 @@ export default function SignupPage() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = '이름을 입력해주세요';
+    if (!formData.username.trim()) {
+      newErrors.username = "사용자명은 필수입니다";
+    } else if (formData.username.length < 3 || formData.username.length > 50) {
+      newErrors.username = "사용자명은 3자 이상 50자 이하여야 합니다";
+    } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
+      newErrors.username =
+        "사용자명은 영문, 숫자, 언더스코어만 사용 가능합니다";
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = '이메일을 입력해주세요';
+      newErrors.email = "이메일은 필수입니다";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = '올바른 이메일 형식이 아닙니다';
+      newErrors.email = "올바른 이메일 형식이 아닙니다";
+    } else if (formData.email.length > 100) {
+      newErrors.email = "이메일은 100자 이하여야 합니다";
     }
 
     if (!formData.password) {
-      newErrors.password = '비밀번호를 입력해주세요';
-    } else if (formData.password.length < 8) {
-      newErrors.password = '비밀번호는 최소 8자 이상이어야 합니다';
+      newErrors.password = "비밀번호는 필수입니다";
+    } else if (formData.password.length < 8 || formData.password.length > 100) {
+      newErrors.password = "비밀번호는 8자 이상 100자 이하여야 합니다";
+    } else if (
+      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W).{8,}$/.test(formData.password)
+    ) {
+      newErrors.password =
+        "비밀번호는 대소문자, 숫자, 특수문자를 각각 하나 이상 포함해야 합니다";
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = '비밀번호가 일치하지 않습니다';
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = "비밀번호 확인은 필수입니다";
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "비밀번호가 일치하지 않습니다";
+    }
+
+    if (formData.name && formData.name.length > 100) {
+      newErrors.name = "이름은 100자 이하여야 합니다";
+    }
+
+    if (
+      formData.phoneNumber &&
+      !/^01[016789]\d{8,9}$/.test(formData.phoneNumber)
+    ) {
+      newErrors.phoneNumber = "올바른 전화번호 형식이 아닙니다";
     }
 
     setErrors(newErrors);
@@ -45,17 +72,49 @@ export default function SignupPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setIsLoading(true);
 
-    // TODO: API 연동 시 실제 회원가입 로직 구현
-    setTimeout(() => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/users/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: formData.username,
+            email: formData.email,
+            password: formData.password,
+            confirmPassword: formData.confirmPassword,
+            name: formData.name || undefined,
+            phoneNumber: formData.phoneNumber || undefined,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data.errors) {
+          setErrors(data.errors);
+        } else {
+          alert(data.message || "회원가입에 실패했습니다.");
+        }
+        return;
+      }
+
+      alert("회원가입이 완료되었습니다!");
+      router.push("/login");
+    } catch (error) {
+      alert("서버와의 통신에 실패했습니다. 다시 시도해주세요.");
+      console.error("회원가입 오류:", error);
+    } finally {
       setIsLoading(false);
-      alert('회원가입이 완료되었습니다!');
-      router.push('/login');
-    }, 1000);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,7 +122,7 @@ export default function SignupPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
     // 입력 시 해당 필드 에러 제거
     if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
@@ -92,6 +151,96 @@ export default function SignupPage() {
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* 사용자명 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                사용자명 <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                className={`w-full px-4 py-3 rounded-lg border ${
+                  errors.username
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-200 dark:border-gray-700 focus:ring-indigo-500"
+                } bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 transition-all`}
+                placeholder="user_name123"
+              />
+              {errors.username && (
+                <p className="mt-1 text-sm text-red-500">{errors.username}</p>
+              )}
+            </div>
+
+            {/* 이메일 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                이메일 <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className={`w-full px-4 py-3 rounded-lg border ${
+                  errors.email
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-200 dark:border-gray-700 focus:ring-indigo-500"
+                } bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 transition-all`}
+                placeholder="example@email.com"
+              />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+              )}
+            </div>
+
+            {/* 비밀번호 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                비밀번호 <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className={`w-full px-4 py-3 rounded-lg border ${
+                  errors.password
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-200 dark:border-gray-700 focus:ring-indigo-500"
+                } bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 transition-all`}
+                placeholder="대소문자, 숫자, 특수문자 포함 8자 이상"
+              />
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-500">{errors.password}</p>
+              )}
+            </div>
+
+            {/* 비밀번호 확인 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                비밀번호 확인 <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className={`w-full px-4 py-3 rounded-lg border ${
+                  errors.confirmPassword
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-200 dark:border-gray-700 focus:ring-indigo-500"
+                } bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 transition-all`}
+                placeholder="비밀번호를 다시 입력해주세요"
+              />
+              {errors.confirmPassword && (
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.confirmPassword}
+                </p>
+              )}
+            </div>
+
             {/* 이름 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -104,8 +253,8 @@ export default function SignupPage() {
                 onChange={handleChange}
                 className={`w-full px-4 py-3 rounded-lg border ${
                   errors.name
-                    ? 'border-red-500 focus:ring-red-500'
-                    : 'border-gray-200 dark:border-gray-700 focus:ring-indigo-500'
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-200 dark:border-gray-700 focus:ring-indigo-500"
                 } bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 transition-all`}
                 placeholder="홍길동"
               />
@@ -114,69 +263,27 @@ export default function SignupPage() {
               )}
             </div>
 
-            {/* 이메일 */}
+            {/* 전화번호 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                이메일
+                전화번호
               </label>
               <input
-                type="email"
-                name="email"
-                value={formData.email}
+                type="tel"
+                name="phoneNumber"
+                value={formData.phoneNumber}
                 onChange={handleChange}
                 className={`w-full px-4 py-3 rounded-lg border ${
-                  errors.email
-                    ? 'border-red-500 focus:ring-red-500'
-                    : 'border-gray-200 dark:border-gray-700 focus:ring-indigo-500'
+                  errors.phoneNumber
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-200 dark:border-gray-700 focus:ring-indigo-500"
                 } bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 transition-all`}
-                placeholder="example@email.com"
+                placeholder="01012345678"
               />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-500">{errors.email}</p>
-              )}
-            </div>
-
-            {/* 비밀번호 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                비밀번호
-              </label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-lg border ${
-                  errors.password
-                    ? 'border-red-500 focus:ring-red-500'
-                    : 'border-gray-200 dark:border-gray-700 focus:ring-indigo-500'
-                } bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 transition-all`}
-                placeholder="8자 이상 입력해주세요"
-              />
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-500">{errors.password}</p>
-              )}
-            </div>
-
-            {/* 비밀번호 확인 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                비밀번호 확인
-              </label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-lg border ${
-                  errors.confirmPassword
-                    ? 'border-red-500 focus:ring-red-500'
-                    : 'border-gray-200 dark:border-gray-700 focus:ring-indigo-500'
-                } bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 transition-all`}
-                placeholder="비밀번호를 다시 입력해주세요"
-              />
-              {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-500">{errors.confirmPassword}</p>
+              {errors.phoneNumber && (
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.phoneNumber}
+                </p>
               )}
             </div>
 
@@ -186,14 +293,14 @@ export default function SignupPage() {
               disabled={isLoading}
               className="w-full py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed mt-6"
             >
-              {isLoading ? '처리중...' : '회원가입'}
+              {isLoading ? "처리중..." : "회원가입"}
             </button>
           </form>
 
           {/* 로그인 링크 */}
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              이미 계정이 있으신가요?{' '}
+              이미 계정이 있으신가요?{" "}
               <Link
                 href="/login"
                 className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline"
