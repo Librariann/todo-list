@@ -1,7 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import ThemeToggleStandalone from './ThemeToggleStandalone';
+import { useAuthStore } from '../store/authStore';
 
 type MainTabType = 'tasks' | 'rewards' | 'challenges';
 
@@ -18,9 +20,26 @@ export default function Header({
   isMobileMenuOpen,
   onMobileMenuToggle,
 }: HeaderProps) {
+  const router = useRouter();
+  const { user, isAuthenticated, clearAuth } = useAuthStore();
+
   const handleMobileTabClick = (tab: MainTabType) => {
     onTabChange(tab);
     onMobileMenuToggle();
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.error('로그아웃 오류:', error);
+    } finally {
+      clearAuth();
+      router.push('/login');
+    }
   };
 
   return (
@@ -72,18 +91,35 @@ export default function Header({
               </button>
             </div>
 
-            <div className="flex gap-2">
-              <Link href="/login">
-                <button className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                  로그인
+            {isAuthenticated ? (
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+                    {user?.username}
+                  </span>
+                  님 어서오세요
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                >
+                  로그아웃
                 </button>
-              </Link>
-              <Link href="/signup">
-                <button className="px-4 py-2 text-sm font-semibold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all shadow-sm hover:shadow-md active:scale-95">
-                  회원가입
-                </button>
-              </Link>
-            </div>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Link href="/login">
+                  <button className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                    로그인
+                  </button>
+                </Link>
+                <Link href="/signup">
+                  <button className="px-4 py-2 text-sm font-semibold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all shadow-sm hover:shadow-md active:scale-95">
+                    회원가입
+                  </button>
+                </Link>
+              </div>
+            )}
 
             <ThemeToggleStandalone />
           </div>
@@ -157,18 +193,35 @@ export default function Header({
                 🎁 보상
               </button>
 
-              <div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-700 flex gap-2">
-                <Link href="/login" className="flex-1">
-                  <button className="w-full px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-                    로그인
+              {isAuthenticated ? (
+                <div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-700">
+                  <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 mb-2">
+                    <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+                      {user?.username}
+                    </span>
+                    님 어서오세요
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                  >
+                    로그아웃
                   </button>
-                </Link>
-                <Link href="/signup" className="flex-1">
-                  <button className="w-full px-4 py-2 text-sm font-semibold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all shadow-sm">
-                    회원가입
-                  </button>
-                </Link>
-              </div>
+                </div>
+              ) : (
+                <div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-700 flex gap-2">
+                  <Link href="/login" className="flex-1">
+                    <button className="w-full px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                      로그인
+                    </button>
+                  </Link>
+                  <Link href="/signup" className="flex-1">
+                    <button className="w-full px-4 py-2 text-sm font-semibold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all shadow-sm">
+                      회원가입
+                    </button>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         )}
