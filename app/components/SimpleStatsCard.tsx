@@ -8,7 +8,7 @@ interface SimpleStatsCardProps {
 
 export default function SimpleStatsCard({ stats }: SimpleStatsCardProps) {
   return (
-    <div className="bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl p-6 text-white shadow-lg">
+    <div className="bg-gradient-to-br from-slate-700 to-slate-600 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-6 text-white shadow-lg">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-bold">내 통계</h2>
         <span className="text-2xl">🏆</span>

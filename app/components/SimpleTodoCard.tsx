@@ -15,10 +15,10 @@ export default function SimpleTodoCard({ todo, onStatusChange }: SimpleTodoCardP
       className={`
         group relative bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm 
         hover:shadow-md transition-all duration-200 border-l-4
-        ${isDone 
-          ? 'border-l-green-500 opacity-70' 
+        $        ${isDone 
+          ? 'border-l-emerald-500 opacity-70' 
           : todo.status === TodoStatus.IN_PROGRESS 
-          ? 'border-l-blue-500' 
+          ? 'border-l-indigo-500' 
           : 'border-l-gray-300'
         }
       `}
@@ -37,8 +37,8 @@ export default function SimpleTodoCard({ todo, onStatusChange }: SimpleTodoCardP
             flex-shrink-0 w-6 h-6 rounded-full border-2 
             flex items-center justify-center transition-all
             ${isDone 
-              ? 'bg-green-500 border-green-500' 
-              : 'border-gray-300 dark:border-gray-600 hover:border-blue-500'
+              ? 'bg-emerald-500 border-emerald-500' 
+              : 'border-gray-300 dark:border-gray-600 hover:border-indigo-500'
             }
           `}
         >
@@ -62,7 +62,7 @@ export default function SimpleTodoCard({ todo, onStatusChange }: SimpleTodoCardP
 
         {/* 포인트 */}
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-purple-600 dark:text-purple-400">
+          <span className="text-sm font-semibold text-slate-600 dark:text-slate-400">
             ⭐ {todo.rewardPoints}P
           </span>
 
@@ -78,8 +78,8 @@ export default function SimpleTodoCard({ todo, onStatusChange }: SimpleTodoCardP
               className={`
                 px-3 py-1 rounded-full text-xs font-medium transition-all
                 ${todo.status === TodoStatus.IN_PROGRESS
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-blue-100 dark:hover:bg-blue-900'
+                  ? 'bg-indigo-500 text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/30'
                 }
               `}
             >

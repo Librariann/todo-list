@@ -13,7 +13,7 @@ export default function RewardShop({ rewards, userPoints, onClaim }: RewardShopP
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">🎁 보상 상점</h2>
-        <div className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-4 py-2 rounded-lg font-bold">
+        <div className="bg-slate-700 dark:bg-slate-600 text-white px-4 py-2 rounded-lg font-bold">
           ⭐ {userPoints} 포인트
         </div>
       </div>
@@ -29,7 +29,7 @@ export default function RewardShop({ rewards, userPoints, onClaim }: RewardShopP
                 relative rounded-xl p-4 border-2 transition-all duration-200
                 ${
                   canAfford
-                    ? 'border-purple-300 dark:border-purple-700 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 hover:shadow-lg hover:scale-105'
+                    ? 'border-indigo-200 dark:border-indigo-700 bg-gradient-to-br from-indigo-50 to-slate-50 dark:from-indigo-950/20 dark:to-slate-950/20 hover:shadow-lg hover:scale-105'
                     : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 opacity-60'
                 }
               `}
@@ -51,7 +51,7 @@ export default function RewardShop({ rewards, userPoints, onClaim }: RewardShopP
 
               {/* 가격 */}
               <div className="flex items-center justify-center gap-1 mb-3">
-                <span className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
                   ⭐ {reward.value}
                 </span>
                 <span className="text-xs text-gray-500 dark:text-gray-400">포인트</span>
@@ -65,7 +65,7 @@ export default function RewardShop({ rewards, userPoints, onClaim }: RewardShopP
                   w-full py-2 rounded-lg font-semibold text-sm transition-all
                   ${
                     canAfford
-                      ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:from-purple-600 hover:to-blue-600 active:scale-95'
+                      ? 'bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95'
                       : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-500 cursor-not-allowed'
                   }
                 `}
@@ -85,7 +85,7 @@ export default function RewardShop({ rewards, userPoints, onClaim }: RewardShopP
       </div>
 
       {/* 더 많은 보상 추가 예정 메시지 */}
-      <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+      <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-900/20 rounded-lg border border-slate-200 dark:border-slate-800">
         <p className="text-sm text-center text-gray-700 dark:text-gray-300">
           🎯 더 많은 보상이 곧 추가됩니다! 계속 할 일을 완료하고 포인트를 모아보세요.
         </p>
