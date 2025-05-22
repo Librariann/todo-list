@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import SimpleTodoCard from './components/SimpleTodoCard';
 import SimpleStatsCard from './components/SimpleStatsCard';
 import RewardShop from './components/RewardShop';
+import ThemeToggle from './components/ThemeToggle';
 import { Todo, TodoStatus, Reward, DailyTodos } from './types/todo';
 import { mockDailyTodos, mockUserStats, mockRewards } from './lib/mockData';
 
@@ -153,7 +154,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-700 to-indigo-600 dark:from-slate-300 dark:to-indigo-400 bg-clip-text text-transparent">
                 ✨ Todo Master
               </h1>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -161,28 +162,31 @@ export default function Home() {
               </p>
             </div>
 
-            {/* 탭 전환 */}
-            <div className="flex gap-2 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
-              <button
-                onClick={() => setActiveTab('todos')}
-                className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-                  activeTab === 'todos'
-                    ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm'
-                    : 'text-gray-600 dark:text-gray-400'
-                }`}
-              >
-                📋 할 일
-              </button>
-              <button
-                onClick={() => setActiveTab('rewards')}
-                className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-                  activeTab === 'rewards'
-                    ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm'
-                    : 'text-gray-600 dark:text-gray-400'
-                }`}
-              >
-                🎁 보상
-              </button>
+            {/* 탭 전환 & 테마 토글 */}
+            <div className="flex items-center gap-4">
+              <div className="flex gap-2 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
+                <button
+                  onClick={() => setActiveTab('todos')}
+                  className={`px-6 py-2 rounded-lg font-semibold transition-all ${
+                    activeTab === 'todos'
+                      ? 'bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400'
+                  }`}
+                >
+                  📋 할 일
+                </button>
+                <button
+                  onClick={() => setActiveTab('rewards')}
+                  className={`px-6 py-2 rounded-lg font-semibold transition-all ${
+                    activeTab === 'rewards'
+                      ? 'bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400'
+                  }`}
+                >
+                  🎁 보상
+                </button>
+              </div>
+              <ThemeToggle />
             </div>
           </div>
         </div>
@@ -211,7 +215,7 @@ export default function Home() {
                       className={`
                         w-full text-left px-4 py-3 rounded-lg transition-all
                         ${selectedDate === date
-                          ? 'bg-blue-500 text-white shadow-md'
+                          ? 'bg-indigo-600 text-white shadow-md'
                           : 'bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
                         }
                       `}
@@ -234,9 +238,8 @@ export default function Home() {
             {activeTab === 'todos' && (
               <button
                 onClick={() => setShowAddModal(true)}
-                className="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-500 
-                         text-white font-semibold rounded-lg hover:from-blue-600 hover:to-purple-600 
-                         transition-all shadow-md hover:shadow-lg active:scale-95"
+                className="w-full px-4 py-3 bg-indigo-600 text-white font-semibold rounded-lg 
+                         hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg active:scale-95"
               >
                 ➕ 새 할 일 추가
               </button>
@@ -374,14 +377,14 @@ export default function Home() {
               placeholder="할 일을 입력하세요..."
               className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 
                        bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100
-                       focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+                       focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4"
               autoFocus
             />
             <div className="flex gap-2">
               <button
                 onClick={handleAddTodo}
-                className="flex-1 px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg 
-                         hover:bg-blue-600 transition-all"
+                className="flex-1 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg 
+                         hover:bg-indigo-700 transition-all"
               >
                 추가
               </button>
