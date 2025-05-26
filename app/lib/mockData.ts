@@ -1,6 +1,19 @@
-// 심플한 Mock 데이터
+// Habitica 스타일 Mock 데이터
 
-import { TodoStatus, Reward, RewardType, UserStats, DailyTodos } from '../types/todo';
+import { 
+  TodoStatus, 
+  Reward, 
+  RewardType, 
+  UserStats, 
+  Habit, 
+  HabitType, 
+  Daily, 
+  DailyFrequency,
+  Todo,
+  Challenge,
+  ChallengeType,
+  ChallengeCondition
+} from '../types/todo';
 
 export const mockRewards: Reward[] = [
   {
@@ -29,109 +42,218 @@ export const mockRewards: Reward[] = [
   },
 ];
 
-// 오늘 날짜 (YYYY-MM-DD)
+// 오늘 날짜
 const today = new Date().toISOString().split('T')[0];
 const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
 const twoDaysAgo = new Date(Date.now() - 172800000).toISOString().split('T')[0];
 
-export const mockDailyTodos: DailyTodos[] = [
+// 습관 (Habits) Mock 데이터
+export const mockHabits: Habit[] = [
   {
+    id: 'h1',
+    title: '물 마시기',
+    habitType: HabitType.POSITIVE,
+    positiveCount: 5,
+    negativeCount: 0,
+    positivePoints: 5,
+    negativePoints: 0,
+    createdAt: new Date(),
+  },
+  {
+    id: 'h2',
+    title: '운동하기',
+    habitType: HabitType.BOTH,
+    positiveCount: 3,
+    negativeCount: 1,
+    positivePoints: 10,
+    negativePoints: -5,
+    createdAt: new Date(),
+  },
+  {
+    id: 'h3',
+    title: '간식 먹기',
+    habitType: HabitType.NEGATIVE,
+    positiveCount: 0,
+    negativeCount: 2,
+    positivePoints: 0,
+    negativePoints: -10,
+    createdAt: new Date(),
+  },
+  {
+    id: 'h4',
+    title: '명상하기',
+    habitType: HabitType.POSITIVE,
+    positiveCount: 2,
+    negativeCount: 0,
+    positivePoints: 15,
+    negativePoints: 0,
+    createdAt: new Date(),
+  },
+];
+
+// 일일 목표 (Dailies) Mock 데이터
+export const mockDailies: Daily[] = [
+  {
+    id: 'd1',
+    title: '아침 스트레칭',
+    frequency: DailyFrequency.DAILY,
+    completedDates: [today, yesterday, twoDaysAgo],
+    streak: 3,
+    rewardPoints: 20,
+    createdAt: new Date(),
+  },
+  {
+    id: 'd2',
+    title: '영어 단어 10개 외우기',
+    frequency: DailyFrequency.DAILY,
+    completedDates: [yesterday, twoDaysAgo],
+    streak: 2,
+    rewardPoints: 25,
+    createdAt: new Date(),
+  },
+  {
+    id: 'd3',
+    title: '독서 30분',
+    frequency: DailyFrequency.DAILY,
+    completedDates: [today],
+    streak: 1,
+    rewardPoints: 30,
+    createdAt: new Date(),
+  },
+  {
+    id: 'd4',
+    title: '주간 회고 작성',
+    frequency: DailyFrequency.WEEKLY,
+    completedDates: [],
+    streak: 0,
+    rewardPoints: 50,
+    createdAt: new Date(),
+  },
+];
+
+// 할 일 (Todos) Mock 데이터
+export const mockTodos: Todo[] = [
+  {
+    id: 't1',
+    title: '프로젝트 기획서 작성',
+    status: TodoStatus.IN_PROGRESS,
     date: today,
-    todos: [
-      {
-        id: '1',
-        title: '프로젝트 기획서 작성',
-        status: TodoStatus.IN_PROGRESS,
-        date: today,
-        createdAt: new Date(),
-        rewardPoints: 50,
-      },
-      {
-        id: '2',
-        title: 'TypeScript 공부하기',
-        status: TodoStatus.TODO,
-        date: today,
-        createdAt: new Date(),
-        rewardPoints: 30,
-      },
-      {
-        id: '3',
-        title: '운동 30분',
-        status: TodoStatus.DONE,
-        date: today,
-        createdAt: new Date(),
-        completedAt: new Date(),
-        rewardPoints: 20,
-        earnedReward: mockRewards[0],
-      },
-      {
-        id: '4',
-        title: '책 읽기',
-        status: TodoStatus.TODO,
-        date: today,
-        createdAt: new Date(),
-        rewardPoints: 25,
-      },
-    ],
+    createdAt: new Date(),
+    rewardPoints: 50,
   },
   {
-    date: yesterday,
-    todos: [
-      {
-        id: '5',
-        title: 'UI 디자인 리뷰',
-        status: TodoStatus.DONE,
-        date: yesterday,
-        createdAt: new Date(yesterday),
-        completedAt: new Date(yesterday),
-        rewardPoints: 40,
-      },
-      {
-        id: '6',
-        title: '회의 참석',
-        status: TodoStatus.DONE,
-        date: yesterday,
-        createdAt: new Date(yesterday),
-        completedAt: new Date(yesterday),
-        rewardPoints: 15,
-      },
-      {
-        id: '7',
-        title: '이메일 답장',
-        status: TodoStatus.TODO,
-        date: yesterday,
-        createdAt: new Date(yesterday),
-        rewardPoints: 10,
-      },
-    ],
+    id: 't2',
+    title: 'TypeScript 공부하기',
+    status: TodoStatus.TODO,
+    date: today,
+    createdAt: new Date(),
+    rewardPoints: 30,
   },
   {
-    date: twoDaysAgo,
-    todos: [
-      {
-        id: '8',
-        title: '코드 리뷰',
-        status: TodoStatus.DONE,
-        date: twoDaysAgo,
-        createdAt: new Date(twoDaysAgo),
-        completedAt: new Date(twoDaysAgo),
-        rewardPoints: 30,
-      },
-      {
-        id: '9',
-        title: '문서 작성',
-        status: TodoStatus.DONE,
-        date: twoDaysAgo,
-        createdAt: new Date(twoDaysAgo),
-        completedAt: new Date(twoDaysAgo),
-        rewardPoints: 25,
-      },
-    ],
+    id: 't3',
+    title: '이메일 답장',
+    status: TodoStatus.TODO,
+    date: today,
+    createdAt: new Date(),
+    rewardPoints: 10,
+  },
+  {
+    id: 't4',
+    title: 'UI 디자인 리뷰',
+    status: TodoStatus.DONE,
+    date: today,
+    createdAt: new Date(),
+    completedAt: new Date(),
+    rewardPoints: 40,
+  },
+];
+
+// 도전과제 Mock 데이터
+export const mockChallenges: Challenge[] = [
+  // 일일 도전과제
+  {
+    id: 'c1',
+    title: '일일 습관왕',
+    description: '습관을 5회 이상 달성하세요',
+    type: ChallengeType.DAILY,
+    condition: ChallengeCondition.COMPLETE_HABITS,
+    targetCount: 5,
+    currentCount: 3,
+    rewardPoints: 50,
+    completed: false,
+    iconUrl: '⚡',
+    resetDate: today,
+  },
+  {
+    id: 'c2',
+    title: '오늘의 루틴',
+    description: '모든 일일목표를 완료하세요',
+    type: ChallengeType.DAILY,
+    condition: ChallengeCondition.COMPLETE_ALL_DAILIES,
+    targetCount: 4,
+    currentCount: 2,
+    rewardPoints: 100,
+    completed: false,
+    iconUrl: '🎯',
+    resetDate: today,
+  },
+  {
+    id: 'c3',
+    title: '할 일 마스터',
+    description: '할 일을 3개 이상 완료하세요',
+    type: ChallengeType.DAILY,
+    condition: ChallengeCondition.COMPLETE_TODOS,
+    targetCount: 3,
+    currentCount: 1,
+    rewardPoints: 30,
+    completed: false,
+    iconUrl: '✅',
+    resetDate: today,
+  },
+  // 주간 도전과제
+  {
+    id: 'c4',
+    title: '주간 포인트 헌터',
+    description: '이번 주 500 포인트 획득하기',
+    type: ChallengeType.WEEKLY,
+    condition: ChallengeCondition.EARN_POINTS,
+    targetCount: 500,
+    currentCount: 340,
+    rewardPoints: 200,
+    completed: false,
+    iconUrl: '💎',
+  },
+  {
+    id: 'c5',
+    title: '주간 일일목표 달성',
+    description: '일일목표 20개 완료하기',
+    type: ChallengeType.WEEKLY,
+    condition: ChallengeCondition.COMPLETE_DAILIES,
+    targetCount: 20,
+    currentCount: 8,
+    rewardPoints: 150,
+    completed: false,
+    iconUrl: '📅',
+  },
+  {
+    id: 'c6',
+    title: '완벽한 한 주',
+    description: '일주일 동안 매일 습관 10회 이상',
+    type: ChallengeType.WEEKLY,
+    condition: ChallengeCondition.COMPLETE_HABITS,
+    targetCount: 70,
+    currentCount: 45,
+    rewardPoints: 300,
+    completed: false,
+    iconUrl: '🏆',
   },
 ];
 
 export const mockUserStats: UserStats = {
-  totalPoints: 240,
+  totalPoints: 340,
   earnedRewards: [mockRewards[0]],
   currentStreak: 3,
+  level: 5,
+  experience: 250,
+  experienceToNextLevel: 500,
 };
