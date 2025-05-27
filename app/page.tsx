@@ -1,36 +1,40 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import HabitCard from './components/HabitCard';
+import DailyCard from './components/DailyCard';
 import SimpleTodoCard from './components/SimpleTodoCard';
 import SimpleStatsCard from './components/SimpleStatsCard';
 import RewardShop from './components/RewardShop';
-import ThemeToggle from './components/ThemeToggle';
-import { Todo, TodoStatus, Reward, DailyTodos } from './types/todo';
-import { mockDailyTodos, mockUserStats, mockRewards } from './lib/mockData';
+import ChallengeCard from './components/ChallengeCard';
+import ThemeToggleStandalone from './components/ThemeToggleStandalone';
+import { Todo, TodoStatus, Habit, Daily, Reward, Challenge, ChallengeType } from './types/todo';
+import { mockHabits, mockDailies, mockTodos, mockUserStats, mockRewards, mockChallenges } from './lib/mockData';
+
+type TaskTabType = 'habits' | 'dailies' | 'todos';
+type MainTabType = 'tasks' | 'rewards' | 'challenges';
 
 export default function Home() {
   // 상태 관리
-  const [dailyTodos, setDailyTodos] = useState<DailyTodos[]>(mockDailyTodos);
+  const [habits, setHabits] = useState<Habit[]>(mockHabits);
+  const [dailies, setDailies] = useState<Daily[]>(mockDailies);
+  const [todos, setTodos] = useState<Todo[]>(mockTodos);
+  const [challenges, setChallenges] = useState<Challenge[]>(mockChallenges);
   const [userStats, setUserStats] = useState(mockUserStats);
+  const [mainTab, setMainTab] = useState<MainTabType>('tasks');
+  const [taskTab, setTaskTab] = useState<TaskTabType>('habits');
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [activeTab, setActiveTab] = useState<'todos' | 'rewards'>('todos');
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [newTodoTitle, setNewTodoTitle] = useState('');
 
-  // 선택된 날짜의 할 일 목록
-  const currentDayTodos = useMemo(() => {
-    const dayData = dailyTodos.find((d) => d.date === selectedDate);
-    return dayData?.todos || [];
-  }, [dailyTodos, selectedDate]);
-
-  // 상태별로 분류
-  const todosByStatus = useMemo(() => {
-    return {
-      todo: currentDayTodos.filter((t) => t.status === TodoStatus.TODO),
-      inProgress: currentDayTodos.filter((t) => t.status === TodoStatus.IN_PROGRESS),
-      done: currentDayTodos.filter((t) => t.status === TodoStatus.DONE),
-    };
-  }, [currentDayTodos]);
+  // 사용 가능한 날짜 목록 (최근 7일)
+  const availableDates = useMemo(() => {
+    const dates: string[] = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      dates.push(date.toISOString().split('T')[0]);
+    }
+    return dates;
+  }, []);
 
   // 날짜 포맷팅
   const formatDate = (dateStr: string) => {
@@ -50,84 +54,91 @@ export default function Home() {
     }
   };
 
-  // 할 일 상태 변경
-  const handleStatusChange = (todoId: string, newStatus: TodoStatus) => {
-    setDailyTodos((prev) =>
-      prev.map((dayData) => {
-        if (dayData.date === selectedDate) {
-          return {
-            ...dayData,
-            todos: dayData.todos.map((todo) => {
-              if (todo.id === todoId) {
-                const wasCompleted = todo.status === TodoStatus.DONE;
-                const isNowCompleted = newStatus === TodoStatus.DONE;
+  // 선택된 날짜의 일일 목표 (완료 여부 포함)
+  const dailiesWithCompletion = useMemo(() => {
+    return dailies.map(daily => ({
+      ...daily,
+      completed: daily.completedDates.includes(selectedDate),
+    }));
+  }, [dailies, selectedDate]);
 
-                // 완료 상태 변경 시 포인트 업데이트
-                if (!wasCompleted && isNowCompleted) {
-                  setUserStats((prev) => ({
-                    ...prev,
-                    totalPoints: prev.totalPoints + todo.rewardPoints,
-                  }));
-                  return {
-                    ...todo,
-                    status: newStatus,
-                    completedAt: new Date(),
-                  };
-                } else if (wasCompleted && !isNowCompleted) {
-                  setUserStats((prev) => ({
-                    ...prev,
-                    totalPoints: Math.max(0, prev.totalPoints - todo.rewardPoints),
-                  }));
-                  return {
-                    ...todo,
-                    status: newStatus,
-                    completedAt: undefined,
-                  };
-                }
+  // 선택된 날짜의 할 일
+  const filteredTodos = useMemo(() => {
+    return todos.filter(todo => todo.date === selectedDate);
+  }, [todos, selectedDate]);
 
-                return { ...todo, status: newStatus };
-              }
-              return todo;
-            }),
-          };
-        }
-        return dayData;
-      })
-    );
+  // 습관 +/- 처리
+  const handleHabitPositive = (id: string) => {
+    setHabits(prev => prev.map(h => {
+      if (h.id === id) {
+        setUserStats(s => ({ ...s, totalPoints: s.totalPoints + h.positivePoints }));
+        return { ...h, positiveCount: h.positiveCount + 1 };
+      }
+      return h;
+    }));
   };
 
-  // 새 할 일 추가
-  const handleAddTodo = () => {
-    if (!newTodoTitle.trim()) return;
-
-    const newTodo: Todo = {
-      id: Date.now().toString(),
-      title: newTodoTitle,
-      status: TodoStatus.TODO,
-      date: selectedDate,
-      createdAt: new Date(),
-      rewardPoints: 20,
-    };
-
-    setDailyTodos((prev) => {
-      const existingDay = prev.find((d) => d.date === selectedDate);
-      if (existingDay) {
-        return prev.map((d) =>
-          d.date === selectedDate ? { ...d, todos: [...d.todos, newTodo] } : d
-        );
-      } else {
-        return [...prev, { date: selectedDate, todos: [newTodo] }];
+  const handleHabitNegative = (id: string) => {
+    setHabits(prev => prev.map(h => {
+      if (h.id === id) {
+        setUserStats(s => ({ ...s, totalPoints: Math.max(0, s.totalPoints + h.negativePoints) }));
+        return { ...h, negativeCount: h.negativeCount + 1 };
       }
-    });
+      return h;
+    }));
+  };
 
-    setNewTodoTitle('');
-    setShowAddModal(false);
+  // 일일 목표 토글
+  const handleDailyToggle = (id: string) => {
+    setDailies(prev => prev.map(d => {
+      if (d.id === id) {
+        const isCompleted = d.completedDates.includes(selectedDate);
+        let newCompletedDates = [...d.completedDates];
+        
+        if (isCompleted) {
+          // 완료 취소
+          newCompletedDates = newCompletedDates.filter(date => date !== selectedDate);
+          setUserStats(s => ({ ...s, totalPoints: Math.max(0, s.totalPoints - d.rewardPoints) }));
+        } else {
+          // 완료 추가
+          newCompletedDates.push(selectedDate);
+          setUserStats(s => ({ ...s, totalPoints: s.totalPoints + d.rewardPoints }));
+        }
+
+        return {
+          ...d,
+          completedDates: newCompletedDates,
+        };
+      }
+      return d;
+    }));
+  };
+
+  // 할 일 상태 변경
+  const handleTodoStatusChange = (todoId: string, newStatus: TodoStatus) => {
+    setTodos(prev => prev.map(todo => {
+      if (todo.id === todoId) {
+        const wasCompleted = todo.status === TodoStatus.DONE;
+        const isNowCompleted = newStatus === TodoStatus.DONE;
+
+        if (!wasCompleted && isNowCompleted) {
+          setUserStats(s => ({ ...s, totalPoints: s.totalPoints + todo.rewardPoints }));
+          return { ...todo, status: newStatus, completedAt: new Date() };
+        } else if (wasCompleted && !isNowCompleted) {
+          setUserStats(s => ({ ...s, totalPoints: Math.max(0, s.totalPoints - todo.rewardPoints) }));
+          return { ...todo, status: newStatus, completedAt: undefined };
+        }
+
+        return { ...todo, status: newStatus };
+      }
+      return todo;
+    }));
   };
 
   // 보상 교환
   const handleClaimReward = (reward: Reward) => {
     if (userStats.totalPoints >= reward.value) {
-      setUserStats((prev) => ({
+      setUserStats(prev => ({
         ...prev,
         totalPoints: prev.totalPoints - reward.value,
         earnedRewards: [...prev.earnedRewards, reward],
@@ -136,16 +147,28 @@ export default function Home() {
     }
   };
 
-  // 사용 가능한 날짜 목록 (최근 7일)
-  const availableDates = useMemo(() => {
-    const dates: string[] = [];
-    for (let i = 0; i < 7; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      dates.push(date.toISOString().split('T')[0]);
-    }
-    return dates;
-  }, []);
+  // 도전과제 보상 받기
+  const handleClaimChallenge = (id: string) => {
+    setChallenges(prev => prev.map(c => {
+      if (c.id === id && !c.completed && c.currentCount >= c.targetCount) {
+        setUserStats(s => ({ ...s, totalPoints: s.totalPoints + c.rewardPoints }));
+        alert(`🎉 도전과제 완료! +${c.rewardPoints} 포인트 획득!`);
+        return { ...c, completed: true };
+      }
+      return c;
+    }));
+  };
+
+  // 일일/주간 도전과제 필터링
+  const dailyChallenges = useMemo(() => 
+    challenges.filter(c => c.type === ChallengeType.DAILY),
+    [challenges]
+  );
+
+  const weeklyChallenges = useMemo(() => 
+    challenges.filter(c => c.type === ChallengeType.WEEKLY),
+    [challenges]
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
@@ -158,35 +181,45 @@ export default function Home() {
                 ✨ Todo Master
               </h1>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                매일 할 일을 완료하고 보상을 받으세요!
+                습관을 만들고 목표를 달성하세요!
               </p>
             </div>
 
-            {/* 탭 전환 & 테마 토글 */}
+            {/* 메인 탭 & 테마 토글 */}
             <div className="flex items-center gap-4">
               <div className="flex gap-2 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
                 <button
-                  onClick={() => setActiveTab('todos')}
+                  onClick={() => setMainTab('tasks')}
                   className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-                    activeTab === 'todos'
+                    mainTab === 'tasks'
                       ? 'bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                      : 'text-gray-600 dark:text-gray-400'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
                   }`}
                 >
-                  📋 할 일
+                  📝 작업
                 </button>
                 <button
-                  onClick={() => setActiveTab('rewards')}
+                  onClick={() => setMainTab('challenges')}
                   className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-                    activeTab === 'rewards'
+                    mainTab === 'challenges'
                       ? 'bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                      : 'text-gray-600 dark:text-gray-400'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                  }`}
+                >
+                  🏆 도전과제
+                </button>
+                <button
+                  onClick={() => setMainTab('rewards')}
+                  className={`px-6 py-2 rounded-lg font-semibold transition-all ${
+                    mainTab === 'rewards'
+                      ? 'bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
                   }`}
                 >
                   🎁 보상
                 </button>
               </div>
-              <ThemeToggle />
+              <ThemeToggleStandalone />
             </div>
           </div>
         </div>
@@ -199,153 +232,233 @@ export default function Home() {
           <div className="lg:col-span-1 space-y-6">
             <SimpleStatsCard stats={userStats} />
 
-            {/* 날짜 선택 */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">📅 날짜 선택</h3>
-              <div className="space-y-2">
-                {availableDates.map((date) => {
-                  const dayData = dailyTodos.find((d) => d.date === date);
-                  const todoCount = dayData?.todos.length || 0;
-                  const doneCount = dayData?.todos.filter((t) => t.status === TodoStatus.DONE).length || 0;
+            {/* 날짜 선택 (일일목표/할일 탭일 때만 표시) */}
+            {mainTab === 'tasks' && (taskTab === 'dailies' || taskTab === 'todos') && (
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                  📅 날짜 선택
+                </h3>
+                <div className="space-y-2">
+                  {availableDates.map((date) => {
+                    const dailyCount = taskTab === 'dailies' 
+                      ? dailies.filter(d => d.completedDates.includes(date)).length
+                      : 0;
+                    const todoCount = taskTab === 'todos'
+                      ? todos.filter(t => t.date === date).length
+                      : 0;
+                    const todoDoneCount = taskTab === 'todos'
+                      ? todos.filter(t => t.date === date && t.status === TodoStatus.DONE).length
+                      : 0;
 
-                  return (
-                    <button
-                      key={date}
-                      onClick={() => setSelectedDate(date)}
-                      className={`
-                        w-full text-left px-4 py-3 rounded-lg transition-all
-                        ${selectedDate === date
-                          ? 'bg-indigo-600 text-white shadow-md'
-                          : 'bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
-                        }
-                      `}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{formatDate(date)}</span>
-                        {todoCount > 0 && (
-                          <span className="text-xs opacity-80">
-                            {doneCount}/{todoCount}
-                          </span>
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
+                    return (
+                      <button
+                        key={date}
+                        onClick={() => setSelectedDate(date)}
+                        className={`
+                          w-full text-left px-4 py-3 rounded-lg transition-all
+                          ${selectedDate === date
+                            ? 'bg-indigo-600 text-white shadow-md'
+                            : 'bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                          }
+                        `}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">{formatDate(date)}</span>
+                          {taskTab === 'dailies' && dailyCount > 0 && (
+                            <span className="text-xs opacity-80">
+                              ✓ {dailyCount}개
+                            </span>
+                          )}
+                          {taskTab === 'todos' && todoCount > 0 && (
+                            <span className="text-xs opacity-80">
+                              {todoDoneCount}/{todoCount}
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-
-            {/* 할 일 추가 버튼 */}
-            {activeTab === 'todos' && (
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="w-full px-4 py-3 bg-indigo-600 text-white font-semibold rounded-lg 
-                         hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg active:scale-95"
-              >
-                ➕ 새 할 일 추가
-              </button>
             )}
           </div>
 
-          {/* 오른쪽: 할 일 목록 또는 보상 상점 */}
+          {/* 오른쪽: 컨텐츠 */}
           <div className="lg:col-span-3">
-            {activeTab === 'todos' ? (
-              <>
-                {/* 날짜 헤더 */}
-                <div className="mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    {formatDate(selectedDate)}의 할 일
-                  </h2>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    총 {currentDayTodos.length}개 · 완료 {todosByStatus.done.length}개
-                  </p>
+            {mainTab === 'tasks' ? (
+              <div>
+                {/* 작업 카테고리 탭 */}
+                <div className="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
+                  <div className="flex gap-2 overflow-x-auto">
+                    <button
+                      onClick={() => setTaskTab('habits')}
+                      className={`px-6 py-3 rounded-lg font-semibold transition-all whitespace-nowrap ${
+                        taskTab === 'habits'
+                          ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      ⚡ 습관
+                    </button>
+                    <button
+                      onClick={() => setTaskTab('dailies')}
+                      className={`px-6 py-3 rounded-lg font-semibold transition-all whitespace-nowrap ${
+                        taskTab === 'dailies'
+                          ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-md'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      📅 일일목표
+                    </button>
+                    <button
+                      onClick={() => setTaskTab('todos')}
+                      className={`px-6 py-3 rounded-lg font-semibold transition-all whitespace-nowrap ${
+                        taskTab === 'todos'
+                          ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      📋 할일
+                    </button>
+                  </div>
                 </div>
 
-                {/* 할 일 섹션 */}
-                <div className="space-y-6">
-                  {/* 오늘 할 일 */}
-                  <section>
-                    <div className="flex items-center gap-2 mb-3">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                        📝 오늘 할 일
-                      </h3>
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                        ({todosByStatus.todo.length})
-                      </span>
+                {/* 작업 컨텐츠 */}
+                {taskTab === 'habits' && (
+                  <div>
+                    <div className="mb-4">
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                        ⚡ 습관 (Habits)
+                      </h2>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        반복하고 싶은 긍정적 습관이나 줄이고 싶은 부정적 습관을 추적하세요
+                      </p>
                     </div>
-                    <div className="space-y-2">
-                      {todosByStatus.todo.length === 0 ? (
+
+                    <div className="space-y-3">
+                      {habits.length === 0 ? (
+                        <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center">
+                          <p className="text-gray-500 dark:text-gray-400">습관이 없습니다</p>
+                        </div>
+                      ) : (
+                        habits.map(habit => (
+                          <HabitCard
+                            key={habit.id}
+                            habit={habit}
+                            onPositive={handleHabitPositive}
+                            onNegative={handleHabitNegative}
+                          />
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {taskTab === 'dailies' && (
+                  <div>
+                    <div className="mb-4">
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                        📅 일일 목표 ({formatDate(selectedDate)})
+                      </h2>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        매일/매주/매월 반복되는 목표를 관리하세요
+                      </p>
+                    </div>
+
+                    <div className="space-y-3">
+                      {dailiesWithCompletion.length === 0 ? (
+                        <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center">
+                          <p className="text-gray-500 dark:text-gray-400">일일 목표가 없습니다</p>
+                        </div>
+                      ) : (
+                        dailiesWithCompletion.map(daily => (
+                          <DailyCard
+                            key={daily.id}
+                            daily={daily}
+                            onToggle={handleDailyToggle}
+                          />
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {taskTab === 'todos' && (
+                  <div>
+                    <div className="mb-4">
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                        📋 할 일 ({formatDate(selectedDate)})
+                      </h2>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        일회성 작업을 추가하고 완료하세요
+                      </p>
+                    </div>
+
+                    <div className="space-y-3">
+                      {filteredTodos.length === 0 ? (
                         <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center">
                           <p className="text-gray-500 dark:text-gray-400">할 일이 없습니다</p>
                         </div>
                       ) : (
-                        todosByStatus.todo.map((todo) => (
+                        filteredTodos.map(todo => (
                           <SimpleTodoCard
                             key={todo.id}
                             todo={todo}
-                            onStatusChange={handleStatusChange}
+                            onStatusChange={handleTodoStatusChange}
                           />
                         ))
                       )}
                     </div>
-                  </section>
-
-                  {/* 하는 중 */}
-                  <section>
-                    <div className="flex items-center gap-2 mb-3">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                        🚀 하는 중
-                      </h3>
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                        ({todosByStatus.inProgress.length})
-                      </span>
-                    </div>
-                    <div className="space-y-2">
-                      {todosByStatus.inProgress.length === 0 ? (
-                        <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center">
-                          <p className="text-gray-500 dark:text-gray-400">진행 중인 일이 없습니다</p>
-                        </div>
-                      ) : (
-                        todosByStatus.inProgress.map((todo) => (
-                          <SimpleTodoCard
-                            key={todo.id}
-                            todo={todo}
-                            onStatusChange={handleStatusChange}
-                          />
-                        ))
-                      )}
-                    </div>
-                  </section>
-
-                  {/* 다 끝낸 일 */}
-                  <section>
-                    <div className="flex items-center gap-2 mb-3">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                        ✅ 다 끝낸 일
-                      </h3>
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                        ({todosByStatus.done.length})
-                      </span>
-                    </div>
-                    <div className="space-y-2">
-                      {todosByStatus.done.length === 0 ? (
-                        <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center">
-                          <p className="text-gray-500 dark:text-gray-400">완료한 일이 없습니다</p>
-                        </div>
-                      ) : (
-                        todosByStatus.done.map((todo) => (
-                          <SimpleTodoCard
-                            key={todo.id}
-                            todo={todo}
-                            onStatusChange={handleStatusChange}
-                          />
-                        ))
-                      )}
-                    </div>
-                  </section>
+                  </div>
+                )}
+              </div>
+            ) : mainTab === 'challenges' ? (
+              /* 도전과제 탭 */
+              <div>
+                {/* 일일 도전과제 */}
+                <div className="mb-8">
+                  <div className="mb-4">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                      📅 일일 도전과제
+                    </h2>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      매일 자정에 초기화됩니다
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-4">
+                    {dailyChallenges.map(challenge => (
+                      <ChallengeCard
+                        key={challenge.id}
+                        challenge={challenge}
+                        onClaim={handleClaimChallenge}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </>
+
+                {/* 주간 도전과제 */}
+                <div>
+                  <div className="mb-4">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                      🗓️ 주간 도전과제
+                    </h2>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      매주 월요일에 초기화됩니다
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-4">
+                    {weeklyChallenges.map(challenge => (
+                      <ChallengeCard
+                        key={challenge.id}
+                        challenge={challenge}
+                        onClaim={handleClaimChallenge}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
             ) : (
-              /* 보상 상점 */
+              /* 보상 탭 */
               <RewardShop
                 rewards={mockRewards}
                 userPoints={userStats.totalPoints}
@@ -355,53 +468,6 @@ export default function Home() {
           </div>
         </div>
       </main>
-
-      {/* 할 일 추가 모달 */}
-      {showAddModal && (
-        <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
-          onClick={() => setShowAddModal(false)}
-        >
-          <div
-            className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-              ➕ 새 할 일 추가
-            </h2>
-            <input
-              type="text"
-              value={newTodoTitle}
-              onChange={(e) => setNewTodoTitle(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAddTodo()}
-              placeholder="할 일을 입력하세요..."
-              className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 
-                       bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100
-                       focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4"
-              autoFocus
-            />
-            <div className="flex gap-2">
-              <button
-                onClick={handleAddTodo}
-                className="flex-1 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg 
-                         hover:bg-indigo-700 transition-all"
-              >
-                추가
-              </button>
-              <button
-                onClick={() => {
-                  setShowAddModal(false);
-                  setNewTodoTitle('');
-                }}
-                className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 
-                         font-semibold rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all"
-              >
-                취소
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
