@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import ThemeToggle from '../components/ThemeToggle';
+import ThemeToggleStandalone from '../components/ThemeToggleStandalone';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -60,7 +60,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
       {/* 테마 토글 (우측 상단) */}
       <div className="fixed top-4 right-4">
-        <ThemeToggle />
+        <ThemeToggleStandalone />
       </div>
 
       <div className="w-full max-w-md">
