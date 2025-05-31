@@ -48,8 +48,6 @@ export interface Habit {
   habitType: HabitType;
   positiveCount: number;  // + 클릭 횟수
   negativeCount: number;  // - 클릭 횟수
-  positivePoints: number; // + 클릭 시 획득 포인트
-  negativePoints: number; // - 클릭 시 감점 포인트
   createdAt: Date;
 }
 
@@ -60,7 +58,6 @@ export interface Daily {
   frequency: DailyFrequency;
   completedDates: string[]; // 완료한 날짜 목록 (YYYY-MM-DD)
   streak: number;           // 연속 달성 일수
-  rewardPoints: number;
   createdAt: Date;
 }
 
@@ -78,8 +75,6 @@ export interface Todo {
   date: string;
   createdAt: Date;
   completedAt?: Date;
-  rewardPoints: number;
-  earnedReward?: Reward;
 }
 
 // 도전과제 타입
@@ -117,4 +112,6 @@ export interface UserStats {
   level: number;
   experience: number;
   experienceToNextLevel: number;
+  recentRewards: Reward[]; // 최근 획득한 보상
+  recentCompletedChallenges: Challenge[]; // 최근 달성한 도전과제
 }
