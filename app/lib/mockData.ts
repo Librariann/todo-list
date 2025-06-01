@@ -55,8 +55,6 @@ export const mockHabits: Habit[] = [
     habitType: HabitType.POSITIVE,
     positiveCount: 5,
     negativeCount: 0,
-    positivePoints: 5,
-    negativePoints: 0,
     createdAt: new Date(),
   },
   {
@@ -65,8 +63,6 @@ export const mockHabits: Habit[] = [
     habitType: HabitType.BOTH,
     positiveCount: 3,
     negativeCount: 1,
-    positivePoints: 10,
-    negativePoints: -5,
     createdAt: new Date(),
   },
   {
@@ -75,8 +71,6 @@ export const mockHabits: Habit[] = [
     habitType: HabitType.NEGATIVE,
     positiveCount: 0,
     negativeCount: 2,
-    positivePoints: 0,
-    negativePoints: -10,
     createdAt: new Date(),
   },
   {
@@ -85,8 +79,6 @@ export const mockHabits: Habit[] = [
     habitType: HabitType.POSITIVE,
     positiveCount: 2,
     negativeCount: 0,
-    positivePoints: 15,
-    negativePoints: 0,
     createdAt: new Date(),
   },
 ];
@@ -99,7 +91,6 @@ export const mockDailies: Daily[] = [
     frequency: DailyFrequency.DAILY,
     completedDates: [today, yesterday, twoDaysAgo],
     streak: 3,
-    rewardPoints: 20,
     createdAt: new Date(),
   },
   {
@@ -108,7 +99,6 @@ export const mockDailies: Daily[] = [
     frequency: DailyFrequency.DAILY,
     completedDates: [yesterday, twoDaysAgo],
     streak: 2,
-    rewardPoints: 25,
     createdAt: new Date(),
   },
   {
@@ -117,7 +107,6 @@ export const mockDailies: Daily[] = [
     frequency: DailyFrequency.DAILY,
     completedDates: [today],
     streak: 1,
-    rewardPoints: 30,
     createdAt: new Date(),
   },
   {
@@ -126,7 +115,6 @@ export const mockDailies: Daily[] = [
     frequency: DailyFrequency.WEEKLY,
     completedDates: [],
     streak: 0,
-    rewardPoints: 50,
     createdAt: new Date(),
   },
 ];
@@ -139,7 +127,6 @@ export const mockTodos: Todo[] = [
     status: TodoStatus.IN_PROGRESS,
     date: today,
     createdAt: new Date(),
-    rewardPoints: 50,
   },
   {
     id: "t2",
@@ -147,7 +134,6 @@ export const mockTodos: Todo[] = [
     status: TodoStatus.TODO,
     date: today,
     createdAt: new Date(),
-    rewardPoints: 30,
   },
   {
     id: "t3",
@@ -155,7 +141,6 @@ export const mockTodos: Todo[] = [
     status: TodoStatus.TODO,
     date: today,
     createdAt: new Date(),
-    rewardPoints: 10,
   },
   {
     id: "t4",
@@ -164,7 +149,6 @@ export const mockTodos: Todo[] = [
     date: today,
     createdAt: new Date(),
     completedAt: new Date(),
-    rewardPoints: 40,
   },
 ];
 
@@ -249,6 +233,34 @@ export const mockChallenges: Challenge[] = [
   },
 ];
 
+// 완료된 도전과제 샘플
+const completedChallenge1: Challenge = {
+  id: "cc1",
+  title: "첫 습관 달성",
+  description: "습관을 3회 달성했습니다",
+  type: ChallengeType.DAILY,
+  condition: ChallengeCondition.COMPLETE_HABITS,
+  targetCount: 3,
+  currentCount: 3,
+  rewardPoints: 30,
+  completed: true,
+  iconUrl: "⚡",
+  resetDate: new Date(Date.now() - 86400000).toISOString().split("T")[0],
+};
+
+const completedChallenge2: Challenge = {
+  id: "cc2",
+  title: "할일 정복자",
+  description: "할 일 5개를 완료했습니다",
+  type: ChallengeType.WEEKLY,
+  condition: ChallengeCondition.COMPLETE_TODOS,
+  targetCount: 5,
+  currentCount: 5,
+  rewardPoints: 50,
+  completed: true,
+  iconUrl: "✅",
+};
+
 export const mockUserStats: UserStats = {
   totalPoints: 340,
   earnedRewards: [mockRewards[0]],
@@ -256,4 +268,6 @@ export const mockUserStats: UserStats = {
   level: 5,
   experience: 250,
   experienceToNextLevel: 500,
+  recentRewards: [mockRewards[0], mockRewards[2]], // 최근 획득한 보상
+  recentCompletedChallenges: [completedChallenge1, completedChallenge2], // 최근 달성한 도전과제
 };
