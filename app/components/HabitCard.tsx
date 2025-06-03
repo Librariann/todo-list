@@ -38,7 +38,7 @@ export default function HabitCard({ habit, onPositive, onNegative }: HabitCardPr
             <button
               onClick={() => onNegative(habit.id)}
               className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-all active:scale-95 font-bold text-xl"
-              title={`${habit.negativePoints}점`}
+              title="부정적 습관 기록"
             >
               −
             </button>
@@ -47,26 +47,12 @@ export default function HabitCard({ habit, onPositive, onNegative }: HabitCardPr
             <button
               onClick={() => onPositive(habit.id)}
               className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-all active:scale-95 font-bold text-xl"
-              title={`+${habit.positivePoints}점`}
+              title="긍정적 습관 기록"
             >
               +
             </button>
           )}
         </div>
-      </div>
-
-      {/* 포인트 표시 */}
-      <div className="mt-2 flex items-center gap-2 text-xs">
-        {showPositive && (
-          <span className="text-emerald-600 dark:text-emerald-400">
-            +{habit.positivePoints}P
-          </span>
-        )}
-        {showNegative && (
-          <span className="text-red-600 dark:text-red-400">
-            {habit.negativePoints}P
-          </span>
-        )}
       </div>
     </div>
   );
