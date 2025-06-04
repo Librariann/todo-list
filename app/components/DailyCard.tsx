@@ -8,7 +8,6 @@ interface DailyWithCompletion {
   frequency: DailyFrequency;
   completedDates: string[];
   streak: number;
-  rewardPoints: number;
   createdAt: Date;
   completed: boolean; // 선택된 날짜의 완료 여부
 }
@@ -84,12 +83,6 @@ export default function DailyCard({ daily, onToggle }: DailyCardProps) {
           </div>
         </div>
 
-        {/* 포인트 */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
-            ⭐ {daily.rewardPoints}P
-          </span>
-        </div>
       </div>
     </div>
   );
