@@ -60,46 +60,27 @@ export default function SimpleTodoCard({ todo, onStatusChange }: SimpleTodoCardP
           </h3>
         </div>
 
-        {/* 포인트 */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-slate-600 dark:text-slate-400">
-            ⭐ {todo.rewardPoints}P
-          </span>
-
-          {/* 진행 중 버튼 */}
-          {!isDone && (
-            <button
-              onClick={() => {
-                const newStatus = todo.status === TodoStatus.IN_PROGRESS 
-                  ? TodoStatus.TODO 
-                  : TodoStatus.IN_PROGRESS;
-                onStatusChange(todo.id, newStatus);
-              }}
-              className={`
-                px-3 py-1 rounded-full text-xs font-medium transition-all
-                ${todo.status === TodoStatus.IN_PROGRESS
-                  ? 'bg-indigo-500 text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/30'
-                }
-              `}
-            >
-              {todo.status === TodoStatus.IN_PROGRESS ? '🚀 진행중' : '시작'}
-            </button>
-          )}
-        </div>
+        {/* 진행 중 버튼 */}
+        {!isDone && (
+          <button
+            onClick={() => {
+              const newStatus = todo.status === TodoStatus.IN_PROGRESS 
+                ? TodoStatus.TODO 
+                : TodoStatus.IN_PROGRESS;
+              onStatusChange(todo.id, newStatus);
+            }}
+            className={`
+              px-3 py-1 rounded-full text-xs font-medium transition-all
+              ${todo.status === TodoStatus.IN_PROGRESS
+                ? 'bg-indigo-500 text-white'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/30'
+              }
+            `}
+          >
+            {todo.status === TodoStatus.IN_PROGRESS ? '🚀 진행중' : '시작'}
+          </button>
+        )}
       </div>
-
-      {/* 획득한 보상 */}
-      {todo.earnedReward && (
-        <div className="mt-2 px-3 py-2 rounded-lg bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/30 dark:to-orange-900/30">
-          <div className="flex items-center gap-2">
-            <span className="text-lg">{todo.earnedReward.iconUrl}</span>
-            <p className="text-xs font-semibold text-yellow-900 dark:text-yellow-200">
-              🎉 {todo.earnedReward.name} 획득!
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
