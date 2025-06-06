@@ -25,18 +25,46 @@ export default function SimpleStatsCard({ stats }: SimpleStatsCardProps) {
         </div>
       </div>
 
-      {/* 획득한 보상 */}
-      {stats.earnedRewards.length > 0 && (
+      {/* 최근 획득한 보상 */}
+      {stats.recentRewards && stats.recentRewards.length > 0 && (
         <div className="mt-4 bg-white/10 backdrop-blur-sm rounded-lg p-4">
-          <p className="text-xs opacity-80 mb-2">최근 보상</p>
-          <div className="flex gap-2 overflow-x-auto">
-            {stats.earnedRewards.slice(0, 3).map((reward) => (
+          <p className="text-xs opacity-80 mb-2 flex items-center gap-1">
+            <span>🎁</span> 최근 보상
+          </p>
+          <div className="space-y-2">
+            {stats.recentRewards.slice(0, 2).map((reward) => (
               <div
                 key={reward.id}
-                className="flex-shrink-0 bg-white/20 rounded-lg px-3 py-2 text-center"
+                className="bg-white/20 rounded-lg px-3 py-2 flex items-center gap-2"
               >
-                <span className="text-2xl block">{reward.iconUrl}</span>
-                <p className="text-xs mt-1 whitespace-nowrap">{reward.name}</p>
+                <span className="text-xl">{reward.iconUrl}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold truncate">{reward.name}</p>
+                  <p className="text-[10px] opacity-70 truncate">{reward.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 최근 달성한 도전과제 */}
+      {stats.recentCompletedChallenges && stats.recentCompletedChallenges.length > 0 && (
+        <div className="mt-4 bg-white/10 backdrop-blur-sm rounded-lg p-4">
+          <p className="text-xs opacity-80 mb-2 flex items-center gap-1">
+            <span>🏆</span> 최근 달성 도전과제
+          </p>
+          <div className="space-y-2">
+            {stats.recentCompletedChallenges.slice(0, 2).map((challenge) => (
+              <div
+                key={challenge.id}
+                className="bg-white/20 rounded-lg px-3 py-2 flex items-center gap-2"
+              >
+                <span className="text-xl">{challenge.iconUrl}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold truncate">{challenge.title}</p>
+                  <p className="text-[10px] opacity-70 truncate">+{challenge.rewardPoints} 포인트</p>
+                </div>
               </div>
             ))}
           </div>
