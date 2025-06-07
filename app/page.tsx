@@ -9,7 +9,8 @@ import SimpleStatsCard from './components/SimpleStatsCard';
 import RewardShop from './components/RewardShop';
 import ChallengeCard from './components/ChallengeCard';
 import ThemeToggleStandalone from './components/ThemeToggleStandalone';
-import { Todo, TodoStatus, Habit, Daily, Reward, Challenge, ChallengeType } from './types/todo';
+import AddTaskModal from './components/AddTaskModal';
+import { Todo, TodoStatus, Habit, Daily, Reward, Challenge, ChallengeType, TaskType } from './types/todo';
 import { mockHabits, mockDailies, mockTodos, mockUserStats, mockRewards, mockChallenges } from './lib/mockData';
 
 type TaskTabType = 'habits' | 'dailies' | 'todos';
@@ -25,6 +26,8 @@ export default function Home() {
   const [mainTab, setMainTab] = useState<MainTabType>('tasks');
   const [taskTab, setTaskTab] = useState<TaskTabType>('habits');
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTaskType, setModalTaskType] = useState<TaskType>(TaskType.HABIT);
 
   // 사용 가능한 날짜 목록 (최근 7일)
   const availableDates = useMemo(() => {
@@ -68,11 +71,10 @@ export default function Home() {
     return todos.filter(todo => todo.date === selectedDate);
   }, [todos, selectedDate]);
 
-  // 습관 +/- 처리
+  // 습관 +/- 처리 (포인트 없이 카운트만 증가)
   const handleHabitPositive = (id: string) => {
     setHabits(prev => prev.map(h => {
       if (h.id === id) {
-        setUserStats(s => ({ ...s, totalPoints: s.totalPoints + h.positivePoints }));
         return { ...h, positiveCount: h.positiveCount + 1 };
       }
       return h;
@@ -82,14 +84,13 @@ export default function Home() {
   const handleHabitNegative = (id: string) => {
     setHabits(prev => prev.map(h => {
       if (h.id === id) {
-        setUserStats(s => ({ ...s, totalPoints: Math.max(0, s.totalPoints + h.negativePoints) }));
         return { ...h, negativeCount: h.negativeCount + 1 };
       }
       return h;
     }));
   };
 
-  // 일일 목표 토글
+  // 일일 목표 토글 (포인트 없이 완료 상태만 변경)
   const handleDailyToggle = (id: string) => {
     setDailies(prev => prev.map(d => {
       if (d.id === id) {
@@ -99,11 +100,9 @@ export default function Home() {
         if (isCompleted) {
           // 완료 취소
           newCompletedDates = newCompletedDates.filter(date => date !== selectedDate);
-          setUserStats(s => ({ ...s, totalPoints: Math.max(0, s.totalPoints - d.rewardPoints) }));
         } else {
           // 완료 추가
           newCompletedDates.push(selectedDate);
-          setUserStats(s => ({ ...s, totalPoints: s.totalPoints + d.rewardPoints }));
         }
 
         return {
@@ -115,7 +114,7 @@ export default function Home() {
     }));
   };
 
-  // 할 일 상태 변경
+  // 할 일 상태 변경 (포인트 없이 상태만 변경)
   const handleTodoStatusChange = (todoId: string, newStatus: TodoStatus) => {
     setTodos(prev => prev.map(todo => {
       if (todo.id === todoId) {
@@ -123,10 +122,8 @@ export default function Home() {
         const isNowCompleted = newStatus === TodoStatus.DONE;
 
         if (!wasCompleted && isNowCompleted) {
-          setUserStats(s => ({ ...s, totalPoints: s.totalPoints + todo.rewardPoints }));
           return { ...todo, status: newStatus, completedAt: new Date() };
         } else if (wasCompleted && !isNowCompleted) {
-          setUserStats(s => ({ ...s, totalPoints: Math.max(0, s.totalPoints - todo.rewardPoints) }));
           return { ...todo, status: newStatus, completedAt: undefined };
         }
 
@@ -170,6 +167,23 @@ export default function Home() {
     challenges.filter(c => c.type === ChallengeType.WEEKLY),
     [challenges]
   );
+
+  // 모달 열기
+  const openAddModal = (type: TaskType) => {
+    setModalTaskType(type);
+    setIsModalOpen(true);
+  };
+
+  // 작업 추가
+  const handleAddTask = (task: Habit | Daily | Todo) => {
+    if ('habitType' in task) {
+      setHabits(prev => [...prev, task as Habit]);
+    } else if ('frequency' in task) {
+      setDailies(prev => [...prev, task as Daily]);
+    } else {
+      setTodos(prev => [...prev, task as Todo]);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
@@ -342,13 +356,22 @@ export default function Home() {
                 {/* 작업 컨텐츠 */}
                 {taskTab === 'habits' && (
                   <div>
-                    <div className="mb-4">
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                        ⚡ 습관 (Habits)
-                      </h2>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        반복하고 싶은 긍정적 습관이나 줄이고 싶은 부정적 습관을 추적하세요
-                      </p>
+                    <div className="mb-4 flex items-center justify-between">
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                          ⚡ 습관 (Habits)
+                        </h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                          반복하고 싶은 긍정적 습관이나 줄이고 싶은 부정적 습관을 추적하세요
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => openAddModal(TaskType.HABIT)}
+                        className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg active:scale-95 flex items-center gap-2"
+                      >
+                        <span className="text-xl">+</span>
+                        추가
+                      </button>
                     </div>
 
                     <div className="space-y-3">
@@ -372,13 +395,22 @@ export default function Home() {
 
                 {taskTab === 'dailies' && (
                   <div>
-                    <div className="mb-4">
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                        📅 일일 목표 ({formatDate(selectedDate)})
-                      </h2>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        매일/매주/매월 반복되는 목표를 관리하세요
-                      </p>
+                    <div className="mb-4 flex items-center justify-between">
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                          📅 일일 목표 ({formatDate(selectedDate)})
+                        </h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                          매일/매주/매월 반복되는 목표를 관리하세요
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => openAddModal(TaskType.DAILY)}
+                        className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg active:scale-95 flex items-center gap-2"
+                      >
+                        <span className="text-xl">+</span>
+                        추가
+                      </button>
                     </div>
 
                     <div className="space-y-3">
@@ -401,13 +433,22 @@ export default function Home() {
 
                 {taskTab === 'todos' && (
                   <div>
-                    <div className="mb-4">
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                        📋 할 일 ({formatDate(selectedDate)})
-                      </h2>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        일회성 작업을 추가하고 완료하세요
-                      </p>
+                    <div className="mb-4 flex items-center justify-between">
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                          📋 할 일 ({formatDate(selectedDate)})
+                        </h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                          일회성 작업을 추가하고 완료하세요
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => openAddModal(TaskType.TODO)}
+                        className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg active:scale-95 flex items-center gap-2"
+                      >
+                        <span className="text-xl">+</span>
+                        추가
+                      </button>
                     </div>
 
                     <div className="space-y-3">
@@ -484,6 +525,14 @@ export default function Home() {
           </div>
         </div>
       </main>
+
+      {/* 추가 모달 */}
+      <AddTaskModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        taskType={modalTaskType}
+        onAdd={handleAddTask}
+      />
     </div>
   );
 }
