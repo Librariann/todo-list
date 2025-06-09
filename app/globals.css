@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Tailwind v4 다크모드 설정 */
+@variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
