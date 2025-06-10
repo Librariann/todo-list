@@ -7,15 +7,12 @@ export default function ThemeToggleStandalone() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    console.log('🎨 ThemeToggle mounted');
     setMounted(true);
     
     // 초기 테마 결정
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
-    
-    console.log('📋 Initial theme:', initialTheme, '| Saved:', savedTheme, '| PrefersDark:', prefersDark);
     
     // 상태 설정
     setTheme(initialTheme);
@@ -27,35 +24,24 @@ export default function ThemeToggleStandalone() {
     } else {
       root.classList.remove('dark');
     }
-    
-    console.log('✅ Initial theme applied, HTML classes:', root.className);
   }, []);
 
   const toggleTheme = () => {
-    console.log('🔄 Toggle clicked! Current theme:', theme);
-    
     const newTheme = theme === 'dark' ? 'light' : 'dark';
-    console.log('🎯 Switching to:', newTheme);
     
     // 상태 업데이트
     setTheme(newTheme);
     
     // localStorage 저장
     localStorage.setItem('theme', newTheme);
-    console.log('💾 Saved to localStorage:', newTheme);
     
     // DOM에 즉시 적용
     const root = document.documentElement;
     if (newTheme === 'dark') {
       root.classList.add('dark');
-      console.log('🌙 Added "dark" class');
     } else {
       root.classList.remove('dark');
-      console.log('☀️ Removed "dark" class');
     }
-    
-    console.log('📦 Current HTML classes:', root.className);
-    console.log('✨ Has dark class?', root.classList.contains('dark'));
   };
 
   if (!mounted) {
