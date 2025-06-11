@@ -81,6 +81,7 @@ export interface Todo {
 export enum ChallengeType {
   DAILY = 'daily',     // 일일 도전과제
   WEEKLY = 'weekly',   // 주간 도전과제
+  MONTHLY = 'monthly', // 월간 도전과제
 }
 
 export enum ChallengeCondition {
