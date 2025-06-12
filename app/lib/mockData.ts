@@ -231,6 +231,43 @@ export const mockChallenges: Challenge[] = [
     completed: false,
     iconUrl: "🏆",
   },
+  // 월간 도전과제
+  {
+    id: "c7",
+    title: "월간 마라토너",
+    description: "이번 달 습관 200회 달성하기",
+    type: ChallengeType.MONTHLY,
+    condition: ChallengeCondition.COMPLETE_HABITS,
+    targetCount: 200,
+    currentCount: 85,
+    rewardPoints: 1000,
+    completed: false,
+    iconUrl: "🎖️",
+  },
+  {
+    id: "c8",
+    title: "월간 목표 달성자",
+    description: "이번 달 일일목표 80개 완료하기",
+    type: ChallengeType.MONTHLY,
+    condition: ChallengeCondition.COMPLETE_DAILIES,
+    targetCount: 80,
+    currentCount: 35,
+    rewardPoints: 800,
+    completed: false,
+    iconUrl: "🌟",
+  },
+  {
+    id: "c9",
+    title: "월간 포인트 왕",
+    description: "이번 달 2000 포인트 획득하기",
+    type: ChallengeType.MONTHLY,
+    condition: ChallengeCondition.EARN_POINTS,
+    targetCount: 2000,
+    currentCount: 680,
+    rewardPoints: 500,
+    completed: false,
+    iconUrl: "👑",
+  },
 ];
 
 // 완료된 도전과제 샘플
