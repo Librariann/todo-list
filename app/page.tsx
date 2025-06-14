@@ -10,6 +10,7 @@ import RewardShop from './components/RewardShop';
 import ChallengeCard from './components/ChallengeCard';
 import ThemeToggleStandalone from './components/ThemeToggleStandalone';
 import AddTaskModal from './components/AddTaskModal';
+import Calendar from './components/Calendar';
 import { Todo, TodoStatus, Habit, Daily, Reward, Challenge, ChallengeType, TaskType } from './types/todo';
 import { mockHabits, mockDailies, mockTodos, mockUserStats, mockRewards, mockChallenges } from './lib/mockData';
 
@@ -28,17 +29,10 @@ export default function Home() {
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTaskType, setModalTaskType] = useState<TaskType>(TaskType.HABIT);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  // 사용 가능한 날짜 목록 (최근 7일)
-  const availableDates = useMemo(() => {
-    const dates: string[] = [];
-    for (let i = 0; i < 7; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      dates.push(date.toISOString().split('T')[0]);
-    }
-    return dates;
-  }, []);
+
 
   // 날짜 포맷팅
   const formatDate = (dateStr: string) => {
@@ -57,6 +51,21 @@ export default function Home() {
       return `${month}월 ${day}일`;
     }
   };
+
+  // 데이터가 있는 날짜들 (달력에 점 표시용)
+  const markedDates = useMemo(() => {
+    const dates = new Set<string>();
+    
+    if (taskTab === 'dailies') {
+      dailies.forEach(daily => {
+        daily.completedDates.forEach(date => dates.add(date));
+      });
+    } else if (taskTab === 'todos') {
+      todos.forEach(todo => dates.add(todo.date));
+    }
+    
+    return Array.from(dates);
+  }, [taskTab, dailies, todos]);
 
   // 선택된 날짜의 일일 목표 (완료 여부 포함)
   const dailiesWithCompletion = useMemo(() => {
@@ -168,6 +177,11 @@ export default function Home() {
     [challenges]
   );
 
+  const monthlyChallenges = useMemo(() => 
+    challenges.filter(c => c.type === ChallengeType.MONTHLY),
+    [challenges]
+  );
+
   // 모달 열기
   const openAddModal = (type: TaskType) => {
     setModalTaskType(type);
@@ -189,19 +203,20 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       {/* 헤더 */}
       <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
           <div className="flex items-center justify-between">
+            {/* 로고 */}
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-700 to-indigo-600 dark:from-slate-300 dark:to-indigo-400 bg-clip-text text-transparent">
+              <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-slate-700 to-indigo-600 dark:from-slate-300 dark:to-indigo-400 bg-clip-text text-transparent">
                 ✨ Todo Master
               </h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <p className="hidden sm:block text-sm text-gray-600 dark:text-gray-400 mt-1">
                 습관을 만들고 목표를 달성하세요!
               </p>
             </div>
 
-            {/* 메인 탭 & 로그인/회원가입 & 테마 토글 */}
-            <div className="flex items-center gap-4">
+            {/* 데스크톱 메뉴 */}
+            <div className="hidden lg:flex items-center gap-4">
               <div className="flex gap-2 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
                 <button
                   onClick={() => setMainTab('tasks')}
@@ -235,7 +250,6 @@ export default function Home() {
                 </button>
               </div>
 
-              {/* 로그인/회원가입 버튼 */}
               <div className="flex gap-2">
                 <Link href="/login">
                   <button className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
@@ -251,7 +265,85 @@ export default function Home() {
 
               <ThemeToggleStandalone />
             </div>
+
+            {/* 모바일 메뉴 버튼 */}
+            <div className="flex lg:hidden items-center gap-2">
+              <ThemeToggleStandalone />
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                aria-label="메뉴"
+              >
+                <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {isMobileMenuOpen ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  )}
+                </svg>
+              </button>
+            </div>
           </div>
+
+          {/* 모바일 메뉴 */}
+          {isMobileMenuOpen && (
+            <div className="lg:hidden mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="space-y-2">
+                <button
+                  onClick={() => {
+                    setMainTab('tasks');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-3 rounded-lg font-semibold transition-all ${
+                    mainTab === 'tasks'
+                      ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  📝 작업
+                </button>
+                <button
+                  onClick={() => {
+                    setMainTab('challenges');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-3 rounded-lg font-semibold transition-all ${
+                    mainTab === 'challenges'
+                      ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  🏆 도전과제
+                </button>
+                <button
+                  onClick={() => {
+                    setMainTab('rewards');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-3 rounded-lg font-semibold transition-all ${
+                    mainTab === 'rewards'
+                      ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  🎁 보상
+                </button>
+                
+                <div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-700 flex gap-2">
+                  <Link href="/login" className="flex-1">
+                    <button className="w-full px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                      로그인
+                    </button>
+                  </Link>
+                  <Link href="/signup" className="flex-1">
+                    <button className="w-full px-4 py-2 text-sm font-semibold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all shadow-sm">
+                      회원가입
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </header>
 
@@ -262,54 +354,15 @@ export default function Home() {
           <div className="lg:col-span-1 space-y-6">
             <SimpleStatsCard stats={userStats} />
 
-            {/* 날짜 선택 (일일목표/할일 탭일 때만 표시) */}
+            {/* 날짜 선택 달력 (일일목표/할일 탭일 때만 표시) */}
             {mainTab === 'tasks' && (taskTab === 'dailies' || taskTab === 'todos') && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
-                <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">
-                  📅 날짜 선택
-                </h3>
-                <div className="space-y-2">
-                  {availableDates.map((date) => {
-                    const dailyCount = taskTab === 'dailies' 
-                      ? dailies.filter(d => d.completedDates.includes(date)).length
-                      : 0;
-                    const todoCount = taskTab === 'todos'
-                      ? todos.filter(t => t.date === date).length
-                      : 0;
-                    const todoDoneCount = taskTab === 'todos'
-                      ? todos.filter(t => t.date === date && t.status === TodoStatus.DONE).length
-                      : 0;
-
-                    return (
-                      <button
-                        key={date}
-                        onClick={() => setSelectedDate(date)}
-                        className={`
-                          w-full text-left px-4 py-3 rounded-lg transition-all
-                          ${selectedDate === date
-                            ? 'bg-indigo-600 text-white shadow-md'
-                            : 'bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
-                          }
-                        `}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium">{formatDate(date)}</span>
-                          {taskTab === 'dailies' && dailyCount > 0 && (
-                            <span className="text-xs opacity-80">
-                              ✓ {dailyCount}개
-                            </span>
-                          )}
-                          {taskTab === 'todos' && todoCount > 0 && (
-                            <span className="text-xs opacity-80">
-                              {todoDoneCount}/{todoCount}
-                            </span>
-                          )}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              <Calendar
+                selectedDate={selectedDate}
+                onDateSelect={setSelectedDate}
+                markedDates={markedDates}
+                currentMonth={currentMonth}
+                onMonthChange={setCurrentMonth}
+              />
             )}
           </div>
 
@@ -356,9 +409,9 @@ export default function Home() {
                 {/* 작업 컨텐츠 */}
                 {taskTab === 'habits' && (
                   <div>
-                    <div className="mb-4 flex items-center justify-between">
+                    <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
                           ⚡ 습관 (Habits)
                         </h2>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -367,10 +420,10 @@ export default function Home() {
                       </div>
                       <button
                         onClick={() => openAddModal(TaskType.HABIT)}
-                        className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg active:scale-95 flex items-center gap-2"
+                        className="px-4 sm:px-6 py-2 sm:py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap"
                       >
                         <span className="text-xl">+</span>
-                        추가
+                        <span>추가</span>
                       </button>
                     </div>
 
@@ -395,9 +448,9 @@ export default function Home() {
 
                 {taskTab === 'dailies' && (
                   <div>
-                    <div className="mb-4 flex items-center justify-between">
+                    <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
                           📅 일일 목표 ({formatDate(selectedDate)})
                         </h2>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -406,10 +459,10 @@ export default function Home() {
                       </div>
                       <button
                         onClick={() => openAddModal(TaskType.DAILY)}
-                        className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg active:scale-95 flex items-center gap-2"
+                        className="px-4 sm:px-6 py-2 sm:py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap"
                       >
                         <span className="text-xl">+</span>
-                        추가
+                        <span>추가</span>
                       </button>
                     </div>
 
@@ -433,9 +486,9 @@ export default function Home() {
 
                 {taskTab === 'todos' && (
                   <div>
-                    <div className="mb-4 flex items-center justify-between">
+                    <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
                           📋 할 일 ({formatDate(selectedDate)})
                         </h2>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -444,10 +497,10 @@ export default function Home() {
                       </div>
                       <button
                         onClick={() => openAddModal(TaskType.TODO)}
-                        className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg active:scale-95 flex items-center gap-2"
+                        className="px-4 sm:px-6 py-2 sm:py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap"
                       >
                         <span className="text-xl">+</span>
-                        추가
+                        <span>추가</span>
                       </button>
                     </div>
 
@@ -494,7 +547,7 @@ export default function Home() {
                 </div>
 
                 {/* 주간 도전과제 */}
-                <div>
+                <div className="mb-8">
                   <div className="mb-4">
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                       🗓️ 주간 도전과제
@@ -505,6 +558,27 @@ export default function Home() {
                   </div>
                   <div className="grid grid-cols-1 gap-4">
                     {weeklyChallenges.map(challenge => (
+                      <ChallengeCard
+                        key={challenge.id}
+                        challenge={challenge}
+                        onClaim={handleClaimChallenge}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* 월간 도전과제 */}
+                <div>
+                  <div className="mb-4">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                      📆 월간 도전과제
+                    </h2>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      매달 1일에 초기화됩니다
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-4">
+                    {monthlyChallenges.map(challenge => (
                       <ChallengeCard
                         key={challenge.id}
                         challenge={challenge}
