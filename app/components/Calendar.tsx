@@ -52,8 +52,8 @@ export default function Calendar({
 
   const toDateString = (date: Date) => {
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   };
 
@@ -121,12 +121,19 @@ export default function Calendar({
           <h3 className="font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
             {formatMonthYear(currentMonth)}
             <svg
-              className={`w-4 h-4 lg:hidden transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+              className={`w-4 h-4 lg:hidden transition-transform ${
+                isExpanded ? "rotate-180" : ""
+              }`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
             </svg>
           </h3>
           <button
@@ -162,7 +169,11 @@ export default function Calendar({
       </div>
 
       {/* 요일 헤더 - 모바일에서는 펼쳤을 때만, 데스크톱에서는 항상 표시 */}
-      <div className={`grid grid-cols-7 gap-1 mb-2 ${isExpanded ? 'block' : 'hidden lg:grid'}`}>
+      <div
+        className={`grid grid-cols-7 gap-1 mb-2 ${
+          isExpanded ? "block" : "hidden lg:grid"
+        }`}
+      >
         {weekDays.map((day, index) => (
           <div
             key={day}
@@ -180,7 +191,11 @@ export default function Calendar({
       </div>
 
       {/* 날짜 그리드 - 모바일에서는 펼쳤을 때만, 데스크톱에서는 항상 표시 */}
-      <div className={`grid grid-cols-7 gap-1 ${isExpanded ? 'grid' : 'hidden lg:grid'}`}>
+      <div
+        className={`grid grid-cols-7 gap-1 ${
+          isExpanded ? "grid" : "hidden lg:grid"
+        }`}
+      >
         {calendarDays.map((date, index) => {
           if (!date) {
             return <div key={`empty-${index}`} className="aspect-square" />;
