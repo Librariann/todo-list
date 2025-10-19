@@ -1,0 +1,43 @@
+# Task ID: 6
+# Title: 태스크 관리 시스템 - CRUD
+# Status: pending
+# Dependencies: 5
+# Priority: high
+# Description: 태스크 생성, 조회, 수정, 삭제 기능
+# Details:
+
+
+# Test Strategy:
+
+
+# Subtasks:
+## 1. 태스크 데이터 모델 확정 [pending]
+### Dependencies: None
+### Description: 제목, 설명, 우선순위, 마감일, 카테고리 등 필드 정의
+### Details:
+
+
+## 2. 태스크 생성 API [pending]
+### Dependencies: None
+### Description: 새 태스크 추가 API 라우트
+### Details:
+
+
+## 3. 태스크 목록 조회 API [pending]
+### Dependencies: None
+### Description: 사용자별 태스크 목록 조회 API
+### Details:
+
+
+## 4. 태스크 수정/삭제 API [pending]
+### Dependencies: None
+### Description: 기존 태스크 업데이트 및 삭제 API
+### Details:
+
+
+## 5. 태스크 완료 처리 [pending]
+### Dependencies: None
+### Description: 태스크 완료 시 XP 부여 및 상태 업데이트
+### Details:
+
+

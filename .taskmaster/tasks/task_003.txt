@@ -1,0 +1,37 @@
+# Task ID: 3
+# Title: 인증 시스템 구현
+# Status: pending
+# Dependencies: 2
+# Priority: high
+# Description: 사용자 회원가입, 로그인, 세션 관리
+# Details:
+
+
+# Test Strategy:
+
+
+# Subtasks:
+## 1. NextAuth.js 설정 [pending]
+### Dependencies: None
+### Description: NextAuth.js 설치 및 기본 설정
+### Details:
+
+
+## 2. 회원가입 API 구현 [pending]
+### Dependencies: None
+### Description: 이메일/비밀번호 기반 회원가입 API 라우트 작성
+### Details:
+
+
+## 3. 로그인/로그아웃 구현 [pending]
+### Dependencies: None
+### Description: 인증 플로우 및 세션 관리 구현
+### Details:
+
+
+## 4. 인증 미들웨어 작성 [pending]
+### Dependencies: None
+### Description: 보호된 라우트를 위한 미들웨어 구현
+### Details:
+
+

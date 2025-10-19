@@ -1,0 +1,37 @@
+# Task ID: 4
+# Title: 캐릭터 시스템 구현
+# Status: pending
+# Dependencies: 3
+# Priority: high
+# Description: 캐릭터 생성, 직업 선택, 커스터마이징 기능
+# Details:
+
+
+# Test Strategy:
+
+
+# Subtasks:
+## 1. 캐릭터 클래스 정의 [pending]
+### Dependencies: None
+### Description: Warrior, Mage, Rogue, Paladin 등 클래스 데이터 구조 작성
+### Details:
+
+
+## 2. 캐릭터 생성 UI [pending]
+### Dependencies: None
+### Description: 캐릭터 생성 페이지 및 폼 컴포넌트 제작
+### Details:
+
+
+## 3. 캐릭터 생성 API [pending]
+### Dependencies: None
+### Description: 캐릭터 데이터 저장 API 라우트 구현
+### Details:
+
+
+## 4. 캐릭터 프로필 컴포넌트 [pending]
+### Dependencies: None
+### Description: 대시보드에서 사용할 캐릭터 정보 표시 컴포넌트
+### Details:
+
+

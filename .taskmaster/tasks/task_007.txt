@@ -1,0 +1,43 @@
+# Task ID: 7
+# Title: 태스크 관리 UI 컴포넌트
+# Status: pending
+# Dependencies: 6
+# Priority: medium
+# Description: 태스크 리스트, 필터, 정렬, 상세 뷰
+# Details:
+
+
+# Test Strategy:
+
+
+# Subtasks:
+## 1. 태스크 리스트 컴포넌트 [pending]
+### Dependencies: None
+### Description: 태스크 목록을 표시하는 컴포넌트
+### Details:
+
+
+## 2. 태스크 생성 폼/모달 [pending]
+### Dependencies: None
+### Description: 새 태스크 추가를 위한 입력 폼
+### Details:
+
+
+## 3. 태스크 필터링 기능 [pending]
+### Dependencies: None
+### Description: 우선순위, 카테고리, 완료 여부로 필터링
+### Details:
+
+
+## 4. 태스크 정렬 기능 [pending]
+### Dependencies: None
+### Description: 날짜, 우선순위, 이름 순 정렬
+### Details:
+
+
+## 5. 태스크 상세 뷰 [pending]
+### Dependencies: None
+### Description: 태스크 클릭 시 상세 정보 표시
+### Details:
+
+
