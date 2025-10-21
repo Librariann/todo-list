@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import HabitCard from './components/HabitCard';
 import DailyCard from './components/DailyCard';
 import SimpleTodoCard from './components/SimpleTodoCard';
@@ -185,7 +186,7 @@ export default function Home() {
               </p>
             </div>
 
-            {/* 메인 탭 & 테마 토글 */}
+            {/* 메인 탭 & 로그인/회원가입 & 테마 토글 */}
             <div className="flex items-center gap-4">
               <div className="flex gap-2 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
                 <button
@@ -219,6 +220,21 @@ export default function Home() {
                   🎁 보상
                 </button>
               </div>
+
+              {/* 로그인/회원가입 버튼 */}
+              <div className="flex gap-2">
+                <Link href="/login">
+                  <button className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                    로그인
+                  </button>
+                </Link>
+                <Link href="/signup">
+                  <button className="px-4 py-2 text-sm font-semibold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all shadow-sm hover:shadow-md active:scale-95">
+                    회원가입
+                  </button>
+                </Link>
+              </div>
+
               <ThemeToggleStandalone />
             </div>
           </div>
