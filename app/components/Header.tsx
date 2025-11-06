@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import ThemeToggleStandalone from './ThemeToggleStandalone';
+import Link from "next/link";
+import ThemeToggleStandalone from "./ThemeToggleStandalone";
 
-type MainTabType = 'tasks' | 'rewards' | 'challenges';
+type MainTabType = "tasks" | "rewards" | "challenges";
 
 interface HeaderProps {
   mainTab: MainTabType;
@@ -41,31 +41,31 @@ export default function Header({
           <div className="hidden lg:flex items-center gap-4">
             <div className="flex gap-2 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
               <button
-                onClick={() => onTabChange('tasks')}
+                onClick={() => onTabChange("tasks")}
                 className={`px-6 py-2 rounded-lg font-semibold transition-all duration-300 cursor-pointer active:scale-95 ${
-                  mainTab === 'tasks'
-                    ? 'bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow-sm scale-105'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:scale-105'
+                  mainTab === "tasks"
+                    ? "bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow-sm scale-105"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:scale-105"
                 }`}
               >
                 📝 작업
               </button>
               <button
-                onClick={() => onTabChange('challenges')}
+                onClick={() => onTabChange("challenges")}
                 className={`px-6 py-2 rounded-lg font-semibold transition-all duration-300 cursor-pointer active:scale-95 ${
-                  mainTab === 'challenges'
-                    ? 'bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow-sm scale-105'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:scale-105'
+                  mainTab === "challenges"
+                    ? "bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow-sm scale-105"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:scale-105"
                 }`}
               >
                 🏆 도전과제
               </button>
               <button
-                onClick={() => onTabChange('rewards')}
+                onClick={() => onTabChange("rewards")}
                 className={`px-6 py-2 rounded-lg font-semibold transition-all duration-300 cursor-pointer active:scale-95 ${
-                  mainTab === 'rewards'
-                    ? 'bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow-sm scale-105'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:scale-105'
+                  mainTab === "rewards"
+                    ? "bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-400 shadow-sm scale-105"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:scale-105"
                 }`}
               >
                 🎁 보상
@@ -74,12 +74,12 @@ export default function Header({
 
             <div className="flex gap-2">
               <Link href="/login">
-                <button className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                <button className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer">
                   로그인
                 </button>
               </Link>
               <Link href="/signup">
-                <button className="px-4 py-2 text-sm font-semibold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all shadow-sm hover:shadow-md active:scale-95">
+                <button className="px-4 py-2 text-sm font-semibold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all shadow-sm hover:shadow-md active:scale-95 cursor-pointer">
                   회원가입
                 </button>
               </Link>
@@ -127,31 +127,31 @@ export default function Header({
           <div className="lg:hidden mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 animate-slide-in">
             <div className="space-y-2">
               <button
-                onClick={() => handleMobileTabClick('tasks')}
+                onClick={() => handleMobileTabClick("tasks")}
                 className={`w-full text-left px-4 py-3 rounded-lg font-semibold transition-all duration-300 active:scale-95 ${
-                  mainTab === 'tasks'
-                    ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 scale-105'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-105'
+                  mainTab === "tasks"
+                    ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 scale-105"
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-105"
                 }`}
               >
                 📝 작업
               </button>
               <button
-                onClick={() => handleMobileTabClick('challenges')}
+                onClick={() => handleMobileTabClick("challenges")}
                 className={`w-full text-left px-4 py-3 rounded-lg font-semibold transition-all duration-300 active:scale-95 ${
-                  mainTab === 'challenges'
-                    ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 scale-105'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-105'
+                  mainTab === "challenges"
+                    ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 scale-105"
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-105"
                 }`}
               >
                 🏆 도전과제
               </button>
               <button
-                onClick={() => handleMobileTabClick('rewards')}
+                onClick={() => handleMobileTabClick("rewards")}
                 className={`w-full text-left px-4 py-3 rounded-lg font-semibold transition-all duration-300 active:scale-95 ${
-                  mainTab === 'rewards'
-                    ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 scale-105'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-105'
+                  mainTab === "rewards"
+                    ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 scale-105"
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-105"
                 }`}
               >
                 🎁 보상
