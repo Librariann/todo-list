@@ -4,11 +4,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ThemeToggleStandalone from '../components/ThemeToggleStandalone';
+import { useAuthStore } from '../store/authStore';
 
 export default function LoginPage() {
   const router = useRouter();
+  const setAuth = useAuthStore((state) => state.setAuth);
   const [formData, setFormData] = useState({
-    email: '',
+    username: '',
     password: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -18,10 +20,8 @@ export default function LoginPage() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.email.trim()) {
-      newErrors.email = '이메일을 입력해주세요';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = '올바른 이메일 형식이 아닙니다';
+    if (!formData.username.trim()) {
+      newErrors.username = '사용자명을 입력해주세요';
     }
 
     if (!formData.password) {
@@ -39,12 +39,45 @@ export default function LoginPage() {
 
     setIsLoading(true);
 
-    // TODO: API 연동 시 실제 로그인 로직 구현
-    setTimeout(() => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          username: formData.username,
+          password: formData.password,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        if (result.message) {
+          alert(result.message);
+        } else {
+          alert('로그인에 실패했습니다.');
+        }
+        return;
+      }
+
+      if (result.success && result.data) {
+        setAuth(result.data.accessToken, {
+          username: result.data.username,
+          email: result.data.email,
+        });
+
+        alert('로그인 성공!');
+        router.push('/');
+      }
+    } catch (error) {
+      alert('서버와의 통신에 실패했습니다. 다시 시도해주세요.');
+      console.error('로그인 오류:', error);
+    } finally {
       setIsLoading(false);
-      alert('로그인 성공!');
-      router.push('/');
-    }, 1000);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,26 +114,26 @@ export default function LoginPage() {
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* 이메일 */}
+            {/* 사용자명 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                이메일
+                사용자명
               </label>
               <input
-                type="email"
-                name="email"
-                value={formData.email}
+                type="text"
+                name="username"
+                value={formData.username}
                 onChange={handleChange}
                 className={`w-full px-4 py-3 rounded-lg border ${
-                  errors.email
+                  errors.username
                     ? 'border-red-500 focus:ring-red-500'
                     : 'border-gray-200 dark:border-gray-700 focus:ring-indigo-500'
                 } bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 transition-all`}
-                placeholder="example@email.com"
+                placeholder="사용자명을 입력하세요"
                 autoFocus
               />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+              {errors.username && (
+                <p className="mt-1 text-sm text-red-500">{errors.username}</p>
               )}
             </div>
 
