@@ -1,6 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 
 interface CalendarProps {
   selectedDate: string;
@@ -91,81 +94,54 @@ export default function Calendar({
   const weekDays = ["일", "월", "화", "수", "목", "금", "토"];
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
+    <Card className="shadow-sm p-4">
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
-        <button
+        <Button
           onClick={goToPreviousMonth}
-          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          variant="ghost"
+          size="sm"
           aria-label="이전 달"
         >
-          <svg
-            className="w-5 h-5 text-gray-600 dark:text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-        </button>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
 
-        <button
+        <Button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="text-center lg:cursor-default"
+          variant="ghost"
+          className="text-center lg:cursor-default flex flex-col items-center gap-1"
         >
-          <h3 className="font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            {formatMonthYear(currentMonth)}
-            <svg
+          <div className="flex items-center gap-2">
+            <h3 className="font-bold text-foreground">
+              {formatMonthYear(currentMonth)}
+            </h3>
+            <ChevronDown
               className={`w-4 h-4 lg:hidden transition-transform ${
                 isExpanded ? "rotate-180" : ""
               }`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </h3>
-          <button
+            />
+          </div>
+          <Button
             onClick={(e) => {
               e.stopPropagation();
               goToToday();
             }}
-            className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline mt-1 cursor-pointer"
+            variant="link"
+            size="sm"
+            className="text-xs text-primary p-0 h-auto"
           >
             오늘
-          </button>
-        </button>
+          </Button>
+        </Button>
 
-        <button
+        <Button
           onClick={goToNextMonth}
-          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          variant="ghost"
+          size="sm"
           aria-label="다음 달"
         >
-          <svg
-            className="w-5 h-5 text-gray-600 dark:text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 5l7 7-7 7"
-            />
-          </svg>
-        </button>
+          <ChevronRight className="h-4 w-4" />
+        </Button>
       </div>
 
       {/* 요일 헤더 - 모바일에서는 펼쳤을 때만, 데스크톱에서는 항상 표시 */}
@@ -182,7 +158,7 @@ export default function Calendar({
                 ? "text-red-500"
                 : index === 6
                 ? "text-blue-500"
-                : "text-gray-600 dark:text-gray-400"
+                : "text-muted-foreground"
             }`}
           >
             {day}
@@ -208,37 +184,34 @@ export default function Calendar({
           const dataFlag = hasData(date);
 
           return (
-            <button
+            <Button
               key={toDateString(date)}
               onClick={() => onDateSelect(toDateString(date))}
+              variant={selectedFlag ? "default" : todayFlag ? "secondary" : "ghost"}
+              size="sm"
               className={`
-                aspect-square rounded-lg text-sm font-medium transition-all relative cursor-pointer
+                aspect-square text-sm font-medium transition-all relative p-0
+                ${selectedFlag ? "shadow-md scale-105" : ""}
+                ${todayFlag && !selectedFlag ? "bg-primary/10 text-primary" : ""}
                 ${
-                  selectedFlag
-                    ? "bg-indigo-600 text-white shadow-md scale-105"
-                    : todayFlag
-                    ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400"
-                    : "hover:bg-gray-100 dark:hover:bg-gray-700"
-                }
-                ${
-                  !selectedFlag &&
+                  !selectedFlag && !todayFlag &&
                   (isSunday
-                    ? "text-red-500"
+                    ? "text-red-500 hover:text-red-600"
                     : isSaturday
-                    ? "text-blue-500"
-                    : "text-gray-900 dark:text-gray-100")
+                    ? "text-blue-500 hover:text-blue-600"
+                    : "text-foreground")
                 }
               `}
             >
               <span className="block">{date.getDate()}</span>
               {/* 데이터 있음 표시 점 */}
               {dataFlag && !selectedFlag && (
-                <span className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-indigo-500 rounded-full" />
+                <span className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
               )}
-            </button>
+            </Button>
           );
         })}
       </div>
-    </div>
+    </Card>
   );
 }
