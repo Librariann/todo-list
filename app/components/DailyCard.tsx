@@ -1,6 +1,10 @@
 'use client';
 
 import { DailyFrequency } from '../types/todo';
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Check } from "lucide-react";
 
 interface DailyWithCompletion {
   id: string;
@@ -32,58 +36,48 @@ export default function DailyCard({ daily, onToggle }: DailyCardProps) {
   };
 
   return (
-    <div
-      className={`
-        group relative bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm 
-        hover:shadow-md transition-all duration-200 border-l-4
-        ${daily.completed 
-          ? 'border-l-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20' 
-          : 'border-l-blue-500'
-        }
-      `}
-    >
+    <Card className={`
+      group relative p-4 hover:shadow-md transition-all duration-200 border-l-4
+      ${daily.completed 
+        ? 'border-l-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20' 
+        : 'border-l-blue-500'
+      }
+    `}>
       <div className="flex items-center gap-3">
         {/* 체크박스 */}
-        <button
+        <Button
           onClick={() => onToggle(daily.id)}
+          variant="ghost"
+          size="sm"
           className={`
-            flex-shrink-0 w-6 h-6 rounded border-2 
-            flex items-center justify-center transition-all
+            flex-shrink-0 w-6 h-6 rounded border-2 p-0
             ${daily.completed 
-              ? 'bg-emerald-500 border-emerald-500' 
-              : 'border-gray-300 dark:border-gray-600 hover:border-blue-500'
+              ? 'bg-emerald-500 border-emerald-500 hover:bg-emerald-600' 
+              : 'border-muted-foreground hover:border-blue-500'
             }
           `}
         >
-          {daily.completed && (
-            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                clipRule="evenodd"
-              />
-            </svg>
-          )}
-        </button>
+          {daily.completed && <Check className="w-4 h-4 text-white" />}
+        </Button>
 
         {/* 제목 */}
         <div className="flex-1 min-w-0">
-          <h3 className={`font-medium text-gray-900 dark:text-gray-100 ${daily.completed ? 'line-through opacity-70' : ''}`}>
+          <h3 className={`font-medium text-foreground ${daily.completed ? 'line-through opacity-70' : ''}`}>
             {daily.title}
           </h3>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+            <Badge variant="outline" className="text-xs">
               {getFrequencyText(daily.frequency)}
-            </span>
+            </Badge>
             {daily.streak > 0 && (
-              <span className="text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-full font-medium">
+              <Badge variant="outline" className="text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
                 🔥 {daily.streak}일 연속
-              </span>
+              </Badge>
             )}
           </div>
         </div>
 
       </div>
-    </div>
+    </Card>
   );
 }
