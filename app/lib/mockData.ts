@@ -55,6 +55,13 @@ export const mockHabits: Habit[] = [
     habitType: HabitType.POSITIVE,
     positiveCount: 5,
     negativeCount: 0,
+    dailyTarget: 8,
+    dailyProgress: {
+      [today]: 5,
+      [yesterday]: 8,
+      [twoDaysAgo]: 6,
+    },
+    lastUpdatedDate: today,
     createdAt: new Date(),
   },
   {
@@ -63,6 +70,13 @@ export const mockHabits: Habit[] = [
     habitType: HabitType.BOTH,
     positiveCount: 3,
     negativeCount: 1,
+    dailyTarget: 1,
+    dailyProgress: {
+      [today]: 1,
+      [yesterday]: 1,
+      [twoDaysAgo]: 1,
+    },
+    lastUpdatedDate: today,
     createdAt: new Date(),
   },
   {
@@ -71,6 +85,12 @@ export const mockHabits: Habit[] = [
     habitType: HabitType.NEGATIVE,
     positiveCount: 0,
     negativeCount: 2,
+    dailyTarget: 3,
+    dailyProgress: {
+      [today]: 2,
+      [yesterday]: 1,
+    },
+    lastUpdatedDate: today,
     createdAt: new Date(),
   },
   {
@@ -79,6 +99,12 @@ export const mockHabits: Habit[] = [
     habitType: HabitType.POSITIVE,
     positiveCount: 2,
     negativeCount: 0,
+    dailyTarget: 2,
+    dailyProgress: {
+      [today]: 2,
+      [yesterday]: 2,
+    },
+    lastUpdatedDate: today,
     createdAt: new Date(),
   },
 ];
