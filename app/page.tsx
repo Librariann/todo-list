@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import HabitCard from "./components/HabitCard";
 import DailyCard from "./components/DailyCard";
 import SimpleTodoCard from "./components/SimpleTodoCard";
 import SimpleStatsCard from "./components/SimpleStatsCard";
 import RewardShop from "./components/RewardShop";
-import ChallengeCard from "./components/ChallengeCard";
+
 import AddTaskModal from "./components/AddTaskModal";
 import Calendar from "./components/Calendar";
 import Header from "./components/Header";
@@ -18,7 +20,7 @@ import {
   Reward,
   ChallengeType,
   TaskType,
-  Challenge,
+
 } from "./types/todo";
 import {
   mockHabits,
@@ -34,6 +36,9 @@ type TaskTabType = "habits" | "dailies" | "todos";
 type MainTabType = "tasks" | "rewards" | "challenges";
 
 export default function Home() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
   // 상태 관리
   const [habits, setHabits] = useState<Habit[]>(mockHabits);
   const [dailies, setDailies] = useState<Daily[]>(mockDailies);
@@ -95,12 +100,29 @@ export default function Home() {
     return todos.filter((todo) => todo.date === selectedDate);
   }, [todos, selectedDate]);
 
-  // 습관 +/- 처리 (포인트 없이 카운트만 증가)
   const handleHabitPositive = (id: string) => {
+    const today = new Date().toISOString().split('T')[0];
     setHabits((prev) =>
       prev.map((h) => {
         if (h.id === id) {
-          return { ...h, positiveCount: h.positiveCount + 1 };
+          const currentProgress = h.dailyProgress?.[today] || 0;
+          const dailyTarget = h.dailyTarget || 5;
+          
+          if (currentProgress >= dailyTarget) {
+            return h;
+          }
+          
+          const newDailyProgress = {
+            ...h.dailyProgress,
+            [today]: currentProgress + 1,
+          };
+          
+          return {
+            ...h,
+            positiveCount: h.positiveCount + 1,
+            dailyProgress: newDailyProgress,
+            lastUpdatedDate: today,
+          };
         }
         return h;
       })
@@ -108,10 +130,27 @@ export default function Home() {
   };
 
   const handleHabitNegative = (id: string) => {
+    const today = new Date().toISOString().split('T')[0];
     setHabits((prev) =>
       prev.map((h) => {
         if (h.id === id) {
-          return { ...h, negativeCount: h.negativeCount + 1 };
+          const currentProgress = h.dailyProgress?.[today] || 0;
+          
+          if (currentProgress <= 0) {
+            return h;
+          }
+          
+          const newDailyProgress = {
+            ...h.dailyProgress,
+            [today]: Math.max(0, currentProgress - 1),
+          };
+          
+          return {
+            ...h,
+            negativeCount: h.negativeCount + 1,
+            dailyProgress: newDailyProgress,
+            lastUpdatedDate: today,
+          };
         }
         return h;
       })
@@ -218,6 +257,29 @@ export default function Home() {
       totalPoints: item.totalPoints + rewardPoints,
     }));
   };
+
+  useEffect(() => {
+    if (status === 'loading') return;
+    if (!session) {
+      router.push('/login');
+      return;
+    }
+  }, [session, status, router]);
+
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">로딩 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
