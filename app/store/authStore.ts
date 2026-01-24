@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 
-interface User {
+type User = {
   username: string;
   email: string;
 }
 
-interface AuthState {
+type AuthState = {
   accessToken: string | null;
   user: User | null;
   isAuthenticated: boolean;
