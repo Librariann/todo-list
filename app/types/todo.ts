@@ -48,6 +48,9 @@ export interface Habit {
   habitType: HabitType;
   positiveCount: number;  // + 클릭 횟수
   negativeCount: number;  // - 클릭 횟수
+  dailyTarget?: number;   // 일일 목표 횟수 (옵셔널로 기존 호환성 유지)
+  dailyProgress?: { [date: string]: number }; // 날짜별 진행 상황 (YYYY-MM-DD: count)
+  lastUpdatedDate?: string; // 마지막 업데이트 날짜 (YYYY-MM-DD)
   createdAt: Date;
 }
 
