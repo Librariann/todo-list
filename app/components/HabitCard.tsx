@@ -6,6 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Minus, Target } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import {
+  getTodayProgress,
+  getProgressPercentage,
+  isCompletedToday,
+  calculateStreak,
+  getProgressMessage,
+  getProgressColor,
+  canIncrementProgress,
+  canDecrementProgress
+} from '../lib/habitUtils';
 
 interface HabitCardProps {
   habit: Habit;
@@ -15,50 +25,20 @@ interface HabitCardProps {
 
 export default function HabitCard({ habit, onPositive, onNegative }: HabitCardProps) {
   const dailyTarget = habit.dailyTarget || 5;
-  const today = new Date().toISOString().split('T')[0];
-  const todayProgress = habit.dailyProgress?.[today] || 0;
-  const progressPercentage = Math.min((todayProgress / dailyTarget) * 100, 100);
-  
-  const calculateStreak = () => {
-    if (!habit.dailyProgress) return 0;
-    let streak = 0;
-    const currentDate = new Date();
-    
-    while (true) {
-      const dateStr = currentDate.toISOString().split('T')[0];
-      const dayProgress = habit.dailyProgress[dateStr] || 0;
-      
-      if (dayProgress >= dailyTarget) {
-        streak++;
-        currentDate.setDate(currentDate.getDate() - 1);
-      } else {
-        break;
-      }
-    }
-    return streak;
-  };
-  
-  const streakDays = calculateStreak();
-  const isCompletedToday = todayProgress >= dailyTarget;
+  const todayProgress = getTodayProgress(habit);
+  const progressPercentage = getProgressPercentage(habit);
+  const streakDays = calculateStreak(habit);
+  const completed = isCompletedToday(habit);
+  const canIncrement = canIncrementProgress(habit);
+  const canDecrement = canDecrementProgress(habit);
 
   const getHabitIcon = () => "💪";
 
-  const getProgressColor = () => {
-    if (progressPercentage >= 100) return "text-emerald-600";
-    if (progressPercentage >= 60) return "text-blue-600";
-    return "text-gray-600";
-  };
 
-  const getProgressMessage = () => {
-    if (isCompletedToday) return "🎉 오늘 목표 달성 완료!";
-    if (progressPercentage >= 80) return "🔥 거의 다 왔어요!";
-    if (progressPercentage >= 50) return "💪 좋은 페이스!";
-    return "💡 시작해보세요!";
-  };
 
   return (
     <Card className={`group relative p-4 hover:shadow-md transition-all duration-200 border-l-4 ${
-      isCompletedToday ? 'border-l-emerald-500 bg-emerald-50/30 dark:bg-emerald-950/20' : 'border-l-primary'
+      completed ? 'border-l-emerald-500 bg-emerald-50/40 dark:bg-emerald-900/10' : 'border-l-primary'
     }`}>
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -77,7 +57,7 @@ export default function HabitCard({ habit, onPositive, onNegative }: HabitCardPr
                      🔥 {streakDays}일 연속
                    </Badge>
                  )}
-                 {isCompletedToday && (
+                 {completed && (
                    <Badge className="text-xs bg-emerald-500 text-white">
                      ✅ 완료
                    </Badge>
@@ -86,7 +66,7 @@ export default function HabitCard({ habit, onPositive, onNegative }: HabitCardPr
             </div>
           </div>
           <div className="text-right">
-            <div className={`text-lg font-bold ${getProgressColor()}`}>
+            <div className={`text-lg font-bold ${getProgressColor(progressPercentage)}`}>
               {todayProgress}/{dailyTarget}
             </div>
             <div className="text-xs text-muted-foreground">
@@ -98,32 +78,32 @@ export default function HabitCard({ habit, onPositive, onNegative }: HabitCardPr
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">오늘의 진행도</span>
-            <span className="text-sm font-medium">{getProgressMessage()}</span>
+            <span className="text-sm font-medium">{getProgressMessage(habit)}</span>
           </div>
           <Progress value={progressPercentage} className="h-3" />
         </div>
 
-        {isCompletedToday ? (
-          <div className="flex items-center justify-center py-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg border border-emerald-200 dark:border-emerald-800">
-            <span className="text-emerald-700 dark:text-emerald-400 font-medium text-sm">
+        {completed ? (
+          <div className="flex items-center justify-center py-4 bg-emerald-50/60 dark:bg-emerald-900/10 rounded-lg border border-emerald-200/60 dark:border-emerald-800/30">
+            <span className="text-emerald-700 dark:text-emerald-400 font-medium text-sm text-center px-2">
               🎉 오늘 목표를 모두 달성했어요! 내일 다시 도전해보세요.
             </span>
           </div>
         ) : (
-          <div className="flex items-center justify-center gap-2">
+          <div className="flex items-center justify-center gap-3 sm:gap-2">
             <Button
               onClick={() => onNegative(habit.id)}
               variant="outline"
               size="sm"
-              className="flex-1 max-w-20"
-              disabled={todayProgress <= 0}
+              className="flex-1 max-w-16 sm:max-w-20 h-10 touch-manipulation"
+              disabled={!canDecrement}
             >
-              <Minus className="h-4 w-4" />
+              <Minus className="h-5 w-5 sm:h-4 sm:w-4" />
             </Button>
             
-            <div className="flex items-center gap-1 px-4">
-              <Target className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium min-w-12 text-center">
+            <div className="flex items-center gap-1 px-3 sm:px-4 min-w-[80px] justify-center">
+              <Target className="h-4 w-4 text-primary flex-shrink-0" />
+              <span className="text-sm font-medium text-center">
                 {todayProgress}회
               </span>
             </div>
@@ -132,10 +112,10 @@ export default function HabitCard({ habit, onPositive, onNegative }: HabitCardPr
               onClick={() => onPositive(habit.id)}
               variant="outline"
               size="sm"
-              className="flex-1 max-w-20"
-              disabled={todayProgress >= dailyTarget}
+              className="flex-1 max-w-16 sm:max-w-20 h-10 touch-manipulation"
+              disabled={!canIncrement}
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-5 w-5 sm:h-4 sm:w-4" />
             </Button>
           </div>
         )}
