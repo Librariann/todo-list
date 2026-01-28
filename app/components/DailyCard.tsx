@@ -70,7 +70,7 @@ export default function DailyCard({ daily, onToggle }: DailyCardProps) {
               {getFrequencyText(daily.frequency)}
             </Badge>
             {daily.streak > 0 && (
-              <Badge variant="outline" className="text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
+              <Badge variant="outline" className="text-xs bg-orange-50 dark:bg-orange-900/15 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800/30">
                 🔥 {daily.streak}일 연속
               </Badge>
             )}
