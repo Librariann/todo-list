@@ -17,11 +17,11 @@ export default function SimpleTodoCard({ todo, onStatusChange }: SimpleTodoCardP
   return (
     <Card className={`
       group relative p-4 hover:shadow-md transition-all duration-200 border-l-4
-      ${isDone 
-        ? 'border-l-emerald-500 opacity-70' 
-        : todo.status === TodoStatus.IN_PROGRESS 
-        ? 'border-l-primary' 
-        : 'border-l-muted-foreground/30'
+      ${isDone
+        ? 'border-l-emerald-500 opacity-70'
+        : todo.status === TodoStatus.IN_PROGRESS
+        ? 'border-l-primary'
+        : 'border-l-stone-300 dark:border-l-stone-600'
       }
     `}>
       <div className="flex items-center gap-3">
@@ -38,9 +38,9 @@ export default function SimpleTodoCard({ todo, onStatusChange }: SimpleTodoCardP
           size="sm"
           className={`
             flex-shrink-0 w-6 h-6 rounded-full border-2 p-0
-            ${isDone 
-              ? 'bg-emerald-500 border-emerald-500 hover:bg-emerald-600' 
-              : 'border-muted-foreground hover:border-primary'
+            ${isDone
+              ? 'bg-emerald-500 border-emerald-500 hover:bg-emerald-600'
+              : 'border-stone-300 dark:border-stone-600 hover:border-primary dark:hover:border-primary'
             }
           `}
         >
@@ -63,7 +63,7 @@ export default function SimpleTodoCard({ todo, onStatusChange }: SimpleTodoCardP
                 : TodoStatus.IN_PROGRESS;
               onStatusChange(todo.id, newStatus);
             }}
-            variant={todo.status === TodoStatus.IN_PROGRESS ? "default" : "secondary"}
+            variant={todo.status === TodoStatus.IN_PROGRESS ? "default" : "outline"}
             className="cursor-pointer hover:opacity-80 transition-opacity"
           >
             {todo.status === TodoStatus.IN_PROGRESS ? '🚀 진행중' : '시작'}
