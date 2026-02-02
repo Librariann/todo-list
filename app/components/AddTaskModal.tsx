@@ -22,7 +22,6 @@ export default function AddTaskModal({ isOpen, onClose, taskType, onAdd }: AddTa
   const [dailyTarget, setDailyTarget] = useState(5);
 
   if (!isOpen) return null;
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
