@@ -1,9 +1,9 @@
 'use client';
 
 import { Reward } from '../types/todo';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface RewardShopProps {
   rewards: Reward[];
@@ -23,11 +23,10 @@ export default function RewardShop({ rewards, userPoints, onClaim }: RewardShopP
         </div>
       </CardHeader>
       <CardContent>
-
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {rewards.map((reward) => {
             const canAfford = userPoints >= reward.value;
-            
+
             return (
               <Card
                 key={reward.id}
@@ -47,12 +46,8 @@ export default function RewardShop({ rewards, userPoints, onClaim }: RewardShopP
 
                 {/* 정보 */}
                 <div className="text-center mb-3 px-4">
-                  <h3 className="font-bold text-foreground mb-1">
-                    {reward.name}
-                  </h3>
-                  <p className="text-xs text-muted-foreground line-clamp-2">
-                    {reward.description}
-                  </p>
+                  <h3 className="font-bold text-foreground mb-1">{reward.name}</h3>
+                  <p className="text-xs text-muted-foreground line-clamp-2">{reward.description}</p>
                 </div>
 
                 {/* 가격 */}
@@ -68,7 +63,7 @@ export default function RewardShop({ rewards, userPoints, onClaim }: RewardShopP
                     onClick={() => canAfford && onClaim(reward)}
                     disabled={!canAfford}
                     className="w-full"
-                    variant={canAfford ? "default" : "secondary"}
+                    variant={canAfford ? 'default' : 'secondary'}
                   >
                     {canAfford ? '교환하기' : '포인트 부족'}
                   </Button>
@@ -80,9 +75,9 @@ export default function RewardShop({ rewards, userPoints, onClaim }: RewardShopP
                     -{reward.value - userPoints}
                   </Badge>
                 )}
-             </Card>
-           );
-         })}
+              </Card>
+            );
+          })}
         </div>
 
         {/* 더 많은 보상 추가 예정 메시지 */}
