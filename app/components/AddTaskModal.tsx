@@ -2,11 +2,17 @@
 
 import { useState } from 'react';
 import { TaskType, HabitType, DailyFrequency, Habit, Daily, Todo, TodoStatus } from '../types/todo';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 interface AddTaskModalProps {
   isOpen: boolean;
@@ -24,7 +30,7 @@ export default function AddTaskModal({ isOpen, onClose, taskType, onAdd }: AddTa
   if (!isOpen) return null;
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!title.trim()) {
       alert('제목을 입력해주세요');
       return;
@@ -108,8 +114,6 @@ export default function AddTaskModal({ isOpen, onClose, taskType, onAdd }: AddTa
             />
           </div>
 
-
-
           {taskType === TaskType.HABIT && (
             <div>
               <Label htmlFor="dailyTarget" className="text-sm font-medium mb-2">
@@ -130,14 +134,14 @@ export default function AddTaskModal({ isOpen, onClose, taskType, onAdd }: AddTa
             </div>
           )}
 
-
           {/* 일일목표 빈도 선택 */}
           {taskType === TaskType.DAILY && (
             <div>
-              <Label className="text-sm font-medium mb-2">
-                반복 주기
-              </Label>
-              <Select value={frequency} onValueChange={(value) => setFrequency(value as DailyFrequency)}>
+              <Label className="text-sm font-medium mb-2">반복 주기</Label>
+              <Select
+                value={frequency}
+                onValueChange={(value) => setFrequency(value as DailyFrequency)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="반복 주기 선택" />
                 </SelectTrigger>
@@ -150,37 +154,22 @@ export default function AddTaskModal({ isOpen, onClose, taskType, onAdd }: AddTa
             </div>
           )}
 
-
-
           {/* 할일 날짜 선택 */}
           {taskType === TaskType.TODO && (
             <div>
               <Label htmlFor="date" className="text-sm font-medium mb-2">
                 날짜
               </Label>
-              <Input
-                id="date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
+              <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
             </div>
           )}
 
           {/* 버튼 */}
           <div className="flex gap-3 pt-4">
-            <Button
-              type="button"
-              onClick={onClose}
-              variant="outline"
-              className="flex-1"
-            >
+            <Button type="button" onClick={onClose} variant="outline" className="flex-1">
               취소
             </Button>
-            <Button
-              type="submit"
-              className="flex-1"
-            >
+            <Button type="submit" className="flex-1">
               추가하기
             </Button>
           </div>
