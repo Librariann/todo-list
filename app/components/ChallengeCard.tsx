@@ -55,13 +55,13 @@ export default function ChallengeCard({ challenge, onClaim }: ChallengeCardProps
       relative p-5 hover:shadow-md transition-all duration-200
       border ${
         isCompleted
-          ? 'border-emerald-400 dark:border-emerald-700/60 bg-emerald-50/40 dark:bg-emerald-900/10'
+          ? 'border-amber-400 dark:border-amber-700/60 bg-amber-50/40 dark:bg-amber-900/10'
           : 'border-stone-200 dark:border-white/[0.07]'
       }
     `}
     >
       {challenge.completed && (
-        <Badge className="absolute top-3 right-3 bg-emerald-500 text-white text-xs">✓ 완료</Badge>
+        <Badge className="absolute top-3 right-3 bg-amber-500 text-white text-xs">✓ 완료</Badge>
       )}
 
       <div className="flex items-start gap-4">
@@ -95,17 +95,17 @@ export default function ChallengeCard({ challenge, onClaim }: ChallengeCardProps
                 {challenge.currentCount} / {challenge.targetCount}
               </span>
             </div>
-            <Progress value={progress} className="h-2" />
+            <Progress value={progress} className="h-2" glow />
           </div>
 
           {/* 보상 & 버튼 */}
           <div className="flex items-center justify-between">
-            <span className="text-sm font-bold text-primary">+{challenge.rewardPoints}pt</span>
+            <span className="text-sm font-bold text-amber-600 dark:text-amber-400">+{challenge.rewardPoints}pt</span>
             {canClaim && onClaim && (
               <Button
                 onClick={() => onClaim(challenge.id)}
                 size="sm"
-                className="bg-primary hover:opacity-90 text-primary-foreground"
+                className="bg-amber-500 hover:bg-amber-600 text-white"
               >
                 보상 받기
               </Button>
