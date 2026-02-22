@@ -39,8 +39,8 @@ export default function DailyCard({ daily, onToggle }: DailyCardProps) {
     <Card className={`
       group relative p-4 hover:shadow-md transition-all duration-200 border-l-4
       ${daily.completed 
-        ? 'border-l-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20' 
-        : 'border-l-blue-500'
+        ? 'border-l-amber-500 bg-amber-50/50 dark:bg-amber-950/20' 
+        : 'border-l-primary'
       }
     `}>
       <div className="flex items-center gap-3">
@@ -52,8 +52,8 @@ export default function DailyCard({ daily, onToggle }: DailyCardProps) {
           className={`
             flex-shrink-0 w-6 h-6 rounded border-2 p-0
             ${daily.completed 
-              ? 'bg-emerald-500 border-emerald-500 hover:bg-emerald-600' 
-              : 'border-muted-foreground hover:border-blue-500'
+              ? 'bg-amber-500 border-amber-500 hover:bg-amber-600' 
+              : 'border-muted-foreground hover:border-primary'
             }
           `}
         >
