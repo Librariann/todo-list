@@ -38,7 +38,7 @@ export default function HabitCard({ habit, onPositive, onNegative }: HabitCardPr
 
   return (
     <Card className={`group relative p-4 hover:shadow-md transition-all duration-200 border-l-4 ${
-      completed ? 'border-l-emerald-500 bg-emerald-50/40 dark:bg-emerald-900/10' : 'border-l-primary'
+      completed ? 'border-l-amber-500 bg-amber-50/40 dark:bg-amber-900/10' : 'border-l-primary'
     }`}>
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -58,7 +58,7 @@ export default function HabitCard({ habit, onPositive, onNegative }: HabitCardPr
                    </Badge>
                  )}
                  {completed && (
-                   <Badge className="text-xs bg-emerald-500 text-white">
+                   <Badge className="text-xs bg-amber-500 text-white">
                      ✅ 완료
                    </Badge>
                  )}
@@ -80,12 +80,12 @@ export default function HabitCard({ habit, onPositive, onNegative }: HabitCardPr
             <span className="text-sm text-muted-foreground">오늘의 진행도</span>
             <span className="text-sm font-medium">{getProgressMessage(habit)}</span>
           </div>
-          <Progress value={progressPercentage} className="h-3" />
+          <Progress value={progressPercentage} className="h-3" glow />
         </div>
 
         {completed ? (
-          <div className="flex items-center justify-center py-4 bg-emerald-50/60 dark:bg-emerald-900/10 rounded-lg border border-emerald-200/60 dark:border-emerald-800/30">
-            <span className="text-emerald-700 dark:text-emerald-400 font-medium text-sm text-center px-2">
+          <div className="flex items-center justify-center py-4 bg-amber-50/60 dark:bg-amber-900/10 rounded-lg border border-amber-200/60 dark:border-amber-800/30">
+            <span className="text-amber-700 dark:text-amber-400 font-medium text-sm text-center px-2">
               🎉 오늘 목표를 모두 달성했어요! 내일 다시 도전해보세요.
             </span>
           </div>
