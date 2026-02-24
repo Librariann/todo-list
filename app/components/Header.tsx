@@ -49,7 +49,7 @@ export default function Header({
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white/90 dark:bg-[oklch(0.22_0.01_240)]/90 backdrop-blur border-b border-stone-200 dark:border-white/[0.07] shadow-sm">
+    <header className="sticky top-0 z-50 bg-white/90 dark:bg-[oklch(0.168_0.03_248)]/90 backdrop-blur border-b border-stone-200 dark:border-white/[0.07] shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
         <div className="flex items-center justify-between">
           {/* 로고 */}
