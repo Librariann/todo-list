@@ -42,10 +42,10 @@ export default function StatsPanel({ totalPoints: fallbackPoints }: StatsPanelPr
 
     async function fetchData() {
       try {
-        const [rewardsRes, challengesRes, meRes] = await Promise.all([
+        const [rewardsRes, challengesRes, pointsRes] = await Promise.all([
           apiFetch(`${API_URL}/api/user/rewards/`),
           apiFetch(`${API_URL}/api/challenges/`),
-          apiFetch(`${API_URL}/api/users/me`),
+          apiFetch(`${API_URL}/api/user/points/`),
         ]);
 
         if (rewardsRes.ok) {
@@ -58,9 +58,9 @@ export default function StatsPanel({ totalPoints: fallbackPoints }: StatsPanelPr
           setChallenges((challengesData.data ?? []).slice(0, 5));
         }
 
-        if (meRes.ok) {
-          const d = await meRes.json();
-          const pts = d.data?.totalPoints ?? d.data?.point ?? d.data?.points ?? null;
+        if (pointsRes.ok) {
+          const data = await pointsRes.json();
+          const pts = data.data;
           if (typeof pts === 'number') setServerPoints(pts);
         }
       } catch {
@@ -91,7 +91,9 @@ export default function StatsPanel({ totalPoints: fallbackPoints }: StatsPanelPr
     <div className="space-y-3">
       {/* 총 포인트 */}
       <div className="bg-white dark:bg-card rounded-xl px-5 py-4 border border-stone-200 dark:border-white/[0.07] shadow-sm">
-        <p className="text-[11px] font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-widest mb-1">총 포인트</p>
+        <p className="text-[11px] font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-widest mb-1">
+          총 포인트
+        </p>
         <div className="flex items-baseline gap-1">
           <span className="text-3xl font-bold text-stone-800 dark:text-stone-100 tabular-nums">
             {displayPoints.toLocaleString()}
@@ -102,7 +104,9 @@ export default function StatsPanel({ totalPoints: fallbackPoints }: StatsPanelPr
 
       {/* 최근 받은 보상 */}
       <div className="bg-white dark:bg-card rounded-xl px-5 py-4 border border-stone-200 dark:border-white/[0.07] shadow-sm">
-        <p className="text-[11px] font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-widest mb-3">최근 받은 보상</p>
+        <p className="text-[11px] font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-widest mb-3">
+          최근 받은 보상
+        </p>
         {loading ? (
           <div className="space-y-2">
             {[...Array(3)].map((_, i) => (
@@ -110,7 +114,9 @@ export default function StatsPanel({ totalPoints: fallbackPoints }: StatsPanelPr
             ))}
           </div>
         ) : rewards.length === 0 ? (
-          <p className="text-sm text-stone-400 dark:text-stone-500 text-center py-2">받은 보상이 없습니다</p>
+          <p className="text-sm text-stone-400 dark:text-stone-500 text-center py-2">
+            받은 보상이 없습니다
+          </p>
         ) : (
           <ul className="space-y-1.5">
             {rewards.map((r) => (
@@ -120,9 +126,13 @@ export default function StatsPanel({ totalPoints: fallbackPoints }: StatsPanelPr
               >
                 <div className="flex items-center gap-2">
                   <span className="text-base">🎁</span>
-                  <span className="text-sm font-medium text-stone-700 dark:text-stone-300">보상 #{r.id}</span>
+                  <span className="text-sm font-medium text-stone-700 dark:text-stone-300">
+                    보상 #{r.id}
+                  </span>
                 </div>
-                <span className="text-xs text-stone-400 dark:text-stone-500">{formatDate(r.createdAt)}</span>
+                <span className="text-xs text-stone-400 dark:text-stone-500">
+                  {formatDate(r.createdAt)}
+                </span>
               </li>
             ))}
           </ul>
@@ -131,7 +141,9 @@ export default function StatsPanel({ totalPoints: fallbackPoints }: StatsPanelPr
 
       {/* 최근 달성 도전과제 */}
       <div className="bg-white dark:bg-card rounded-xl px-5 py-4 border border-stone-200 dark:border-white/[0.07] shadow-sm">
-        <p className="text-[11px] font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-widest mb-3">최근 달성 도전과제</p>
+        <p className="text-[11px] font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-widest mb-3">
+          최근 달성 도전과제
+        </p>
         {loading ? (
           <div className="space-y-2">
             {[...Array(3)].map((_, i) => (
@@ -139,7 +151,9 @@ export default function StatsPanel({ totalPoints: fallbackPoints }: StatsPanelPr
             ))}
           </div>
         ) : challenges.length === 0 ? (
-          <p className="text-sm text-stone-400 dark:text-stone-500 text-center py-2">달성한 도전과제가 없습니다</p>
+          <p className="text-sm text-stone-400 dark:text-stone-500 text-center py-2">
+            달성한 도전과제가 없습니다
+          </p>
         ) : (
           <ul className="space-y-1.5">
             {challenges.map((c) => (
@@ -149,7 +163,9 @@ export default function StatsPanel({ totalPoints: fallbackPoints }: StatsPanelPr
               >
                 <span className="text-base shrink-0">{c.icon || '🏆'}</span>
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-stone-700 dark:text-stone-300 truncate">{c.name}</p>
+                  <p className="text-sm font-medium text-stone-700 dark:text-stone-300 truncate">
+                    {c.name}
+                  </p>
                   <p className="text-xs text-stone-400 dark:text-stone-500">
                     {recurrenceLabel(c.recurrenceType)} · {c.point}pt
                   </p>
