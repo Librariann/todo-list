@@ -1,12 +1,18 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { useAuthStore } from "./store/authStore";
 import { useRouter } from "next/navigation";
+import { useDataPersistence } from "./hooks/useDataPersistence";
+import { updateHabitProgress } from "./lib/habitUtils";
+import {
+  calculateProgressMetrics,
+  calculateDailyPoints,
+} from "./lib/rewardUtils";
 import HabitCard from "./components/HabitCard";
 import DailyCard from "./components/DailyCard";
 import SimpleTodoCard from "./components/SimpleTodoCard";
-import SimpleStatsCard from "./components/SimpleStatsCard";
+import StatsPanel from "./components/StatsPanel";
 import RewardShop from "./components/RewardShop";
 
 import AddTaskModal from "./components/AddTaskModal";
@@ -19,8 +25,10 @@ import {
   Daily,
   Reward,
   ChallengeType,
+  ChallengeCondition,
+  Challenge,
   TaskType,
-
+  UserStats,
 } from "./types/todo";
 import {
   mockHabits,
@@ -28,16 +36,22 @@ import {
   mockTodos,
   mockUserStats,
   mockRewards,
-  mockChallenges,
 } from "./lib/mockData";
 import ChallengeComponent from "./components/ChallengeComponent";
+import { apiFetch } from "./lib/apiClient";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 type TaskTabType = "habits" | "dailies" | "todos";
 type MainTabType = "tasks" | "rewards" | "challenges";
 
 export default function Home() {
-  const { data: session, status } = useSession();
+  const { isAuthenticated, user } = useAuthStore();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // 상태 관리
   const [habits, setHabits] = useState<Habit[]>(mockHabits);
@@ -47,13 +61,72 @@ export default function Home() {
   const [mainTab, setMainTab] = useState<MainTabType>("tasks");
   const [taskTab, setTaskTab] = useState<TaskTabType>("habits");
   const [selectedDate, setSelectedDate] = useState<string>(
-    new Date().toISOString().split("T")[0]
+    new Date().toISOString().split("T")[0],
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTaskType, setModalTaskType] = useState<TaskType>(TaskType.HABIT);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [apiChallenges, setApiChallenges] = useState<Challenge[]>([]);
+  const [challengesLoading, setChallengesLoading] = useState(false);
 
+  const handleDataLoaded = useCallback(
+    (data: {
+      todos: Todo[];
+      habits: Habit[];
+      dailies: Daily[];
+      userStats: UserStats;
+    }) => {
+      setTodos(data.todos);
+      setHabits(data.habits);
+      setDailies(data.dailies);
+      setUserStats(data.userStats);
+    },
+    [],
+  );
+
+  const { isLoaded } = useDataPersistence({
+    todos,
+    habits,
+    dailies,
+    userStats,
+    onDataLoaded: handleDataLoaded,
+  });
+
+  // 도전과제 API 연동
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    setChallengesLoading(true);
+    apiFetch(`${API_URL}/api/challenges/`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (!d) return;
+        const raw = (d.data ?? []) as Array<{
+          id: number; name: string; description: string;
+          icon: string; recurrenceType: string;
+          targetCount: number; point: number; isActive: boolean;
+        }>;
+        const mapped: Challenge[] = raw
+          .filter(c => c.isActive)
+          .map(c => ({
+            id: c.id.toString(),
+            title: c.name,
+            description: c.description || '',
+            type:
+              c.recurrenceType === 'DAILY' ? ChallengeType.DAILY :
+              c.recurrenceType === 'WEEKLY' ? ChallengeType.WEEKLY :
+              ChallengeType.MONTHLY,
+            condition: ChallengeCondition.COMPLETE_HABITS,
+            targetCount: c.targetCount,
+            currentCount: 0,
+            rewardPoints: c.point,
+            completed: false,
+            iconUrl: c.icon,
+          }));
+        setApiChallenges(mapped);
+      })
+      .finally(() => setChallengesLoading(false));
+  }, [isAuthenticated]);
   // 날짜 포맷팅
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -101,59 +174,14 @@ export default function Home() {
   }, [todos, selectedDate]);
 
   const handleHabitPositive = (id: string) => {
-    const today = new Date().toISOString().split('T')[0];
     setHabits((prev) =>
-      prev.map((h) => {
-        if (h.id === id) {
-          const currentProgress = h.dailyProgress?.[today] || 0;
-          const dailyTarget = h.dailyTarget || 5;
-          
-          if (currentProgress >= dailyTarget) {
-            return h;
-          }
-          
-          const newDailyProgress = {
-            ...h.dailyProgress,
-            [today]: currentProgress + 1,
-          };
-          
-          return {
-            ...h,
-            positiveCount: h.positiveCount + 1,
-            dailyProgress: newDailyProgress,
-            lastUpdatedDate: today,
-          };
-        }
-        return h;
-      })
+      prev.map((h) => (h.id === id ? updateHabitProgress(h, 1) : h)),
     );
   };
 
   const handleHabitNegative = (id: string) => {
-    const today = new Date().toISOString().split('T')[0];
     setHabits((prev) =>
-      prev.map((h) => {
-        if (h.id === id) {
-          const currentProgress = h.dailyProgress?.[today] || 0;
-          
-          if (currentProgress <= 0) {
-            return h;
-          }
-          
-          const newDailyProgress = {
-            ...h.dailyProgress,
-            [today]: Math.max(0, currentProgress - 1),
-          };
-          
-          return {
-            ...h,
-            negativeCount: h.negativeCount + 1,
-            dailyProgress: newDailyProgress,
-            lastUpdatedDate: today,
-          };
-        }
-        return h;
-      })
+      prev.map((h) => (h.id === id ? updateHabitProgress(h, -1) : h)),
     );
   };
 
@@ -168,7 +196,7 @@ export default function Home() {
           if (isCompleted) {
             // 완료 취소
             newCompletedDates = newCompletedDates.filter(
-              (date) => date !== selectedDate
+              (date) => date !== selectedDate,
             );
           } else {
             // 완료 추가
@@ -181,7 +209,7 @@ export default function Home() {
           };
         }
         return d;
-      })
+      }),
     );
   };
 
@@ -202,7 +230,7 @@ export default function Home() {
           return { ...todo, status: newStatus };
         }
         return todo;
-      })
+      }),
     );
   };
 
@@ -218,21 +246,29 @@ export default function Home() {
     }
   };
 
-  // 일일/주간 도전과제 필터링
+  // 일일/주간/월간 도전과제 필터링 (API 데이터)
   const dailyChallenges = useMemo(
-    () => mockChallenges.filter((c) => c.type === ChallengeType.DAILY),
-    []
+    () => apiChallenges.filter((c) => c.type === ChallengeType.DAILY),
+    [apiChallenges],
   );
 
   const weeklyChallenges = useMemo(
-    () => mockChallenges.filter((c) => c.type === ChallengeType.WEEKLY),
-    []
+    () => apiChallenges.filter((c) => c.type === ChallengeType.WEEKLY),
+    [apiChallenges],
   );
 
   const monthlyChallenges = useMemo(
-    () => mockChallenges.filter((c) => c.type === ChallengeType.MONTHLY),
-    []
+    () => apiChallenges.filter((c) => c.type === ChallengeType.MONTHLY),
+    [apiChallenges],
   );
+
+  const progressMetrics = useMemo(() => {
+    return calculateProgressMetrics(habits, dailies, todos, selectedDate);
+  }, [habits, dailies, todos, selectedDate]);
+
+  const todayPoints = useMemo(() => {
+    return calculateDailyPoints(habits, dailies, todos, selectedDate);
+  }, [habits, dailies, todos, selectedDate]);
 
   // 모달 열기
   const openAddModal = (type: TaskType) => {
@@ -259,25 +295,26 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (status === 'loading') return;
-    if (!session) {
+    if (!mounted) return;
+    if (!isAuthenticated) {
       router.push('/login');
-      return;
     }
-  }, [session, status, router]);
+  }, [isAuthenticated, mounted, router]);
 
-  if (status === 'loading') {
+  if (!mounted || !isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">로딩 중...</p>
+          <p className="text-muted-foreground">
+            데이터 로딩 중...
+          </p>
         </div>
       </div>
     );
   }
 
-  if (!session) {
+  if (!isAuthenticated) {
     return null;
   }
 
@@ -292,11 +329,13 @@ export default function Home() {
       />
 
       {/* 메인 컨텐츠 */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* 왼쪽: 통계 & 날짜 선택 */}
           <div className="lg:col-span-1 space-y-6">
-            <SimpleStatsCard stats={userStats} />
+            <StatsPanel
+              totalPoints={userStats.totalPoints + todayPoints}
+            />
 
             {/* 날짜 선택 달력 (일일목표/할일 탭일 때만 표시) */}
             {mainTab === "tasks" &&
@@ -483,6 +522,7 @@ export default function Home() {
                   challengeOptions={dailyChallenges}
                   comment={"매일 자정에 초기화됩니다"}
                   userStats={handleUsetStats}
+                  loading={challengesLoading}
                 />
 
                 {/* 주간 도전과제 */}
@@ -491,6 +531,7 @@ export default function Home() {
                   challengeOptions={weeklyChallenges}
                   comment={"매주 월요일에 초기화됩니다"}
                   userStats={handleUsetStats}
+                  loading={challengesLoading}
                 />
 
                 {/* 월간 도전과제 */}
@@ -499,6 +540,7 @@ export default function Home() {
                   challengeOptions={monthlyChallenges}
                   comment={"매달 1일에 초기화됩니다"}
                   userStats={handleUsetStats}
+                  loading={challengesLoading}
                 />
               </div>
             ) : (
