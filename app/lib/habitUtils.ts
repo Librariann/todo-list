@@ -28,6 +28,9 @@ export function isCompletedToday(habit: Habit): boolean {
 }
 
 export function calculateStreak(habit: Habit): number {
+  // API에서 제공한 스트리크가 있으면 우선 사용
+  if (habit.streak !== undefined) return habit.streak;
+
   if (!habit.dailyProgress || !habit.dailyTarget) return 0
   
   let streak = 0
