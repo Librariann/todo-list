@@ -6,20 +6,20 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="fixed top-4 right-4">
         <ThemeToggleStandalone />
       </div>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-4xl font-bold text-foreground mb-2">
             Welcome to Growdo
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">할 일을 관리하고 보상을 받으세요!!</p>
+          <p className="text-muted-foreground">할 일을 관리하고 보상을 받으세요!!</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 text-center">
+        <div className="bg-card rounded-2xl shadow-xl p-8 border border-border">
+          <h2 className="text-2xl font-bold text-foreground mb-6 text-center">
             간편 로그인
           </h2>
 
@@ -28,7 +28,7 @@ export default function LoginPage() {
               onClick={() => {
                 window.location.href = `${API_URL}/oauth2/authorization/google`;
               }}
-              className="w-full py-4 px-6 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-all shadow-sm hover:shadow-md"
+              className="w-full py-4 px-6 rounded-lg border border-border bg-card text-foreground font-medium hover:bg-accent hover:text-accent-foreground transition-all shadow-sm hover:shadow-md"
             >
               <div className="flex items-center justify-center gap-3">
                 <svg className="w-6 h-6" viewBox="0 0 24 24">
@@ -71,7 +71,7 @@ export default function LoginPage() {
           </div>
 
           <div className="mt-8 text-center">
-            <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               소셜 계정으로 간편하게 로그인하세요
               <br />
               별도 회원가입 없이 바로 이용 가능합니다
@@ -80,13 +80,13 @@ export default function LoginPage() {
         </div>
 
         <div className="mt-6 text-center">
-          <p className="text-xs text-gray-400 dark:text-gray-500">
+          <p className="text-xs text-muted-foreground">
             로그인 시{' '}
-            <a href="#" className="text-indigo-500 hover:underline">
+            <a href="#" className="text-primary hover:underline">
               서비스 이용약관
             </a>{' '}
             및{' '}
-            <a href="#" className="text-indigo-500 hover:underline">
+            <a href="#" className="text-primary hover:underline">
               개인정보처리방침
             </a>
             에 동의합니다
