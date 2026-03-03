@@ -51,6 +51,7 @@ export interface Habit {
   dailyTarget?: number;   // 일일 목표 횟수 (옵셔널로 기존 호환성 유지)
   dailyProgress?: { [date: string]: number }; // 날짜별 진행 상황 (YYYY-MM-DD: count)
   lastUpdatedDate?: string; // 마지막 업데이트 날짜 (YYYY-MM-DD)
+  streak?: number;          // 서버에서 받은 연속 달성 일수 (API 연동 시 사용)
   createdAt: Date;
 }
 
