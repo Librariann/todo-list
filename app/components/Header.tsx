@@ -101,7 +101,7 @@ export default function Header({
                     asChild
                     variant="outline"
                     size="sm"
-                    className="border-primary/30 text-primary hover:bg-primary/5"
+                    className="border-primary/30 text-primary hover:bg-primary/5 hover:text-white"
                   >
                     <Link href="/admin">관리자</Link>
                   </Button>
