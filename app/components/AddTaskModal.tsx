@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { TaskType, HabitType, DailyFrequency, Habit, Daily, Todo, TodoStatus } from '../types/todo';
+import { TaskType, HabitType, GoalFrequency, Habit, Goal, Todo, TodoStatus } from '../types/todo';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,12 +18,12 @@ interface AddTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   taskType: TaskType;
-  onAdd: (task: Habit | Daily | Todo) => void;
+  onAdd: (task: Habit | Goal | Todo) => void;
 }
 
 export default function AddTaskModal({ isOpen, onClose, taskType, onAdd }: AddTaskModalProps) {
   const [title, setTitle] = useState('');
-  const [frequency, setFrequency] = useState<DailyFrequency>(DailyFrequency.DAILY);
+  const [frequency, setFrequency] = useState<GoalFrequency>(GoalFrequency.DAILY);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [dailyTarget, setDailyTarget] = useState(5);
 
@@ -51,8 +51,8 @@ export default function AddTaskModal({ isOpen, onClose, taskType, onAdd }: AddTa
         createdAt: now,
       };
       onAdd(newHabit);
-    } else if (taskType === TaskType.DAILY) {
-      const newDaily: Daily = {
+    } else if (taskType === TaskType.GOAL) {
+      const newGoal: Goal = {
         id: `d${Date.now()}`,
         title: title.trim(),
         frequency,
@@ -60,7 +60,7 @@ export default function AddTaskModal({ isOpen, onClose, taskType, onAdd }: AddTa
         streak: 0,
         createdAt: now,
       };
-      onAdd(newDaily);
+      onAdd(newGoal);
     } else if (taskType === TaskType.TODO) {
       const newTodo: Todo = {
         id: `t${Date.now()}`,
@@ -74,7 +74,7 @@ export default function AddTaskModal({ isOpen, onClose, taskType, onAdd }: AddTa
 
     // 초기화
     setTitle('');
-    setFrequency(DailyFrequency.DAILY);
+    setFrequency(GoalFrequency.DAILY);
     setDate(new Date().toISOString().split('T')[0]);
     setDailyTarget(5);
     onClose();
@@ -84,8 +84,8 @@ export default function AddTaskModal({ isOpen, onClose, taskType, onAdd }: AddTa
     switch (taskType) {
       case TaskType.HABIT:
         return '새 습관 추가';
-      case TaskType.DAILY:
-        return '새 일일목표 추가';
+      case TaskType.GOAL:
+        return '새 목표 추가';
       case TaskType.TODO:
         return '새 할일 추가';
     }
@@ -134,21 +134,21 @@ export default function AddTaskModal({ isOpen, onClose, taskType, onAdd }: AddTa
             </div>
           )}
 
-          {/* 일일목표 빈도 선택 */}
-          {taskType === TaskType.DAILY && (
+          {/* 목표 빈도 선택 */}
+          {taskType === TaskType.GOAL && (
             <div>
               <Label className="text-sm font-medium mb-2">반복 주기</Label>
               <Select
                 value={frequency}
-                onValueChange={(value) => setFrequency(value as DailyFrequency)}
+                onValueChange={(value) => setFrequency(value as GoalFrequency)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="반복 주기 선택" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={DailyFrequency.DAILY}>매일</SelectItem>
-                  <SelectItem value={DailyFrequency.WEEKLY}>매주</SelectItem>
-                  <SelectItem value={DailyFrequency.MONTHLY}>매월</SelectItem>
+                  <SelectItem value={GoalFrequency.DAILY}>매일</SelectItem>
+                  <SelectItem value={GoalFrequency.WEEKLY}>매주</SelectItem>
+                  <SelectItem value={GoalFrequency.MONTHLY}>매월</SelectItem>
                 </SelectContent>
               </Select>
             </div>
