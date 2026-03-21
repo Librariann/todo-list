@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useMemo, useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { useMemo, useState } from 'react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 
 interface CalendarProps {
   selectedDate: string;
@@ -55,8 +55,8 @@ export default function Calendar({
 
   const toDateString = (date: Date) => {
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
 
@@ -91,34 +91,24 @@ export default function Calendar({
     onDateSelect(toDateString(today));
   };
 
-  const weekDays = ["일", "월", "화", "수", "목", "금", "토"];
+  const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
 
   return (
     <Card className="shadow-sm p-4">
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
-        <Button
-          onClick={goToPreviousMonth}
-          variant="ghost"
-          size="sm"
-          aria-label="이전 달"
-        >
+        <Button onClick={goToPreviousMonth} variant="ghost" size="sm" aria-label="이전 달">
           <ChevronLeft className="h-4 w-4" />
         </Button>
 
-        <Button
+        <div
           onClick={() => setIsExpanded(!isExpanded)}
-          variant="ghost"
-          className="text-center lg:cursor-default flex flex-col items-center gap-1"
+          className="text-center lg:cursor-default flex flex-col items-center gap-1 cursor-pointer rounded-md px-3 py-1 hover:bg-accent transition-colors"
         >
           <div className="flex items-center gap-2">
-            <h3 className="font-bold text-foreground">
-              {formatMonthYear(currentMonth)}
-            </h3>
+            <h3 className="font-bold text-foreground">{formatMonthYear(currentMonth)}</h3>
             <ChevronDown
-              className={`w-4 h-4 lg:hidden transition-transform ${
-                isExpanded ? "rotate-180" : ""
-              }`}
+              className={`w-4 h-4 lg:hidden transition-transform ${isExpanded ? 'rotate-180' : ''}`}
             />
           </div>
           <Button
@@ -132,33 +122,20 @@ export default function Calendar({
           >
             오늘
           </Button>
-        </Button>
+        </div>
 
-        <Button
-          onClick={goToNextMonth}
-          variant="ghost"
-          size="sm"
-          aria-label="다음 달"
-        >
+        <Button onClick={goToNextMonth} variant="ghost" size="sm" aria-label="다음 달">
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
 
       {/* 요일 헤더 - 모바일에서는 펼쳤을 때만, 데스크톱에서는 항상 표시 */}
-      <div
-        className={`grid grid-cols-7 gap-1 mb-2 ${
-          isExpanded ? "block" : "hidden lg:grid"
-        }`}
-      >
+      <div className={`grid grid-cols-7 gap-1 mb-2 ${isExpanded ? 'block' : 'hidden lg:grid'}`}>
         {weekDays.map((day, index) => (
           <div
             key={day}
             className={`text-center text-xs font-semibold py-2 ${
-              index === 0
-                ? "text-red-500"
-                : index === 6
-                ? "text-blue-500"
-                : "text-muted-foreground"
+              index === 0 ? 'text-red-500' : index === 6 ? 'text-blue-500' : 'text-muted-foreground'
             }`}
           >
             {day}
@@ -167,11 +144,7 @@ export default function Calendar({
       </div>
 
       {/* 날짜 그리드 - 모바일에서는 펼쳤을 때만, 데스크톱에서는 항상 표시 */}
-      <div
-        className={`grid grid-cols-7 gap-1 ${
-          isExpanded ? "grid" : "hidden lg:grid"
-        }`}
-      >
+      <div className={`grid grid-cols-7 gap-1 ${isExpanded ? 'grid' : 'hidden lg:grid'}`}>
         {calendarDays.map((date, index) => {
           if (!date) {
             return <div key={`empty-${index}`} className="aspect-square" />;
@@ -187,19 +160,20 @@ export default function Calendar({
             <Button
               key={toDateString(date)}
               onClick={() => onDateSelect(toDateString(date))}
-              variant={selectedFlag ? "default" : todayFlag ? "secondary" : "ghost"}
+              variant={selectedFlag ? 'default' : todayFlag ? 'secondary' : 'ghost'}
               size="sm"
               className={`
                 aspect-square text-sm font-medium transition-all relative p-0
-                ${selectedFlag ? "shadow-md scale-105" : ""}
-                ${todayFlag && !selectedFlag ? "bg-primary/10 text-primary" : ""}
+                ${selectedFlag ? 'shadow-md scale-105' : ''}
+                ${todayFlag && !selectedFlag ? 'bg-primary/10 text-primary' : ''}
                 ${
-                  !selectedFlag && !todayFlag &&
+                  !selectedFlag &&
+                  !todayFlag &&
                   (isSunday
-                    ? "text-red-500 hover:text-red-600"
+                    ? 'text-red-500 hover:text-red-600'
                     : isSaturday
-                    ? "text-blue-500 hover:text-blue-600"
-                    : "text-foreground")
+                      ? 'text-blue-500 hover:text-blue-600'
+                      : 'text-foreground')
                 }
               `}
             >
