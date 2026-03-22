@@ -100,7 +100,9 @@ export default function ChallengeCard({ challenge, onClaim }: ChallengeCardProps
 
           {/* 보상 & 버튼 */}
           <div className="flex items-center justify-between">
-            <span className="text-sm font-bold text-amber-600 dark:text-amber-400">+{challenge.rewardPoints}pt</span>
+            <span className="text-sm font-bold text-amber-600 dark:text-amber-400">
+              +{challenge.rewardPoints}pt
+            </span>
             {canClaim && onClaim && (
               <Button
                 onClick={() => onClaim(challenge.id)}
