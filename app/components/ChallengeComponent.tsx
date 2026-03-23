@@ -14,11 +14,14 @@ export default function ChallengeComponent({
   userStats: (rewardPoints: number) => void;
   loading?: boolean;
 }) {
+  //TODO: Complete Challenge Logic
   const handleClaimChallenge = (id: string) => {
     const challenge = challengeOptions.find((c) => c.id === id);
-    if (challenge && !challenge.completed && challenge.currentCount >= challenge.targetCount) {
+    if (challenge && !challenge.completed && 0 >= challenge.targetCount) {
       userStats(challenge.rewardPoints);
       alert(`🎉 도전과제 완료! +${challenge.rewardPoints} 포인트 획득!`);
+    } else {
+      alert('도전과제 달성안됨');
     }
   };
 
