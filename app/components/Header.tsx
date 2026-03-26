@@ -1,13 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ThemeToggleStandalone from './ThemeToggleStandalone';
 import { useAuthStore } from '../store/authStore';
 import { Menu, X } from 'lucide-react';
-import DataManager from './DataManager';
 
 type MainTabType = 'tasks' | 'rewards' | 'challenges';
 
@@ -25,9 +24,11 @@ export default function Header({
   onMobileMenuToggle,
 }: HeaderProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, isAuthenticated, clearAuth, accessToken } = useAuthStore();
 
   const isLoggedIn = isAuthenticated;
+  const isAdminPage = pathname === '/admin';
 
   const handleMobileTabClick = (tab: MainTabType) => {
     onTabChange(tab);
@@ -64,35 +65,37 @@ export default function Header({
 
           {/* 데스크톱 메뉴 */}
           <div className="hidden lg:flex items-center gap-4">
-            <div className="flex gap-2 bg-muted p-1 rounded-lg">
-              <Button
-                onClick={() => onTabChange('tasks')}
-                variant={mainTab === 'tasks' ? 'default' : 'ghost'}
-                className={`transition-all duration-300 active:scale-95 ${
-                  mainTab === 'tasks' ? 'scale-105' : 'hover:scale-105'
-                }`}
-              >
-                📝 작업
-              </Button>
-              <Button
-                onClick={() => onTabChange('challenges')}
-                variant={mainTab === 'challenges' ? 'default' : 'ghost'}
-                className={`transition-all duration-300 active:scale-95 ${
-                  mainTab === 'challenges' ? 'scale-105' : 'hover:scale-105'
-                }`}
-              >
-                🏆 도전과제
-              </Button>
-              <Button
-                onClick={() => onTabChange('rewards')}
-                variant={mainTab === 'rewards' ? 'default' : 'ghost'}
-                className={`transition-all duration-300 active:scale-95 ${
-                  mainTab === 'rewards' ? 'scale-105' : 'hover:scale-105'
-                }`}
-              >
-                🎁 보상
-              </Button>
-            </div>
+            {!isAdminPage && (
+              <div className="flex gap-2 bg-muted p-1 rounded-lg">
+                <Button
+                  onClick={() => onTabChange('tasks')}
+                  variant={mainTab === 'tasks' ? 'default' : 'ghost'}
+                  className={`transition-all duration-300 active:scale-95 ${
+                    mainTab === 'tasks' ? 'scale-105' : 'hover:scale-105'
+                  }`}
+                >
+                  📝 작업
+                </Button>
+                <Button
+                  onClick={() => onTabChange('challenges')}
+                  variant={mainTab === 'challenges' ? 'default' : 'ghost'}
+                  className={`transition-all duration-300 active:scale-95 ${
+                    mainTab === 'challenges' ? 'scale-105' : 'hover:scale-105'
+                  }`}
+                >
+                  🏆 도전과제
+                </Button>
+                <Button
+                  onClick={() => onTabChange('rewards')}
+                  variant={mainTab === 'rewards' ? 'default' : 'ghost'}
+                  className={`transition-all duration-300 active:scale-95 ${
+                    mainTab === 'rewards' ? 'scale-105' : 'hover:scale-105'
+                  }`}
+                >
+                  🎁 보상
+                </Button>
+              </div>
+            )}
 
             {isLoggedIn ? (
               <div className="flex items-center gap-4">
@@ -103,7 +106,9 @@ export default function Header({
                     size="sm"
                     className="border-primary/30 text-primary hover:bg-primary/5 hover:text-white"
                   >
-                    <Link href="/admin">관리자</Link>
+                    <Link href={isAdminPage ? '/' : '/admin'}>
+                      {isAdminPage ? '메인' : '관리자'}
+                    </Link>
                   </Button>
                 )}
                 <Badge variant="secondary" className="text-sm">
@@ -147,33 +152,37 @@ export default function Header({
         {isMobileMenuOpen && (
           <div className="lg:hidden mt-4 pt-4 border-t border-border animate-slide-in">
             <div className="space-y-2">
-              <Button
-                onClick={() => handleMobileTabClick('tasks')}
-                variant={mainTab === 'tasks' ? 'default' : 'ghost'}
-                className={`w-full justify-start transition-all duration-300 active:scale-95 ${
-                  mainTab === 'tasks' ? 'scale-105' : 'hover:scale-105'
-                }`}
-              >
-                📝 작업
-              </Button>
-              <Button
-                onClick={() => handleMobileTabClick('challenges')}
-                variant={mainTab === 'challenges' ? 'default' : 'ghost'}
-                className={`w-full justify-start transition-all duration-300 active:scale-95 ${
-                  mainTab === 'challenges' ? 'scale-105' : 'hover:scale-105'
-                }`}
-              >
-                🏆 도전과제
-              </Button>
-              <Button
-                onClick={() => handleMobileTabClick('rewards')}
-                variant={mainTab === 'rewards' ? 'default' : 'ghost'}
-                className={`w-full justify-start transition-all duration-300 active:scale-95 ${
-                  mainTab === 'rewards' ? 'scale-105' : 'hover:scale-105'
-                }`}
-              >
-                🎁 보상
-              </Button>
+              {!isAdminPage && (
+                <>
+                  <Button
+                    onClick={() => handleMobileTabClick('tasks')}
+                    variant={mainTab === 'tasks' ? 'default' : 'ghost'}
+                    className={`w-full justify-start transition-all duration-300 active:scale-95 ${
+                      mainTab === 'tasks' ? 'scale-105' : 'hover:scale-105'
+                    }`}
+                  >
+                    📝 작업
+                  </Button>
+                  <Button
+                    onClick={() => handleMobileTabClick('challenges')}
+                    variant={mainTab === 'challenges' ? 'default' : 'ghost'}
+                    className={`w-full justify-start transition-all duration-300 active:scale-95 ${
+                      mainTab === 'challenges' ? 'scale-105' : 'hover:scale-105'
+                    }`}
+                  >
+                    🏆 도전과제
+                  </Button>
+                  <Button
+                    onClick={() => handleMobileTabClick('rewards')}
+                    variant={mainTab === 'rewards' ? 'default' : 'ghost'}
+                    className={`w-full justify-start transition-all duration-300 active:scale-95 ${
+                      mainTab === 'rewards' ? 'scale-105' : 'hover:scale-105'
+                    }`}
+                  >
+                    🎁 보상
+                  </Button>
+                </>
+              )}
 
               {isLoggedIn ? (
                 <div className="pt-2 mt-2 border-t border-border space-y-2">
@@ -183,7 +192,9 @@ export default function Header({
                   </Badge>
                   {user?.role === 'ADMIN' && (
                     <Button asChild variant="outline" className="w-full" size="sm">
-                      <Link href="/admin">⚙️ 관리자 페이지</Link>
+                      <Link href={isAdminPage ? '/' : '/admin'}>
+                        {isAdminPage ? '🏠 메인으로' : '⚙️ 관리자 페이지'}
+                      </Link>
                     </Button>
                   )}
                   <Button onClick={handleLogout} variant="destructive" className="w-full" size="sm">
