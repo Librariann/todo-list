@@ -8,6 +8,10 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 interface RewardItem {
   id: number;
+  name: string;
+  type: 'COUPON' | 'POINT';
+  point: number;
+  description: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -21,6 +25,7 @@ interface ChallengeItem {
   targetCount: number;
   point: number;
   isActive: boolean;
+  achievedAt?: string;
 }
 
 interface StatsPanelProps {
@@ -44,7 +49,7 @@ export default function StatsPanel({ totalPoints: fallbackPoints }: StatsPanelPr
       try {
         const [rewardsRes, challengesRes, pointsRes] = await Promise.all([
           apiFetch(`${API_URL}/api/user/rewards/`),
-          apiFetch(`${API_URL}/api/challenges/`),
+          apiFetch(`${API_URL}/api/user/challenges/achieved`),
           apiFetch(`${API_URL}/api/user/points/`),
         ]);
 
@@ -95,7 +100,7 @@ export default function StatsPanel({ totalPoints: fallbackPoints }: StatsPanelPr
           총 포인트
         </p>
         <div className="flex items-baseline gap-1">
-          <span className="text-3xl font-bold text-stone-800 dark:text-stone-100 tabular-nums">
+          <span className="text-3xl font-bold text-stone-800 dark:text-white tabular-nums">
             {displayPoints.toLocaleString()}
           </span>
           <span className="text-sm text-stone-400 dark:text-stone-500 font-medium">pt</span>
@@ -122,15 +127,20 @@ export default function StatsPanel({ totalPoints: fallbackPoints }: StatsPanelPr
             {rewards.map((r) => (
               <li
                 key={r.id}
-                className="flex items-center justify-between px-3 py-2 rounded-lg bg-stone-50 dark:bg-white/[0.04] border border-stone-100 dark:border-white/[0.05]"
+                className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-stone-50 dark:bg-white/[0.04] border border-stone-100 dark:border-white/[0.05]"
               >
-                <div className="flex items-center gap-2">
-                  <span className="text-base">🎁</span>
-                  <span className="text-sm font-medium text-stone-700 dark:text-stone-300">
-                    보상 #{r.id}
-                  </span>
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-base shrink-0">{r.type === 'COUPON' ? '🎫' : '⭐'}</span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-stone-700 dark:text-stone-300 truncate">
+                      {r.name}
+                    </p>
+                    <p className="text-xs text-stone-400 dark:text-stone-500">
+                      {r.type === 'COUPON' ? '쿠폰' : '포인트'} · {r.point.toLocaleString()}pt
+                    </p>
+                  </div>
                 </div>
-                <span className="text-xs text-stone-400 dark:text-stone-500">
+                <span className="text-xs text-stone-400 dark:text-stone-500 shrink-0">
                   {formatDate(r.createdAt)}
                 </span>
               </li>
@@ -162,7 +172,7 @@ export default function StatsPanel({ totalPoints: fallbackPoints }: StatsPanelPr
                 className="flex items-center gap-3 px-3 py-2 rounded-lg bg-stone-50 dark:bg-white/[0.04] border border-stone-100 dark:border-white/[0.05]"
               >
                 <span className="text-base shrink-0">{c.icon || '🏆'}</span>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-stone-700 dark:text-stone-300 truncate">
                     {c.name}
                   </p>
@@ -170,6 +180,11 @@ export default function StatsPanel({ totalPoints: fallbackPoints }: StatsPanelPr
                     {recurrenceLabel(c.recurrenceType)} · {c.point}pt
                   </p>
                 </div>
+                {c.achievedAt && (
+                  <span className="text-xs text-stone-400 dark:text-stone-500 shrink-0">
+                    {formatDate(c.achievedAt)}
+                  </span>
+                )}
               </li>
             ))}
           </ul>
