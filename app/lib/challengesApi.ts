@@ -56,11 +56,11 @@ export function mapChallenge(c: ChallengesApiResponse): Challenge {
 }
 
 export async function fetchUserChallengeProgress(): Promise<Challenge[]> {
-  const res = await apiFetch(`${API_URL}/api/user/challenges/progress`);
+  const res = await apiFetch(`${API_URL}/api/user/challenges/`);
   if (!res.ok) throw new Error('Failed to fetch user challenge progress');
   const data = await res.json();
   const raw = (data.data ?? []) as UserChallengeProgressResponse[];
-  return raw.filter(c => c.isActive).map(mapUserChallengeProgress);
+  return raw.map(mapUserChallengeProgress);
 }
 
 export async function fetchChallenges(): Promise<Challenge[]> {
@@ -68,5 +68,5 @@ export async function fetchChallenges(): Promise<Challenge[]> {
   if (!res.ok) throw new Error('Failed to fetch challenges');
   const data = await res.json();
   const raw = (data.data ?? []) as ChallengesApiResponse[];
-  return raw.filter(c => c.isActive).map(mapChallenge);
+  return raw.filter((c) => c.isActive).map(mapChallenge);
 }
