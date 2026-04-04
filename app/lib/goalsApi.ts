@@ -1,5 +1,5 @@
 import { apiFetch } from './apiClient';
-import { Daily, DailyFrequency } from '../types/todo';
+import { Goal, GoalFrequency } from '../types/todo';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -51,18 +51,18 @@ export interface GoalDashboardData {
   };
 }
 
-function mapFrequency(recurrenceType: string): DailyFrequency {
-  if (recurrenceType === 'DAILY') return DailyFrequency.DAILY;
-  if (recurrenceType === 'WEEKLY') return DailyFrequency.WEEKLY;
-  return DailyFrequency.MONTHLY;
+function mapFrequency(recurrenceType: string): GoalFrequency {
+  if (recurrenceType === 'DAILY') return GoalFrequency.DAILY;
+  if (recurrenceType === 'WEEKLY') return GoalFrequency.WEEKLY;
+  return GoalFrequency.MONTHLY;
 }
 
-export function buildDaily(
+export function buildGoal(
   goal: GoalResponse,
   progress: GoalProcessResponse | undefined,
   streak: GoalStreakResponse | undefined,
   today: string
-): Daily {
+): Goal {
   const completedDates = progress?.isAchieved && progress.periodStart === today ? [today] : [];
   return {
     id: goal.id.toString(),
@@ -74,7 +74,7 @@ export function buildDaily(
   };
 }
 
-export async function fetchGoalsWithProgress(): Promise<Daily[]> {
+export async function fetchGoalsWithProgress(): Promise<Goal[]> {
   const today = new Date().toISOString().split('T')[0];
 
   const [goalsRes, dashboardRes] = await Promise.all([
@@ -96,7 +96,7 @@ export async function fetchGoalsWithProgress(): Promise<Daily[]> {
     dashboard.activeStreaks?.forEach((s) => streakMap.set(s.goalId, s));
   }
 
-  return goals.map((g) => buildDaily(g, progressMap.get(g.id), streakMap.get(g.id), today));
+  return goals.map((g) => buildGoal(g, progressMap.get(g.id), streakMap.get(g.id), today));
 }
 
 export async function achieveGoal(goalId: string): Promise<GoalProcessResponse> {
@@ -111,7 +111,7 @@ export async function achieveGoal(goalId: string): Promise<GoalProcessResponse> 
 export async function createGoal(
   name: string,
   recurrenceType: 'DAILY' | 'WEEKLY' | 'MONTHLY' = 'DAILY'
-): Promise<Daily> {
+): Promise<Goal> {
   const today = new Date().toISOString().split('T')[0];
   const res = await apiFetch(`${API_URL}/api/goals`, {
     method: 'POST',
@@ -127,5 +127,5 @@ export async function createGoal(
   if (!res.ok) throw new Error('Failed to create goal');
   const data = await res.json();
   const goal = data.data as GoalResponse;
-  return buildDaily(goal, undefined, undefined, today);
+  return buildGoal(goal, undefined, undefined, today);
 }
