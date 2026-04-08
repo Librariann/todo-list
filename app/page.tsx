@@ -3,11 +3,12 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useAuthStore } from './store/authStore';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { useDataPersistence } from './hooks/useDataPersistence';
 import { updateHabitProgress } from './lib/habitUtils';
 import { calculateProgressMetrics, calculateDailyPoints } from './lib/rewardUtils';
 import HabitCard from './components/HabitCard';
-import DailyCard from './components/DailyCard';
+import GoalCard from './components/GoalCard';
 import SimpleTodoCard from './components/SimpleTodoCard';
 import StatsPanel from './components/StatsPanel';
 import RewardShop from './components/RewardShop';
@@ -19,7 +20,7 @@ import {
   Todo,
   TodoStatus,
   Habit,
-  Daily,
+  Goal,
   Reward,
   ChallengeType,
   Challenge,
@@ -29,7 +30,7 @@ import {
 import { mockUserStats } from './lib/mockData';
 import { fetchHabits, createHabit, incrementHabit, decrementHabit } from './lib/habitsApi';
 import { fetchRewards, redeemReward } from './lib/rewardsApi';
-import { fetchChallenges } from './lib/challengesApi';
+import { fetchUserChallengeProgress } from './lib/challengesApi';
 import { fetchGoalsWithProgress, achieveGoal, createGoal } from './lib/goalsApi';
 import {
   fetchTodos,
@@ -41,23 +42,33 @@ import {
 
 import ChallengeComponent from './components/ChallengeComponent';
 import { apiFetch } from './lib/apiClient';
+import { useThemeStore } from './store/themeStore';
+import { THEME_NAME } from '@/lib/constant';
 
-type TaskTabType = 'habits' | 'dailies' | 'todos';
+type TaskTabType = 'habits' | 'goals' | 'todos';
 type MainTabType = 'tasks' | 'rewards' | 'challenges';
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function Home() {
   const { isAuthenticated, user } = useAuthStore();
+  const { isDarkMode, setTheme } = useThemeStore();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  const [themeMode, setThemeMode] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
+    if (Boolean(localStorage.getItem(THEME_NAME))) {
+      setThemeMode(localStorage.getItem(THEME_NAME));
+    } else {
+      localStorage.setItem(THEME_NAME, 'light');
+      setThemeMode('light');
+    }
   }, []);
 
   // 상태 관리
   const [habits, setHabits] = useState<Habit[]>([]);
-  const [dailies, setDailies] = useState<Daily[]>([]);
+  const [goals, setGoals] = useState<Goal[]>([]);
   const [todos, setTodos] = useState<Todo[]>([]);
   const [userStats, setUserStats] = useState(mockUserStats);
   const [userPoints, setUserPoints] = useState(0);
@@ -71,14 +82,14 @@ export default function Home() {
   const [apiChallenges, setApiChallenges] = useState<Challenge[]>([]);
   const [challengesLoading, setChallengesLoading] = useState(false);
   const [habitsLoading, setHabitsLoading] = useState(false);
-  const [dailiesLoading, setDailiesLoading] = useState(false);
+  const [goalsLoading, setGoalsLoading] = useState(false);
   const [todosLoading, setTodosLoading] = useState(false);
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [rewardsLoading, setRewardsLoading] = useState(false);
 
   const [completedTodoDates, setCompletedTodoDates] = useState<Set<string>>(new Set());
   const handleDataLoaded = useCallback(
-    (data: { todos: Todo[]; habits: Habit[]; dailies: Daily[]; userStats: UserStats }) => {
+    (data: { todos: Todo[]; habits: Habit[]; goals: Goal[]; userStats: UserStats }) => {
       setUserStats(data.userStats);
     },
     []
@@ -87,16 +98,17 @@ export default function Home() {
   const { isLoaded } = useDataPersistence({
     todos,
     habits,
-    dailies,
+    goals,
     userStats,
     onDataLoaded: handleDataLoaded,
   });
 
   //userPoints
   useEffect(() => {
+    if (!isAuthenticated) return;
     async function fetchData() {
       try {
-        const [pointsRes] = await Promise.all([apiFetch(`${API_URL}/api/user/points/`)]);
+        const pointsRes = await apiFetch(`${API_URL}/api/user/points/`);
 
         if (pointsRes.ok) {
           const data = await pointsRes.json();
@@ -114,7 +126,7 @@ export default function Home() {
   useEffect(() => {
     if (!isAuthenticated) return;
     setChallengesLoading(true);
-    fetchChallenges()
+    fetchUserChallengeProgress()
       .then((data) => setApiChallenges(data))
       .catch((err) => console.error('도전과제 로드 실패:', err))
       .finally(() => setChallengesLoading(false));
@@ -122,11 +134,11 @@ export default function Home() {
 
   useEffect(() => {
     if (!isAuthenticated) return;
-    setDailiesLoading(true);
+    setGoalsLoading(true);
     fetchGoalsWithProgress()
-      .then((data) => setDailies(data))
-      .catch((err) => console.error('일일목표 로드 실패:', err))
-      .finally(() => setDailiesLoading(false));
+      .then((data) => setGoals(data))
+      .catch((err) => console.error('목표 로드 실패:', err))
+      .finally(() => setGoalsLoading(false));
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -208,8 +220,8 @@ export default function Home() {
   const markedDates = useMemo(() => {
     const dates = new Set<string>();
 
-    if (taskTab === 'dailies') {
-      dailies.forEach((daily) => {
+    if (taskTab === 'goals') {
+      goals.forEach((daily) => {
         daily.completedDates.forEach((date) => dates.add(date));
       });
     } else if (taskTab === 'todos') {
@@ -217,18 +229,15 @@ export default function Home() {
     }
 
     return Array.from(dates);
-  }, [taskTab, dailies, completedTodoDates]);
+  }, [taskTab, goals, completedTodoDates]);
 
-  // 선택된 날짜의 일일 목표 (완료 여부 포함)
-  const dailiesWithCompletion = useMemo(() => {
-    return dailies.map((daily) => ({
-      ...daily,
-      completed: daily.completedDates.includes(selectedDate),
+  // 선택된 날짜의 목표 (완료 여부 포함)
+  const goalsWithCompletion = useMemo(() => {
+    return goals.map((goal) => ({
+      ...goal,
+      completed: goal.completedDates.includes(selectedDate),
     }));
-  }, [dailies, selectedDate]);
-
-  // 선택된 날짜의 할 일
-  const filteredTodos = useMemo(() => todos, [todos]);
+  }, [goals, selectedDate]);
 
   const handleHabitPositive = async (id: string) => {
     // 낙관적 업데이트
@@ -251,64 +260,42 @@ export default function Home() {
     }
   };
 
-  const handleDailyToggle = async (id: string) => {
+  const handleGoalToggle = async (id: string) => {
     const today = new Date().toISOString().split('T')[0];
-    const target = dailies.find((d) => d.id === id);
+    const target = goals.find((d) => d.id === id);
     if (!target) return;
     const isCompleted = target.completedDates.includes(today);
-    setDailies((prev) =>
+    if (isCompleted) return;
+
+    setGoals((prev) =>
       prev.map((d) => {
         if (d.id !== id) return d;
-        return isCompleted
-          ? { ...d, completedDates: d.completedDates.filter((dt) => dt !== today) }
-          : { ...d, completedDates: [...d.completedDates, today] };
+        return { ...d, completedDates: [...d.completedDates, today] };
       })
     );
-    if (!isCompleted) {
-      try {
-        await achieveGoal(id);
-      } catch {
-        setDailies((prev) =>
-          prev.map((d) =>
-            d.id === id
-              ? { ...d, completedDates: d.completedDates.filter((dt) => dt !== today) }
-              : d
-          )
-        );
-      }
-    }
-  };
-
-  const handleDateSelect = async (date: string) => {
-    setSelectedDate(date);
-    const today = new Date().toISOString().split('T')[0];
-    if (date !== today || taskTab !== 'dailies') return;
-    const unachieved = dailies.filter((d) => !d.completedDates.includes(today));
-    if (unachieved.length === 0) return;
-    setDailies((prev) =>
-      prev.map((d) =>
-        unachieved.some((u) => u.id === d.id)
-          ? { ...d, completedDates: [...d.completedDates, today] }
-          : d
-      )
-    );
     try {
-      await Promise.all(unachieved.map((d) => achieveGoal(d.id)));
+      await achieveGoal(id);
+      toast.success('목표가 완료됐어요', {
+        description: '완료된 목표는 취소할 수 없어요.',
+      });
     } catch {
-      setDailies((prev) =>
+      setGoals((prev) =>
         prev.map((d) =>
-          unachieved.some((u) => u.id === d.id)
-            ? { ...d, completedDates: d.completedDates.filter((dt) => dt !== today) }
-            : d
+          d.id === id ? { ...d, completedDates: d.completedDates.filter((dt) => dt !== today) } : d
         )
       );
     }
   };
 
+  const handleDateSelect = (date: string) => {
+    setSelectedDate(date);
+  };
+
   const handleTodoStatusChange = async (todoId: string, newStatus: TodoStatus) => {
-    const prev = todos.find((t) => t.id === todoId);
-    if (!prev) return;
-    const optimistic = todos.map((t) => {
+    const snapshot = [...todos];
+    const target = snapshot.find((t) => t.id === todoId);
+    if (!target) return;
+    const optimistic = snapshot.map((t) => {
       if (t.id !== todoId) return t;
       return newStatus === TodoStatus.DONE
         ? { ...t, status: newStatus, completedAt: new Date() }
@@ -326,11 +313,11 @@ export default function Home() {
     try {
       await updateTodoStatus(todoId, newStatus);
     } catch {
-      setTodos(todos);
+      setTodos(snapshot);
       // 롤백 시 completedTodoDates도 원래대로
       setCompletedTodoDates((prev) => {
         const next = new Set(prev);
-        const hadDone = todos.some((t) => t.status === TodoStatus.DONE);
+        const hadDone = snapshot.some((t) => t.status === TodoStatus.DONE);
         if (hadDone) next.add(selectedDate);
         else next.delete(selectedDate);
         return next;
@@ -366,24 +353,25 @@ export default function Home() {
 
   // 보상 교환
   const handleClaimReward = async (reward: Reward) => {
-    if (userStats.totalPoints < reward.value) return;
+    if (userPoints < reward.value) return;
+    const prevPoints = userPoints;
     // 낙관적 UI 업데이트
+    setUserPoints((prev) => prev - reward.value);
     setUserStats((prev) => ({
       ...prev,
-      totalPoints: prev.totalPoints - reward.value,
       earnedRewards: [...prev.earnedRewards, reward],
     }));
     try {
       await redeemReward(reward.id);
-      alert(`🎉 ${reward.name}을(를) 획득했습니다!`);
+      toast.success(`${reward.name}을(를) 획득했습니다!`);
     } catch {
       // 실패 시 롤백
+      setUserPoints(prevPoints);
       setUserStats((prev) => ({
         ...prev,
-        totalPoints: prev.totalPoints + reward.value,
         earnedRewards: prev.earnedRewards.filter((r) => r.id !== reward.id),
       }));
-      alert('오류가 발생했습니다. 다시 시도해주세요.');
+      toast.error('오류가 발생했습니다. 다시 시도해주세요.');
     }
   };
 
@@ -404,12 +392,12 @@ export default function Home() {
   );
 
   const progressMetrics = useMemo(() => {
-    return calculateProgressMetrics(habits, dailies, todos, selectedDate);
-  }, [habits, dailies, todos, selectedDate]);
+    return calculateProgressMetrics(habits, goals, todos, selectedDate);
+  }, [habits, goals, todos, selectedDate]);
 
   const todayPoints = useMemo(() => {
-    return calculateDailyPoints(habits, dailies, todos, selectedDate);
-  }, [habits, dailies, todos, selectedDate]);
+    return calculateDailyPoints(habits, goals, todos, selectedDate);
+  }, [habits, goals, todos, selectedDate]);
 
   // 모달 열기
   const openAddModal = (type: TaskType) => {
@@ -418,7 +406,7 @@ export default function Home() {
   };
 
   // 작업 추가
-  const handleAddTask = async (task: Habit | Daily | Todo) => {
+  const handleAddTask = async (task: Habit | Goal | Todo) => {
     if ('habitType' in task) {
       try {
         const created = await createHabit({
@@ -435,12 +423,12 @@ export default function Home() {
         weekly: 'WEEKLY',
         monthly: 'MONTHLY',
       };
-      const freq = freqMap[(task as Daily).frequency] ?? 'DAILY';
+      const freq = freqMap[(task as Goal).frequency] ?? 'DAILY';
       try {
         const created = await createGoal(task.title, freq);
-        setDailies((prev) => [...prev, created]);
+        setGoals((prev) => [...prev, created]);
       } catch (err) {
-        console.error('일일목표 생성 실패:', err);
+        console.error('목표 생성 실패:', err);
       }
     } else {
       try {
@@ -452,7 +440,7 @@ export default function Home() {
     }
   };
 
-  const handleUsetStats = (rewardPoints: number) => {
+  const handleUserStats = (rewardPoints: number) => {
     setUserStats((item) => ({
       ...item,
       totalPoints: item.totalPoints + rewardPoints,
@@ -482,7 +470,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className={`min-h-screen bg-background `}>
       {/* 헤더 */}
       <Header
         mainTab={mainTab}
@@ -498,8 +486,8 @@ export default function Home() {
           <div className="lg:col-span-1 space-y-6">
             <StatsPanel totalPoints={userPoints} />
 
-            {/* 날짜 선택 달력 (일일목표/할일 탭일 때만 표시) */}
-            {mainTab === 'tasks' && (taskTab === 'dailies' || taskTab === 'todos') && (
+            {/* 날짜 선택 달력 (목표/할일 탭일 때만 표시) */}
+            {mainTab === 'tasks' && (taskTab === 'goals' || taskTab === 'todos') && (
               <Calendar
                 selectedDate={selectedDate}
                 onDateSelect={handleDateSelect}
@@ -528,14 +516,14 @@ export default function Home() {
                       ⚡ 습관
                     </button>
                     <button
-                      onClick={() => setTaskTab('dailies')}
+                      onClick={() => setTaskTab('goals')}
                       className={`px-6 py-3 rounded-lg font-semibold transition-all whitespace-nowrap cursor-pointer ${
-                        taskTab === 'dailies'
+                        taskTab === 'goals'
                           ? 'bg-primary text-primary-foreground shadow-sm'
                           : 'bg-muted text-muted-foreground hover:bg-muted/70'
                       }`}
                     >
-                      📅 일일목표
+                      📅 목표
                     </button>
                     <button
                       onClick={() => setTaskTab('todos')}
@@ -595,19 +583,19 @@ export default function Home() {
                   </div>
                 )}
 
-                {taskTab === 'dailies' && (
+                {taskTab === 'goals' && (
                   <div>
                     <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div>
                         <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                          📅 일일 목표 ({formatDate(selectedDate)})
+                          📅 목표 ({formatDate(selectedDate)})
                         </h2>
                         <p className="text-sm text-muted-foreground mt-1">
                           매일/매주/매월 반복되는 목표를 관리하세요
                         </p>
                       </div>
                       <button
-                        onClick={() => openAddModal(TaskType.DAILY)}
+                        onClick={() => openAddModal(TaskType.GOAL)}
                         className="px-4 sm:px-6 py-2 sm:py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-all shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap"
                       >
                         <span className="text-xl">+</span>
@@ -616,18 +604,18 @@ export default function Home() {
                     </div>
 
                     <div className="space-y-3">
-                      {dailiesLoading ? (
+                      {goalsLoading ? (
                         <div className="bg-card rounded-lg p-8 text-center border border-border">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3" />
-                          <p className="text-muted-foreground text-sm">일일목표 로딩 중...</p>
+                          <p className="text-muted-foreground text-sm">목표 로딩 중...</p>
                         </div>
-                      ) : dailiesWithCompletion.length === 0 ? (
+                      ) : goalsWithCompletion.length === 0 ? (
                         <div className="bg-card rounded-lg p-8 text-center border border-border">
-                          <p className="text-muted-foreground">일일 목표가 없습니다</p>
+                          <p className="text-muted-foreground">목표가 없습니다</p>
                         </div>
                       ) : (
-                        dailiesWithCompletion.map((daily) => (
-                          <DailyCard key={daily.id} daily={daily} onToggle={handleDailyToggle} />
+                        goalsWithCompletion.map((goal) => (
+                          <GoalCard key={goal.id} goal={goal} onToggle={handleGoalToggle} />
                         ))
                       )}
                     </div>
@@ -660,12 +648,12 @@ export default function Home() {
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3" />
                           <p className="text-muted-foreground text-sm">할일 로딩 중...</p>
                         </div>
-                      ) : filteredTodos.length === 0 ? (
+                      ) : todos.length === 0 ? (
                         <div className="bg-card rounded-lg p-8 text-center border border-border">
                           <p className="text-muted-foreground">할 일이 없습니다</p>
                         </div>
                       ) : (
-                        filteredTodos.map((todo) => (
+                        todos.map((todo) => (
                           <SimpleTodoCard
                             key={todo.id}
                             todo={todo}
@@ -686,7 +674,7 @@ export default function Home() {
                   title="📅 일일 도전과제"
                   challengeOptions={dailyChallenges}
                   comment={'매일 자정에 초기화됩니다'}
-                  userStats={handleUsetStats}
+                  userStats={handleUserStats}
                   loading={challengesLoading}
                 />
 
@@ -695,7 +683,7 @@ export default function Home() {
                   title="🗓️ 주간 도전과제"
                   challengeOptions={weeklyChallenges}
                   comment={'매주 월요일에 초기화됩니다'}
-                  userStats={handleUsetStats}
+                  userStats={handleUserStats}
                   loading={challengesLoading}
                 />
 
@@ -704,7 +692,7 @@ export default function Home() {
                   title="📆 월간 도전과제"
                   challengeOptions={monthlyChallenges}
                   comment={'매달 1일에 초기화됩니다'}
-                  userStats={handleUsetStats}
+                  userStats={handleUserStats}
                   loading={challengesLoading}
                 />
               </div>
