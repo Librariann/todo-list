@@ -50,7 +50,7 @@ export default function ChallengesTab() {
       dailyMaxCount: c.targetCount,
       workType: 'HABITS',
       point: c.point,
-      active: c.isActive,
+      isActive: c.isActive,
     });
     setShowForm(true);
   }
@@ -70,9 +70,11 @@ export default function ChallengesTab() {
             recurrenceType: form.recurrenceType,
             targetCount: form.targetCount,
             point: form.point,
+            isActive: form.isActive,
           }),
         });
       } else {
+        console.log(form);
         await apiFetch(`${API_URL}/api/challenges/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -200,8 +202,8 @@ export default function ChallengesTab() {
               <label className="flex items-center gap-2 mt-2 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={form.active}
-                  onChange={(e) => setForm((f) => ({ ...f, active: e.target.checked }))}
+                  checked={form.isActive}
+                  onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))}
                   className="w-4 h-4 accent-primary rounded"
                 />
                 <span className="text-sm text-muted-foreground">활성 상태로 등록</span>
