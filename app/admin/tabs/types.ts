@@ -26,7 +26,7 @@ export interface ChallengeForm {
   dailyMaxCount: number;
   workType: WorkType;
   point: number;
-  active: boolean;
+  isActive: boolean;
 }
 
 export const defaultChallengeForm: ChallengeForm = {
@@ -38,7 +38,7 @@ export const defaultChallengeForm: ChallengeForm = {
   dailyMaxCount: 1,
   workType: 'HABITS',
   point: 10,
-  active: true,
+  isActive: true,
 };
 
 export interface Reward {
