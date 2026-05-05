@@ -1,20 +1,18 @@
 'use client';
 
-import { Challenge, ChallengeType } from '../types/todo';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Challenge, ChallengeType } from '@/app/types/todo';
 
 interface ChallengeCardProps {
   challenge: Challenge;
-  onClaim?: (id: string) => void;
 }
 
-export default function ChallengeCard({ challenge, onClaim }: ChallengeCardProps) {
+export default function ChallengeCard({ challenge }: ChallengeCardProps) {
   const progress = Math.min((challenge.currentCount / challenge.targetCount) * 100, 100);
-  const isCompleted = challenge.completed || challenge.currentCount >= challenge.targetCount;
-  const canClaim = !challenge.completed && challenge.currentCount >= challenge.targetCount;
+  const hasReachedTarget = challenge.currentCount >= challenge.targetCount;
+  const isCompleted = challenge.completed || hasReachedTarget;
 
   const getTypeBadgeCls = (type: ChallengeType) => {
     switch (type) {
@@ -61,7 +59,7 @@ export default function ChallengeCard({ challenge, onClaim }: ChallengeCardProps
     `}
     >
       {challenge.completed && (
-        <Badge className="absolute top-3 right-3 bg-amber-500 text-white text-xs">✓ 완료</Badge>
+        <Badge className="absolute top-3 right-3 bg-amber-500 text-white text-xs">받기완료!</Badge>
       )}
 
       <div className="flex items-start gap-4">
@@ -98,19 +96,21 @@ export default function ChallengeCard({ challenge, onClaim }: ChallengeCardProps
             <Progress value={progress} className="h-2" glow />
           </div>
 
-          {/* 보상 & 버튼 */}
+          {/* 보상 상태 */}
           <div className="flex items-center justify-between">
             <span className="text-sm font-bold text-amber-600 dark:text-amber-400">
               +{challenge.rewardPoints}pt
             </span>
-            {canClaim && onClaim && (
-              <Button
-                onClick={() => onClaim(challenge.id)}
-                size="sm"
-                className="bg-amber-500 hover:bg-amber-600 text-white"
-              >
-                보상 받기
-              </Button>
+            {challenge.completed ? (
+              <span className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+                받기완료!
+              </span>
+            ) : hasReachedTarget ? (
+              <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                지급 처리 중...
+              </span>
+            ) : (
+              <span className="text-xs text-muted-foreground">달성 시 자동 지급</span>
             )}
           </div>
         </div>
