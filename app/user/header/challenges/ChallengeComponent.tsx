@@ -1,30 +1,17 @@
+import { Challenge } from '@/app/types/todo';
 import ChallengeCard from './ChallengeCard';
-import { Challenge } from '../types/todo';
 
 export default function ChallengeComponent({
   title,
   challengeOptions,
   comment,
-  userStats,
   loading = false,
 }: {
   title: string;
   challengeOptions: Challenge[];
   comment: string;
-  userStats: (rewardPoints: number) => void;
   loading?: boolean;
 }) {
-  //TODO: Complete Challenge Logic
-  const handleClaimChallenge = (id: string) => {
-    const challenge = challengeOptions.find((c) => c.id === id);
-    if (challenge && !challenge.completed && 0 >= challenge.targetCount) {
-      userStats(challenge.rewardPoints);
-      alert(`🎉 도전과제 완료! +${challenge.rewardPoints} 포인트 획득!`);
-    } else {
-      alert('도전과제 달성안됨');
-    }
-  };
-
   return (
     <div className="mb-8">
       <div className="mb-3">
@@ -45,11 +32,7 @@ export default function ChallengeComponent({
       ) : (
         <div className="grid grid-cols-1 gap-3">
           {challengeOptions.map((challenge) => (
-            <ChallengeCard
-              key={challenge.id}
-              challenge={challenge}
-              onClaim={handleClaimChallenge}
-            />
+            <ChallengeCard key={challenge.id} challenge={challenge} />
           ))}
         </div>
       )}
