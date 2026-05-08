@@ -74,7 +74,7 @@ export default function Header({
                     mainTab === 'tasks' ? 'scale-105' : 'hover:scale-105'
                   }`}
                 >
-                  📝 작업
+                  작업
                 </Button>
                 <Button
                   onClick={() => onTabChange('challenges')}
@@ -83,7 +83,7 @@ export default function Header({
                     mainTab === 'challenges' ? 'scale-105' : 'hover:scale-105'
                   }`}
                 >
-                  🏆 도전과제
+                  도전과제
                 </Button>
                 <Button
                   onClick={() => onTabChange('rewards')}
@@ -92,7 +92,7 @@ export default function Header({
                     mainTab === 'rewards' ? 'scale-105' : 'hover:scale-105'
                   }`}
                 >
-                  🎁 보상
+                  보상
                 </Button>
               </div>
             )}
@@ -161,7 +161,7 @@ export default function Header({
                       mainTab === 'tasks' ? 'scale-105' : 'hover:scale-105'
                     }`}
                   >
-                    📝 작업
+                    작업
                   </Button>
                   <Button
                     onClick={() => handleMobileTabClick('challenges')}
@@ -170,7 +170,7 @@ export default function Header({
                       mainTab === 'challenges' ? 'scale-105' : 'hover:scale-105'
                     }`}
                   >
-                    🏆 도전과제
+                    도전과제
                   </Button>
                   <Button
                     onClick={() => handleMobileTabClick('rewards')}
@@ -179,7 +179,7 @@ export default function Header({
                       mainTab === 'rewards' ? 'scale-105' : 'hover:scale-105'
                     }`}
                   >
-                    🎁 보상
+                    보상
                   </Button>
                 </>
               )}
@@ -193,7 +193,7 @@ export default function Header({
                   {user?.role === 'ADMIN' && (
                     <Button asChild variant="outline" className="w-full" size="sm">
                       <Link href={isAdminPage ? '/' : '/admin'}>
-                        {isAdminPage ? '🏠 메인으로' : '⚙️ 관리자 페이지'}
+                        {isAdminPage ? '메인으로' : '관리자 페이지'}
                       </Link>
                     </Button>
                   )}
