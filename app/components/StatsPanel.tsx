@@ -1,22 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useAuthStore } from '@/app/store/authStore';
-import { apiFetch } from '@/app/lib/apiClient';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-interface RewardItem {
+export interface RewardItem {
   id: number;
   name: string;
   type: 'COUPON' | 'POINT';
   point: number;
   description: string;
+  discount?: boolean;
+  discountRate?: number;
+  used?: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
-interface ChallengeItem {
+export interface ChallengeItem {
   id: number;
   name: string;
   description: string;
@@ -25,61 +22,21 @@ interface ChallengeItem {
   targetCount: number;
   point: number;
   isActive: boolean;
+  currentCount?: number;
+  achieved?: boolean;
+  periodType?: string;
+  periodKey?: string;
   achievedAt?: string;
 }
 
 interface StatsPanelProps {
-  totalPoints: number; // fallback (local mock)
+  totalPoints: number;
+  rewards: RewardItem[];
+  challenges: ChallengeItem[];
+  loading: boolean;
 }
 
-export default function StatsPanel({ totalPoints: fallbackPoints }: StatsPanelProps) {
-  const { isAuthenticated } = useAuthStore();
-  const [rewards, setRewards] = useState<RewardItem[]>([]);
-  const [challenges, setChallenges] = useState<ChallengeItem[]>([]);
-  const [serverPoints, setServerPoints] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setLoading(false);
-      return;
-    }
-
-    async function fetchData() {
-      try {
-        const [rewardsRes, challengesRes, pointsRes] = await Promise.all([
-          apiFetch(`${API_URL}/api/user/rewards/`),
-          apiFetch(`${API_URL}/api/user/challenges/achieved`),
-          apiFetch(`${API_URL}/api/user/points/`),
-        ]);
-
-        if (rewardsRes.ok) {
-          const rewardsData = await rewardsRes.json();
-          setRewards((rewardsData.data ?? []).slice(0, 5));
-        }
-
-        if (challengesRes.ok) {
-          const challengesData = await challengesRes.json();
-          setChallenges((challengesData.data ?? []).slice(0, 5));
-        }
-
-        if (pointsRes.ok) {
-          const data = await pointsRes.json();
-          const pts = data.data;
-          if (typeof pts === 'number') setServerPoints(pts);
-        }
-      } catch {
-        // 네트워크 오류 시 빈 목록 유지
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, [isAuthenticated]);
-
-  const displayPoints = serverPoints !== null ? serverPoints : fallbackPoints;
-
+export default function StatsPanel({ totalPoints, rewards, challenges, loading }: StatsPanelProps) {
   function formatDate(dateStr: string) {
     const d = new Date(dateStr);
     return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
@@ -101,7 +58,7 @@ export default function StatsPanel({ totalPoints: fallbackPoints }: StatsPanelPr
         </p>
         <div className="flex items-baseline gap-1">
           <span className="text-3xl font-bold text-stone-800 dark:text-white tabular-nums">
-            {displayPoints.toLocaleString()}
+            {totalPoints.toLocaleString()}
           </span>
           <span className="text-sm text-stone-400 dark:text-stone-500 font-medium">pt</span>
         </div>
@@ -136,7 +93,12 @@ export default function StatsPanel({ totalPoints: fallbackPoints }: StatsPanelPr
                       {r.name}
                     </p>
                     <p className="text-xs text-stone-400 dark:text-stone-500">
-                      {r.type === 'COUPON' ? '쿠폰' : '포인트'} · {r.point.toLocaleString()}pt
+                      {r.discount && r.discountRate
+                        ? `${r.discountRate}% 할인`
+                        : r.type === 'COUPON'
+                          ? '쿠폰'
+                          : '포인트'}
+                      · {r.point.toLocaleString()}pt
                     </p>
                   </div>
                 </div>
@@ -177,7 +139,9 @@ export default function StatsPanel({ totalPoints: fallbackPoints }: StatsPanelPr
                     {c.name}
                   </p>
                   <p className="text-xs text-stone-400 dark:text-stone-500">
-                    {recurrenceLabel(c.recurrenceType)} · {c.point}pt
+                    {recurrenceLabel(c.periodType ?? c.recurrenceType)}
+                    {typeof c.currentCount === 'number' && ` · ${c.currentCount}/${c.targetCount}`}
+                    {` · ${c.point}pt`}
                   </p>
                 </div>
                 {c.achievedAt && (
