@@ -12,6 +12,7 @@ export interface ChallengesApiResponse {
   targetCount: number;
   point: number;
   isActive: boolean;
+  isAchieved: boolean;
 }
 
 export interface UserChallengeProgressResponse extends ChallengesApiResponse {
@@ -35,7 +36,7 @@ export function mapUserChallengeProgress(c: UserChallengeProgressResponse): Chal
     targetCount: c.targetCount,
     currentCount: c.currentCount,
     rewardPoints: c.point,
-    completed: c.completed,
+    completed: c.isAchieved,
     iconUrl: c.icon,
   };
 }
