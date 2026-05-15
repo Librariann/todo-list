@@ -10,7 +10,7 @@ import { calculateProgressMetrics, calculateDailyPoints } from './lib/rewardUtil
 import HabitCard from './components/HabitCard';
 import GoalCard from './components/GoalCard';
 import SimpleTodoCard from './components/SimpleTodoCard';
-import StatsPanel from './components/StatsPanel';
+import StatsPanel, { type ChallengeItem, type RewardItem } from './components/StatsPanel';
 import RewardShop from './components/RewardShop';
 
 import AddTaskModal from './components/AddTaskModal';
@@ -25,9 +25,7 @@ import {
   ChallengeType,
   Challenge,
   TaskType,
-  UserStats,
 } from './types/todo';
-import { mockUserStats } from './lib/mockData';
 import { fetchHabits, createHabit, incrementHabit, decrementHabit } from './lib/habitsApi';
 import { fetchRewards, redeemReward } from './lib/rewardsApi';
 import { fetchUserChallengeProgress } from './lib/challengesApi';
@@ -39,15 +37,31 @@ import {
   deleteTodo,
   fetchCompletedDatesInMonth,
 } from './lib/todosApi';
-
-import ChallengeComponent from './components/ChallengeComponent';
 import { apiFetch } from './lib/apiClient';
 import { useThemeStore } from './store/themeStore';
 import { THEME_NAME } from '@/lib/constant';
+import ChallengeComponent from './user/header/challenges/ChallengeComponent';
 
 type TaskTabType = 'habits' | 'goals' | 'todos';
 type MainTabType = 'tasks' | 'rewards' | 'challenges';
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+type SummaryChallengeResponse = Omit<ChallengeItem, 'isActive' | 'achievedAt'> & {
+  active: boolean;
+  achievedAt?: string;
+};
+
+interface UserSummaryResponse {
+  points: number;
+  rewards?: RewardItem[];
+  achievedChallenges?: SummaryChallengeResponse[];
+}
+
+interface UserSummaryState {
+  points: number;
+  rewards: RewardItem[];
+  achievedChallenges: ChallengeItem[];
+}
 
 export default function Home() {
   const { isAuthenticated, user } = useAuthStore();
@@ -70,8 +84,6 @@ export default function Home() {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [userStats, setUserStats] = useState(mockUserStats);
-  const [userPoints, setUserPoints] = useState(0);
   const [mainTab, setMainTab] = useState<MainTabType>('tasks');
   const [taskTab, setTaskTab] = useState<TaskTabType>('habits');
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
@@ -86,37 +98,40 @@ export default function Home() {
   const [todosLoading, setTodosLoading] = useState(false);
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [rewardsLoading, setRewardsLoading] = useState(false);
+  const [userSummary, setUserSummary] = useState<UserSummaryState>({
+    points: 0,
+    rewards: [],
+    achievedChallenges: [],
+  });
+  const [statsLoading, setStatsLoading] = useState(false);
 
   const [completedTodoDates, setCompletedTodoDates] = useState<Set<string>>(new Set());
-  const handleDataLoaded = useCallback(
-    (data: { todos: Todo[]; habits: Habit[]; goals: Goal[]; userStats: UserStats }) => {
-      setUserStats(data.userStats);
-    },
-    []
-  );
 
-  const { isLoaded } = useDataPersistence({
-    todos,
-    habits,
-    goals,
-    userStats,
-    onDataLoaded: handleDataLoaded,
-  });
-
-  //userPoints
+  // 사용자 요약 정보
   useEffect(() => {
     if (!isAuthenticated) return;
     async function fetchData() {
+      setStatsLoading(true);
       try {
-        const pointsRes = await apiFetch(`${API_URL}/api/user/points/`);
+        const res = await apiFetch(`${API_URL}/api/user/summary/`);
+        if (!res.ok) return;
 
-        if (pointsRes.ok) {
-          const data = await pointsRes.json();
-          const pts = data.data;
-          if (typeof pts === 'number') setUserPoints(pts);
-        }
+        const json = await res.json();
+        const data = (json.data ?? {}) as UserSummaryResponse;
+
+        setUserSummary({
+          points: typeof data.points === 'number' ? data.points : 0,
+          rewards: (data.rewards ?? []).slice(0, 5),
+          achievedChallenges: (data.achievedChallenges ?? []).slice(0, 5).map((challenge) => ({
+            ...challenge,
+            isActive: challenge.active,
+            achievedAt: challenge.achievedAt ?? challenge.periodKey,
+          })),
+        });
       } catch {
         // 네트워크 오류 시 빈 목록 유지
+      } finally {
+        setStatsLoading(false);
       }
     }
 
@@ -127,7 +142,10 @@ export default function Home() {
     if (!isAuthenticated) return;
     setChallengesLoading(true);
     fetchUserChallengeProgress()
-      .then((data) => setApiChallenges(data))
+      .then((data) => {
+        setApiChallenges(data);
+        console.log(data);
+      })
       .catch((err) => console.error('도전과제 로드 실패:', err))
       .finally(() => setChallengesLoading(false));
   }, [isAuthenticated]);
@@ -245,6 +263,10 @@ export default function Home() {
     try {
       const updated = await incrementHabit(id);
       setHabits((prev) => prev.map((h) => (h.id === id ? updated : h)));
+
+      //완료가 됐을때 도전과제 달성도 데이터 불러옴
+      if (updated.dailyTarget === updated.positiveCount) {
+      }
     } catch {
       setHabits((prev) => prev.map((h) => (h.id === id ? updateHabitProgress(h, -1) : h)));
     }
@@ -353,24 +375,22 @@ export default function Home() {
 
   // 보상 교환
   const handleClaimReward = async (reward: Reward) => {
-    if (userPoints < reward.value) return;
-    const prevPoints = userPoints;
+    if (userSummary.points < reward.value) {
+      toast.error('포인트가 부족합니다. 포인트를 모아주세요');
+      return;
+    }
+    const prevSummary = userSummary;
     // 낙관적 UI 업데이트
-    setUserPoints((prev) => prev - reward.value);
-    setUserStats((prev) => ({
+    setUserSummary((prev) => ({
       ...prev,
-      earnedRewards: [...prev.earnedRewards, reward],
+      points: prev.points - reward.value,
     }));
     try {
       await redeemReward(reward.id);
       toast.success(`${reward.name}을(를) 획득했습니다!`);
     } catch {
       // 실패 시 롤백
-      setUserPoints(prevPoints);
-      setUserStats((prev) => ({
-        ...prev,
-        earnedRewards: prev.earnedRewards.filter((r) => r.id !== reward.id),
-      }));
+      setUserSummary(prevSummary);
       toast.error('오류가 발생했습니다. 다시 시도해주세요.');
     }
   };
@@ -440,13 +460,6 @@ export default function Home() {
     }
   };
 
-  const handleUserStats = (rewardPoints: number) => {
-    setUserStats((item) => ({
-      ...item,
-      totalPoints: item.totalPoints + rewardPoints,
-    }));
-  };
-
   useEffect(() => {
     if (!mounted) return;
     if (!isAuthenticated) {
@@ -454,7 +467,16 @@ export default function Home() {
     }
   }, [isAuthenticated, mounted, router]);
 
-  if (!mounted || !isLoaded) {
+  useEffect(() => {
+    async function updateProgress() {
+      const userChallengeData = await fetchUserChallengeProgress();
+      setApiChallenges(userChallengeData);
+    }
+
+    updateProgress();
+  }, [mainTab]);
+
+  if (!mounted) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -484,7 +506,12 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* 왼쪽: 통계 & 날짜 선택 */}
           <div className="lg:col-span-1 space-y-6">
-            <StatsPanel totalPoints={userPoints} />
+            <StatsPanel
+              totalPoints={userSummary.points}
+              rewards={userSummary.rewards}
+              challenges={userSummary.achievedChallenges}
+              loading={statsLoading}
+            />
 
             {/* 날짜 선택 달력 (목표/할일 탭일 때만 표시) */}
             {mainTab === 'tasks' && (taskTab === 'goals' || taskTab === 'todos') && (
@@ -513,7 +540,7 @@ export default function Home() {
                           : 'bg-muted text-muted-foreground hover:bg-muted/70'
                       }`}
                     >
-                      ⚡ 습관
+                      습관
                     </button>
                     <button
                       onClick={() => setTaskTab('goals')}
@@ -523,7 +550,7 @@ export default function Home() {
                           : 'bg-muted text-muted-foreground hover:bg-muted/70'
                       }`}
                     >
-                      📅 목표
+                      목표
                     </button>
                     <button
                       onClick={() => setTaskTab('todos')}
@@ -533,7 +560,7 @@ export default function Home() {
                           : 'bg-muted text-muted-foreground hover:bg-muted/70'
                       }`}
                     >
-                      📋 할일
+                      할일
                     </button>
                   </div>
                 </div>
@@ -544,7 +571,7 @@ export default function Home() {
                     <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div>
                         <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                          ⚡ 습관 (Habits)
+                          습관 (Habits)
                         </h2>
                         <p className="text-sm text-muted-foreground mt-1">
                           반복하고 싶은 긍정적 습관이나 줄이고 싶은 부정적 습관을 추적하세요
@@ -588,7 +615,7 @@ export default function Home() {
                     <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div>
                         <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                          📅 목표 ({formatDate(selectedDate)})
+                          목표 ({formatDate(selectedDate)})
                         </h2>
                         <p className="text-sm text-muted-foreground mt-1">
                           매일/매주/매월 반복되는 목표를 관리하세요
@@ -627,7 +654,7 @@ export default function Home() {
                     <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div>
                         <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                          📋 할 일 ({formatDate(selectedDate)})
+                          할 일 ({formatDate(selectedDate)})
                         </h2>
                         <p className="text-sm text-muted-foreground mt-1">
                           일회성 작업을 추가하고 완료하세요
@@ -671,28 +698,25 @@ export default function Home() {
               <div>
                 {/* 일일 도전과제 */}
                 <ChallengeComponent
-                  title="📅 일일 도전과제"
+                  title="일일 도전과제"
                   challengeOptions={dailyChallenges}
                   comment={'매일 자정에 초기화됩니다'}
-                  userStats={handleUserStats}
                   loading={challengesLoading}
                 />
 
                 {/* 주간 도전과제 */}
                 <ChallengeComponent
-                  title="🗓️ 주간 도전과제"
+                  title="주간 도전과제"
                   challengeOptions={weeklyChallenges}
                   comment={'매주 월요일에 초기화됩니다'}
-                  userStats={handleUserStats}
                   loading={challengesLoading}
                 />
 
                 {/* 월간 도전과제 */}
                 <ChallengeComponent
-                  title="📆 월간 도전과제"
+                  title="월간 도전과제"
                   challengeOptions={monthlyChallenges}
                   comment={'매달 1일에 초기화됩니다'}
-                  userStats={handleUserStats}
                   loading={challengesLoading}
                 />
               </div>
@@ -700,7 +724,7 @@ export default function Home() {
               /* 보상 탭 */
               <RewardShop
                 rewards={rewardsLoading ? [] : rewards}
-                userPoints={userPoints}
+                userPoints={userSummary.points}
                 onClaim={handleClaimReward}
               />
             )}
