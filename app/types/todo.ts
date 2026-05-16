@@ -105,7 +105,7 @@ export interface Challenge {
   targetCount: number; // 목표 횟수/개수
   currentCount: number; // 현재 달성 횟수/개수
   rewardPoints: number; // 완료 시 보상 포인트
-  completed: boolean; // 완료 여부
+  completed?: boolean; // 완료 여부
   iconUrl?: string;
   resetDate?: string; // 리셋 날짜 (YYYY-MM-DD)
 }
