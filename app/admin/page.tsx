@@ -40,8 +40,6 @@ export default function AdminPage() {
       <Header
         mainTab="tasks"
         onTabChange={() => {}}
-        taskTab="home"
-        onTaskTabChange={() => {}}
         isMobileMenuOpen={false}
         onMobileMenuToggle={() => {}}
       />
