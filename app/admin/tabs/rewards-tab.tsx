@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from '@/app/lib/apiClient';
 import { ActionBtn, Field } from './components';
 import { Reward, RewardForm, RewardType, defaultRewardForm } from './types';
+import ConfirmModal from '@/app/components/ConfirmModal';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -15,6 +16,7 @@ export default function RewardsTab() {
   const [form, setForm] = useState<RewardForm>(defaultRewardForm);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Reward | null>(null);
 
   const fetchList = useCallback(async () => {
     setLoading(true);
@@ -85,10 +87,10 @@ export default function RewardsTab() {
   }
 
   async function handleDelete(id: number) {
-    if (!confirm('이 보상을 삭제하시겠습니까?')) return;
     setDeletingId(id);
     try {
-      await apiFetch(`${API_URL}/api/rewards/${id}`, { method: 'DELETE' });
+      const response = await apiFetch(`${API_URL}/api/rewards/${id}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('보상을 삭제하지 못했어요.');
       await fetchList();
     } finally {
       setDeletingId(null);
@@ -246,7 +248,7 @@ export default function RewardsTab() {
               </div>
               <div className="flex gap-1.5 shrink-0">
                 <ActionBtn onClick={() => openEdit(r)}>수정</ActionBtn>
-                <ActionBtn danger onClick={() => handleDelete(r.id)} disabled={deletingId === r.id}>
+                <ActionBtn danger onClick={() => setDeleteTarget(r)} disabled={deletingId === r.id}>
                   {deletingId === r.id ? '...' : '삭제'}
                 </ActionBtn>
               </div>
@@ -254,6 +256,22 @@ export default function RewardsTab() {
           ))}
         </div>
       )}
+      <ConfirmModal
+        open={deleteTarget !== null}
+        title="이 보상을 삭제할까요?"
+        description={
+          deleteTarget
+            ? `‘${deleteTarget.name}’ 보상을 교환 목록에서 삭제해요.`
+            : '선택한 보상을 삭제해요.'
+        }
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+        onConfirm={() => {
+          if (!deleteTarget) return;
+          return handleDelete(deleteTarget.id);
+        }}
+      />
     </div>
   );
 }
