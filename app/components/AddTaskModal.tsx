@@ -18,16 +18,25 @@ interface AddTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   taskType: TaskType;
+  selectedDate: string;
   onAdd: (task: Habit | Goal | Todo) => void;
 }
 
-export default function AddTaskModal({ isOpen, onClose, taskType, onAdd }: AddTaskModalProps) {
+export default function AddTaskModal({
+  isOpen,
+  onClose,
+  taskType,
+  selectedDate,
+  onAdd,
+}: AddTaskModalProps) {
   const [title, setTitle] = useState('');
   const [frequency, setFrequency] = useState<GoalFrequency>(GoalFrequency.DAILY);
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [dailyTarget, setDailyTarget] = useState(5);
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -58,6 +67,7 @@ export default function AddTaskModal({ isOpen, onClose, taskType, onAdd }: AddTa
         frequency,
         completedDates: [],
         streak: 0,
+        startDate: selectedDate,
         createdAt: now,
       };
       onAdd(newGoal);
@@ -66,7 +76,7 @@ export default function AddTaskModal({ isOpen, onClose, taskType, onAdd }: AddTa
         id: `t${Date.now()}`,
         title: title.trim(),
         status: TodoStatus.TODO,
-        date,
+        date: selectedDate,
         createdAt: now,
       };
       onAdd(newTodo);
@@ -75,7 +85,6 @@ export default function AddTaskModal({ isOpen, onClose, taskType, onAdd }: AddTa
     // 초기화
     setTitle('');
     setFrequency(GoalFrequency.DAILY);
-    setDate(new Date().toISOString().split('T')[0]);
     setDailyTarget(5);
     onClose();
   };
@@ -155,15 +164,12 @@ export default function AddTaskModal({ isOpen, onClose, taskType, onAdd }: AddTa
             </div>
           )}
 
-          {/* 할일 날짜 선택 */}
-          {taskType === TaskType.TODO && (
-            <div>
-              <Label htmlFor="date" className="text-sm font-medium mb-2">
-                날짜
-              </Label>
-              <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-            </div>
-          )}
+          {taskType === TaskType.TODO ? (
+            <p className="rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground">
+              할 일은 {Number(selectedDate.split('-')[1])}월 {Number(selectedDate.split('-')[2])}
+              일로 등록됩니다.
+            </p>
+          ) : null}
 
           {/* 버튼 */}
           <div className="flex gap-3 pt-4">
