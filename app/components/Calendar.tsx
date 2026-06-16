@@ -8,7 +8,7 @@ import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 interface CalendarProps {
   selectedDate: string;
   onDateSelect: (date: string) => void;
-  markedDates: string[]; // 데이터가 있는 날짜들
+  // markedDates?: string[]; // 데이터가 있는 날짜들
   currentMonth: Date;
   onMonthChange: (date: Date) => void;
 }
@@ -16,7 +16,7 @@ interface CalendarProps {
 export default function Calendar({
   selectedDate,
   onDateSelect,
-  markedDates,
+  // markedDates,
   currentMonth,
   onMonthChange,
 }: CalendarProps) {
@@ -69,9 +69,9 @@ export default function Calendar({
     return toDateString(date) === selectedDate;
   };
 
-  const hasData = (date: Date) => {
-    return markedDates.includes(toDateString(date));
-  };
+  // const hasData = (date: Date) => {
+  //   return markedDates.includes(toDateString(date));
+  // };
 
   const goToPreviousMonth = () => {
     const newDate = new Date(currentMonth);
@@ -154,7 +154,7 @@ export default function Calendar({
           const isSaturday = date.getDay() === 6;
           const todayFlag = isToday(date);
           const selectedFlag = isSelected(date);
-          const dataFlag = hasData(date);
+          // const dataFlag = hasData(date);
 
           return (
             <Button
@@ -179,9 +179,9 @@ export default function Calendar({
             >
               <span className="block">{date.getDate()}</span>
               {/* 데이터 있음 표시 점 */}
-              {dataFlag && !selectedFlag && (
+              {/* {dataFlag && !selectedFlag && (
                 <span className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
-              )}
+              )} */}
             </Button>
           );
         })}
