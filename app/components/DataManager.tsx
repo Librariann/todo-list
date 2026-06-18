@@ -13,12 +13,14 @@ import {
 } from '@/components/ui/dialog';
 import { Download, Upload, Trash2 } from 'lucide-react';
 import { getUserStorage } from '@/app/lib/storage';
+import ConfirmModal from '@/app/components/ConfirmModal';
 
 export default function DataManager() {
   const { user } = useAuthStore();
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [exportResult, setExportResult] = useState<string>('');
+  const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false);
 
   const handleExport = async () => {
     if (!user?.email) return;
@@ -79,17 +81,15 @@ export default function DataManager() {
   const handleClearData = () => {
     if (!user?.email) return;
 
-    if (confirm('정말로 모든 데이터를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
-      const userId = user.email;
-      const storage = getUserStorage(userId);
+    const userId = user.email;
+    const storage = getUserStorage(userId);
 
-      if (storage && storage.clearAllData()) {
-        alert('모든 데이터가 삭제되었습니다. 페이지를 새로고침해주세요.');
-        window.location.reload();
-      } else {
-        alert('데이터 삭제에 실패했습니다.');
-      }
+    if (storage && storage.clearAllData()) {
+      window.location.reload();
+      return;
     }
+
+    throw new Error('데이터를 삭제하지 못했어요.');
   };
   const getDataSize = () => {
     if (!user?.email) return '0KB';
@@ -163,7 +163,7 @@ export default function DataManager() {
               </div>
 
               <Button
-                onClick={handleClearData}
+                onClick={() => setIsClearConfirmOpen(true)}
                 variant="destructive"
                 className="w-full justify-start"
               >
@@ -186,6 +186,16 @@ export default function DataManager() {
           </div>
         </Card>
       </DialogContent>
+      <ConfirmModal
+        open={isClearConfirmOpen}
+        title="저장된 데이터를 모두 삭제할까요?"
+        description="이 브라우저에 저장된 할 일, 목표, 습관 기록을 모두 지워요."
+        warning="모든 기록이 사라지며 다시 되돌릴 수 없어요."
+        confirmLabel="모두 삭제하기"
+        pendingLabel="삭제하는 중..."
+        onOpenChange={setIsClearConfirmOpen}
+        onConfirm={handleClearData}
+      />
     </Dialog>
   );
 }
