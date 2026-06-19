@@ -3,10 +3,10 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { ProgressMetrics, getRewardTier, generateAchievements } from '../lib/rewardUtils';
+import { IProgressMetrics, getRewardTier, generateAchievements } from '../lib/rewardUtils';
 
 interface EnhancedStatsCardProps {
-  metrics: ProgressMetrics;
+  metrics: IProgressMetrics;
   totalPoints: number;
 }
 
@@ -38,15 +38,15 @@ export default function EnhancedStatsCard({ metrics, totalPoints }: EnhancedStat
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-              <div className="flex items-center gap-2">
-                <Badge className={`${getTierColor()} font-semibold`}>{tierInfo.tier} 티어</Badge>
-                <span className="text-2xl font-bold">{totalPoints.toLocaleString()}pt</span>
-              </div>
-              {tierInfo.tier !== '마스터' && (
-                <p className="text-sm text-muted-foreground">
-                  다음 티어까지 {tierInfo.nextTierPoints - totalPoints}pt
-                </p>
-              )}
+            <div className="flex items-center gap-2">
+              <Badge className={`${getTierColor()} font-semibold`}>{tierInfo.tier} 티어</Badge>
+              <span className="text-2xl font-bold">{totalPoints.toLocaleString()}pt</span>
+            </div>
+            {tierInfo.tier !== '마스터' && (
+              <p className="text-sm text-muted-foreground">
+                다음 티어까지 {tierInfo.nextTierPoints - totalPoints}pt
+              </p>
+            )}
           </div>
           <div className="text-right">
             <div className="text-emerald-600">
