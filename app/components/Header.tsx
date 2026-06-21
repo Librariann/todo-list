@@ -3,19 +3,15 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, Shield } from 'lucide-react';
+import { LogOut, Shield, Ticket, UserRound } from 'lucide-react';
 import ThemeToggleStandalone from './ThemeToggleStandalone';
 import { useAuthStore } from '../store/authStore';
 import { apiFetch } from '../lib/apiClient';
-
-type MainTabType = 'tasks' | 'rewards' | 'challenges';
-type TaskTabType = 'home' | 'habits' | 'goals' | 'todos';
+import type { MainTabType } from '../types/navigation';
 
 interface HeaderProps {
   mainTab: MainTabType;
   onTabChange: (tab: MainTabType) => void;
-  taskTab?: TaskTabType;
-  onTaskTabChange?: (tab: TaskTabType) => void;
   isMobileMenuOpen: boolean;
   onMobileMenuToggle: () => void;
 }
@@ -24,14 +20,13 @@ const navigation: Array<{
   key: string;
   label: string;
   mainTab: MainTabType;
-  taskTab?: TaskTabType;
 }> = [
   { key: 'home', label: '오늘', mainTab: 'tasks' },
   { key: 'challenges', label: '챌린지', mainTab: 'challenges' },
-  { key: 'rewards', label: '포인트', mainTab: 'rewards' },
+  { key: 'rewards', label: '보상', mainTab: 'rewards' },
 ];
 
-export default function Header({ mainTab, onTabChange, onTaskTabChange }: HeaderProps) {
+export default function Header({ mainTab, onTabChange }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, isAuthenticated, clearAuth, accessToken, setUser } = useAuthStore();
@@ -76,7 +71,6 @@ export default function Header({ mainTab, onTabChange, onTaskTabChange }: Header
 
   const handleNavigate = (item: (typeof navigation)[number]) => {
     onTabChange(item.mainTab);
-    if (item.taskTab) onTaskTabChange?.(item.taskTab);
   };
 
   const isItemActive = (item: (typeof navigation)[number]) => item.mainTab === mainTab;
@@ -125,11 +119,28 @@ export default function Header({ mainTab, onTabChange, onTaskTabChange }: Header
                 <span className="hidden sm:inline">{isAdminPage ? '홈으로' : '관리자'}</span>
               </Link>
             )}
-            {isAuthenticated && (
-              <span className="hidden max-w-36 truncate rounded-full bg-muted px-3 py-2 text-sm font-medium text-foreground lg:block">
-                {user?.username || '사용자'}님
-              </span>
-            )}
+            {isAuthenticated ? (
+              <Link
+                href="/coupons"
+                className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-bold text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:px-4"
+                aria-label="내 쿠폰함으로 이동"
+              >
+                <Ticket className="h-4 w-4" />
+                <span className="hidden sm:inline">쿠폰함</span>
+              </Link>
+            ) : null}
+            {isAuthenticated ? (
+              <Link
+                href="/profile"
+                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-muted px-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary sm:px-4"
+                aria-label="내 정보 설정으로 이동"
+              >
+                <UserRound className="h-4 w-4" />
+                <span className="hidden max-w-36 truncate lg:block">
+                  {user?.username || '사용자'}님
+                </span>
+              </Link>
+            ) : null}
             <ThemeToggleStandalone />
             {isAuthenticated && (
               <button
