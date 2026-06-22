@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Reward } from '../types/todo';
+import { calculateRewardPoint, fetchRewards, redeemReward } from '../lib/rewardsApi';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,22 +15,62 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { toast } from 'sonner';
+import { useUserSummaryStore } from '../store/userSummaryStore';
 
-interface RewardShopProps {
-  rewards: Reward[];
-  userPoints: number;
-  onClaim: (reward: Reward) => void;
-}
-
-export default function RewardShop({ rewards, userPoints, onClaim }: RewardShopProps) {
+export default function RewardShop() {
+  const router = useRouter();
   const [selectedReward, setSelectedReward] = useState<Reward | null>(null);
+  const [rewards, setRewards] = useState<Reward[]>([]);
+  const userPoints = useUserSummaryStore((state) => state.points);
+  const adjustPoints = useUserSummaryStore((state) => state.adjustPoints);
+  const refreshSummary = useUserSummaryStore((state) => state.refreshSummary);
+
+  useEffect(() => {
+    const getRewardList = async () => {
+      const rewardRes = await fetchRewards();
+      setRewards(rewardRes);
+    };
+    getRewardList();
+  }, []);
 
   const closeDialog = () => setSelectedReward(null);
 
   const handleConfirmClaim = () => {
     if (!selectedReward) return;
-    onClaim(selectedReward);
+    handleClaimReward(selectedReward);
     closeDialog();
+  };
+
+  // 보상 교환
+  const handleClaimReward = async (reward: Reward) => {
+    const purchasePoint = calculateRewardPoint(reward);
+
+    if (userPoints < purchasePoint) {
+      toast.error('포인트가 부족합니다. 포인트를 모아주세요');
+      return;
+    }
+
+    //낙관적 차감
+    adjustPoints(-purchasePoint);
+
+    try {
+      await redeemReward(reward.id);
+      toast.success(`${reward.name}을(를) 획득했습니다!`, {
+        description: '내 쿠폰함에서 언제든 다시 확인할 수 있어요.',
+        action: {
+          label: '쿠폰함 보기',
+          onClick: () => router.push('/coupons'),
+        },
+      });
+
+      //서버 실제 포인트 동기화
+      await refreshSummary();
+    } catch {
+      // 실패 시 롤백
+      adjustPoints(purchasePoint);
+      toast.error('오류가 발생했습니다. 다시 시도해주세요.');
+    }
   };
 
   return (
@@ -36,7 +78,9 @@ export default function RewardShop({ rewards, userPoints, onClaim }: RewardShopP
       <section>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="friendly-heading text-2xl font-bold">작은 기쁨을 골라봐요</CardTitle>
+            <CardTitle className="friendly-heading text-2xl font-bold">
+              작은 기쁨을 골라봐요
+            </CardTitle>
             <Badge className="rounded-full bg-secondary px-4 py-2 text-base font-bold text-secondary-foreground">
               {userPoints} P
             </Badge>
@@ -45,7 +89,8 @@ export default function RewardShop({ rewards, userPoints, onClaim }: RewardShopP
         <CardContent>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {rewards.map((reward) => {
-              const canAfford = userPoints >= reward.value;
+              const purchasePoint = calculateRewardPoint(reward);
+              const canAfford = userPoints >= purchasePoint;
 
               return (
                 <Card
@@ -68,10 +113,20 @@ export default function RewardShop({ rewards, userPoints, onClaim }: RewardShopP
                   </div>
 
                   {/* 가격 */}
-                  <div className="mb-3 flex items-center px-5">
-                    <Badge variant="secondary" className="rounded-full font-bold text-primary">
-                      {reward.value} 포인트
-                    </Badge>
+                  <div className="mb-3 flex min-h-7 items-center gap-2 px-5">
+                    {reward.discount && reward.discountRate > 0 && (
+                      <Badge className="rounded-full bg-[oklch(0.91_0.09_55)] text-[oklch(0.43_0.15_42)] shadow-none dark:bg-[oklch(0.31_0.07_45)] dark:text-[oklch(0.86_0.08_60)]">
+                        {reward.discountRate}% 할인
+                      </Badge>
+                    )}
+                    <span className="font-bold text-primary">
+                      {purchasePoint.toLocaleString()} P
+                    </span>
+                    {purchasePoint !== reward.value && (
+                      <span className="text-xs text-muted-foreground line-through">
+                        {reward.value.toLocaleString()} P
+                      </span>
+                    )}
                   </div>
 
                   {/* 구매 버튼 */}
@@ -89,7 +144,7 @@ export default function RewardShop({ rewards, userPoints, onClaim }: RewardShopP
                   {/* 부족한 포인트 표시 */}
                   {!canAfford && (
                     <Badge className="absolute top-2 right-2 bg-destructive text-destructive-foreground text-xs font-bold">
-                      -{reward.value - userPoints}
+                      {purchasePoint - userPoints} P 부족
                     </Badge>
                   )}
                 </Card>
@@ -112,7 +167,7 @@ export default function RewardShop({ rewards, userPoints, onClaim }: RewardShopP
             <DialogTitle>보상을 교환할까요?</DialogTitle>
             <DialogDescription>
               {selectedReward
-                ? `${selectedReward.name} 보상을 ${selectedReward.value}포인트로 교환합니다.`
+                ? `${selectedReward.name} 보상을 ${calculateRewardPoint(selectedReward).toLocaleString()}포인트로 교환합니다.`
                 : '선택한 보상을 교환합니다.'}
             </DialogDescription>
           </DialogHeader>
@@ -124,9 +179,15 @@ export default function RewardShop({ rewards, userPoints, onClaim }: RewardShopP
                 <span className="font-semibold">{userPoints} P</span>
               </div>
               <div className="mt-2 flex items-center justify-between gap-3">
+                <span className="text-muted-foreground">교환 포인트</span>
+                <span className="font-semibold text-primary">
+                  -{calculateRewardPoint(selectedReward).toLocaleString()} P
+                </span>
+              </div>
+              <div className="mt-2 flex items-center justify-between gap-3 border-t pt-2">
                 <span className="text-muted-foreground">교환 후 포인트</span>
                 <span className="font-semibold text-foreground">
-                  {userPoints - selectedReward.value} P
+                  {(userPoints - calculateRewardPoint(selectedReward)).toLocaleString()} P
                 </span>
               </div>
             </div>
