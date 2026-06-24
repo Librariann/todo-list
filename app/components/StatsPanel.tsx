@@ -1,48 +1,19 @@
 'use client';
 
 import { Habit, Goal } from '../types/todo';
-import { ProgressMetrics } from '../lib/rewardUtils';
 import { calculateStreak, getProgressPercentage, getTodayProgress } from '../lib/habitUtils';
-
-export interface RewardItem {
-  id: number;
-  name: string;
-  type: 'COUPON' | 'POINT';
-  point: number;
-  description: string;
-  discount?: boolean;
-  discountRate?: number;
-  used?: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface ChallengeItem {
-  id: number;
-  name: string;
-  description: string;
-  icon: string;
-  recurrenceType: string;
-  targetCount: number;
-  point: number;
-  isActive: boolean;
-  currentCount?: number;
-  achieved?: boolean;
-  periodType?: string;
-  periodKey?: string;
-  achievedAt?: string;
-}
+import { useUserSummaryStore } from '../store/userSummaryStore';
 
 interface StatsPanelProps {
-  totalPoints: number;
+  loading: boolean;
   habits: Habit[];
   goals: Goal[];
-  completedTodoDates: ReadonlySet<string>;
-  metrics: ProgressMetrics;
-  loading: boolean;
+  // completedTodoDates: ReadonlySet<string>;
+  // metrics: ProgressMetrics;
 }
 
 const dayLabels = ['월', '화', '수', '목', '금', '토', '일'];
+
 function toDateString(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -51,17 +22,17 @@ function toDateString(date: Date): string {
 }
 
 export default function StatsPanel({
-  totalPoints,
+  loading,
   habits,
   goals,
-  completedTodoDates,
-  metrics,
-  loading,
+  // completedTodoDates,
+  // metrics,
 }: StatsPanelProps) {
   const today = new Date();
   const monday = new Date(today);
   const weekday = today.getDay() || 7;
   monday.setDate(today.getDate() - weekday + 1);
+  const totalPoints = useUserSummaryStore((summary) => summary.points);
 
   const week = dayLabels.map((label, index) => {
     const date = new Date(monday);
@@ -72,8 +43,10 @@ export default function StatsPanel({
 
     return {
       label,
-      active: hasHabit || hasGoal || completedTodoDates.has(dateString),
-      future: date > today,
+      // active: hasHabit || hasGoal || completedTodoDates.has(dateString),
+      active: false,
+      // future: date > today,
+      future: false,
     };
   });
 
@@ -82,9 +55,10 @@ export default function StatsPanel({
     ...habits.map((habit) => habit.streak ?? calculateStreak(habit)),
     ...goals.map((goal) => goal.streak)
   );
-  const completedCount =
-    metrics.habitsCompletedToday + metrics.goalsCompletedToday + metrics.todosCompletedToday;
-  const totalCount = metrics.totalHabitsToday + metrics.totalGoalsToday + metrics.totalTodosToday;
+  const completedCount = 0;
+  // metrics.habitsCompletedToday + metrics.goalsCompletedToday + metrics.todosCompletedToday;
+  // const totalCount = metrics.totalHabitsToday + metrics.totalGoalsToday + metrics.totalTodosToday;
+  const totalCount = 0;
 
   if (loading) {
     return (
@@ -103,13 +77,17 @@ export default function StatsPanel({
       </div>
 
       <h2 className="friendly-heading mt-12 text-3xl leading-tight tracking-[-0.04em]">
-        매일 두드리는<br />작은 문들
+        매일 두드리는
+        <br />
+        작은 문들
       </h2>
 
       <div className="mt-9 divide-y divide-white/12">
         {habits.length === 0 ? (
           <p className="py-8 text-sm leading-6 text-[#aeb9b1]">
-            아직 습관이 없어요.<br />작은 행동 하나를 만들어보세요.
+            아직 습관이 없어요.
+            <br />
+            작은 행동 하나를 만들어보세요.
           </p>
         ) : (
           habits.slice(0, 4).map((habit) => {
@@ -143,12 +121,16 @@ export default function StatsPanel({
             <p className="text-xs text-[#aeb9b1]">오늘의 흐름</p>
             <p className="friendly-heading mt-2 text-3xl font-bold">{completedCount}개 완료</p>
           </div>
-          <p className="text-sm font-bold tabular-nums text-[#79c995]">{completedCount} / {totalCount}</p>
+          <p className="text-sm font-bold tabular-nums text-[#79c995]">
+            {completedCount} / {totalCount}
+          </p>
         </div>
         <span className="mt-5 block h-2 overflow-hidden rounded-full bg-white/12">
           <span
             className="block h-full rounded-full bg-[#f2c66d]"
-            style={{ width: `${totalCount > 0 ? Math.min(100, (completedCount / totalCount) * 100) : 0}%` }}
+            style={{
+              width: `${totalCount > 0 ? Math.min(100, (completedCount / totalCount) * 100) : 0}%`,
+            }}
           />
         </span>
       </section>
@@ -175,11 +157,9 @@ export default function StatsPanel({
       <section className="mt-10 flex items-end justify-between border-t border-white/12 pt-8">
         <div>
           <p className="text-xs text-[#aeb9b1]">모아둔 포인트</p>
-          <p className="friendly-heading mt-2 text-3xl font-bold tabular-nums">
-            {totalPoints.toLocaleString()} P
-          </p>
+          <p className="friendly-heading mt-2 text-3xl font-bold tabular-nums">{totalPoints} P</p>
         </div>
-        <span className="text-xs font-bold text-[#f2c66d]">오늘 +{metrics.totalPointsEarned}</span>
+        {/* <span className="text-xs font-bold text-[#f2c66d]">오늘 +{metrics.totalPointsEarned}</span> */}
       </section>
     </div>
   );
