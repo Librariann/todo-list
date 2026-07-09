@@ -21,8 +21,14 @@ export interface UserChallengeProgressResponse extends ChallengesApiResponse {
 }
 
 function mapRecurrenceType(recurrenceType: string): ChallengeType {
-  if (recurrenceType === 'DAILY') return ChallengeType.DAILY;
-  if (recurrenceType === 'WEEKLY') return ChallengeType.WEEKLY;
+  if (recurrenceType === 'DAILY') {
+    return ChallengeType.DAILY;
+  }
+
+  if (recurrenceType === 'WEEKLY') {
+    return ChallengeType.WEEKLY;
+  }
+
   return ChallengeType.MONTHLY;
 }
 
@@ -40,23 +46,25 @@ export function mapUserChallengeProgress(c: UserChallengeProgressResponse): Chal
   };
 }
 
-export function mapChallenge(c: ChallengesApiResponse): Challenge {
+export function mapChallenge(challenge: ChallengesApiResponse): Challenge {
   return {
-    id: c.id.toString(),
-    title: c.name,
-    description: c.description || '',
-    type: mapRecurrenceType(c.recurrenceType),
+    id: challenge.id.toString(),
+    title: challenge.name,
+    description: challenge.description || '',
+    type: mapRecurrenceType(challenge.recurrenceType),
     condition: ChallengeCondition.COMPLETE_HABITS,
-    targetCount: c.targetCount,
+    targetCount: challenge.targetCount,
     currentCount: 0,
-    rewardPoints: c.point,
+    rewardPoints: challenge.point,
     completed: false,
   };
 }
 
 export async function fetchUserChallengeProgress(): Promise<Challenge[]> {
   const res = await apiFetch(`${API_URL}/api/user/challenges/`);
-  if (!res.ok) throw new Error('Failed to fetch user challenge progress');
+  if (!res.ok) {
+    throw new Error('Failed to fetch user challenge progress');
+  }
   const data = await res.json();
   const raw = (data.data ?? []) as UserChallengeProgressResponse[];
   return raw.map(mapUserChallengeProgress);
@@ -64,7 +72,9 @@ export async function fetchUserChallengeProgress(): Promise<Challenge[]> {
 
 export async function fetchChallenges(): Promise<Challenge[]> {
   const res = await apiFetch(`${API_URL}/api/challenges/`);
-  if (!res.ok) throw new Error('Failed to fetch challenges');
+  if (!res.ok) {
+    throw new Error('Failed to fetch challenges');
+  }
   const data = await res.json();
   const raw = (data.data ?? []) as ChallengesApiResponse[];
   return raw.filter((c) => c.isActive).map(mapChallenge);
