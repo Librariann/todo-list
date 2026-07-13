@@ -1,7 +1,7 @@
 import { Habit, Goal, Todo, TodoStatus } from '@/app/types/todo';
 import { isCompletedToday, calculateStreak } from './habitUtils';
 
-export interface ProgressMetrics {
+export interface IProgressMetrics {
   habitsCompletedToday: number;
   totalHabitsToday: number;
   goalsCompletedToday: number;
@@ -51,7 +51,7 @@ export function calculateProgressMetrics(
   goals: Goal[],
   todos: Todo[],
   selectedDate: string = new Date().toISOString().split('T')[0]
-): ProgressMetrics {
+): IProgressMetrics {
   const habitsCompletedToday = habits.filter(isCompletedToday).length;
   const goalsCompletedToday = goals.filter((goal) =>
     goal.completedDates.includes(selectedDate)
@@ -66,7 +66,6 @@ export function calculateProgressMetrics(
       : 0;
 
   const dailyPoints = calculateDailyPoints(habits, goals, todos, selectedDate);
-
   const perfectDays = calculatePerfectDays(habits, goals, 30);
 
   return {
@@ -146,7 +145,7 @@ export function getRewardTier(totalPoints: number): {
   };
 }
 
-export function generateAchievements(metrics: ProgressMetrics): string[] {
+export function generateAchievements(metrics: IProgressMetrics): string[] {
   const achievements: string[] = [];
 
   if (metrics.perfectDays >= 7) {
