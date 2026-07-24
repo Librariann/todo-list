@@ -24,6 +24,22 @@ export enum GoalFrequency {
   MONTHLY = 'monthly', // 매월
 }
 
+export type GoalPeriodStatus = 'ACTIVE' | 'ACHIEVED' | 'MISSED' | 'UPCOMING';
+
+export interface GoalPeriod {
+  id: number | null;
+  index: number;
+  start: string;
+  end: string;
+  currentCount: number;
+  targetCount: number;
+  isAchieved: boolean;
+  isFinalized: boolean;
+  achievedAt: string | null;
+  status: GoalPeriodStatus;
+  canAchieve: boolean;
+}
+
 export enum RewardType {
   COFFEE_COUPON = 'coffee_coupon',
   GIFT_CARD = 'gift_card',
@@ -39,6 +55,8 @@ export interface Reward {
   description: string;
   iconUrl?: string;
   value: number;
+  discount: boolean;
+  discountRate: number;
 }
 
 // 습관 (Habit)
@@ -62,12 +80,15 @@ export interface Goal {
   frequency: GoalFrequency;
   completedDates: string[]; // 완료한 날짜 목록 (YYYY-MM-DD)
   streak: number; // 연속 달성 일수
+  startDate: string; // 목표가 달력에 표시되기 시작하는 날짜 (YYYY-MM-DD)
   createdAt: Date;
+  period?: GoalPeriod;
 }
 
 // 날짜별 목표 완료 상태
 export interface GoalWithDate extends Goal {
   completed: boolean; // 선택된 날짜의 완료 여부
+  period: GoalPeriod;
   lastCompletedAt?: Date;
 }
 
