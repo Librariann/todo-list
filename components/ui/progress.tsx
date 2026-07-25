@@ -11,22 +11,22 @@ function Progress({
   glow = false,
   ...props
 }: React.ComponentProps<typeof ProgressPrimitive.Root> & { glow?: boolean }) {
-  const pct = Math.max(0, Math.min(100, value || 0));
+  const percentage = Math.max(0, Math.min(100, value || 0));
 
   if (glow) {
     return (
       <div
         role="progressbar"
-        aria-valuenow={pct}
+        aria-valuenow={percentage}
         aria-valuemin={0}
         aria-valuemax={100}
         className={cn('relative w-full rounded-full bg-primary/20', className)}
       >
         <div
           className="relative h-full rounded-full bg-primary transition-[width] duration-500"
-          style={{ width: `${pct}%` }}
+          style={{ width: `${percentage}%` }}
         >
-          {pct > 3 && pct < 100 && (
+          {percentage > 1 && percentage < 100 && (
             <div className="absolute right-0 top-1/2 h-2 w-2 -translate-y-1/2 translate-x-1/2 rounded-full bg-accent" />
           )}
         </div>
