@@ -67,19 +67,19 @@ export async function deleteTodo(id: string): Promise<void> {
   if (!res.ok) throw new Error('Failed to delete todo');
 }
 
-
-export async function fetchCompletedDatesInMonth(year: number, month: number): Promise<Set<string>> {
+export async function fetchCompletedDatesInMonth(
+  year: number,
+  month: number
+): Promise<Set<string>> {
   // month: 1-indexed (1=Jan, 12=Dec)
   const daysInMonth = new Date(year, month, 0).getDate();
   const dates: string[] = [];
   for (let day = 1; day <= daysInMonth; day++) {
-    dates.push(
-      `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
-    );
+    dates.push(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
   }
 
   const results = await Promise.allSettled(
-    dates.map(async (date) => ({ date, todos: await fetchTodos(date) })),
+    dates.map(async (date) => ({ date, todos: await fetchTodos(date) }))
   );
 
   const completedDates = new Set<string>();

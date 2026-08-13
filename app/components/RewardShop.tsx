@@ -33,17 +33,17 @@ export default function RewardShop({ rewards, userPoints, onClaim }: RewardShopP
 
   return (
     <>
-      <Card className="shadow-sm">
+      <section>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-xl font-bold">🎁 보상 상점</CardTitle>
-            <Badge className="bg-primary text-primary-foreground px-4 py-2 text-base font-bold">
-              ⭐ {userPoints} 포인트
+            <CardTitle className="friendly-heading text-2xl font-bold">작은 기쁨을 골라봐요</CardTitle>
+            <Badge className="rounded-full bg-secondary px-4 py-2 text-base font-bold text-secondary-foreground">
+              {userPoints} P
             </Badge>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {rewards.map((reward) => {
               const canAfford = userPoints >= reward.value;
 
@@ -51,21 +51,16 @@ export default function RewardShop({ rewards, userPoints, onClaim }: RewardShopP
                 <Card
                   key={reward.id}
                   className={`
-                    relative border-2 transition-all duration-200
+                    relative overflow-hidden rounded-[1.35rem] border transition-colors duration-200 shadow-none
                     ${
                       canAfford
-                        ? 'border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/5 hover:shadow-lg hover:scale-105'
+                        ? 'border-primary/20 bg-card hover:border-primary/55'
                         : 'border-muted-foreground/20 bg-muted opacity-60'
                     }
                   `}
                 >
-                  {/* 아이콘 */}
-                  <div className="text-center mb-3 p-4">
-                    <span className="text-5xl">{reward.iconUrl}</span>
-                  </div>
-
                   {/* 정보 */}
-                  <div className="text-center mb-3 px-4">
+                  <div className="mb-3 px-5 pt-5 text-left">
                     <h3 className="font-bold text-foreground mb-1">{reward.name}</h3>
                     <p className="text-xs text-muted-foreground line-clamp-2">
                       {reward.description}
@@ -73,9 +68,9 @@ export default function RewardShop({ rewards, userPoints, onClaim }: RewardShopP
                   </div>
 
                   {/* 가격 */}
-                  <div className="flex items-center justify-center gap-1 mb-3 px-4">
-                    <Badge variant="secondary" className="text-primary font-bold">
-                      ⭐ {reward.value} 포인트
+                  <div className="mb-3 flex items-center px-5">
+                    <Badge variant="secondary" className="rounded-full font-bold text-primary">
+                      {reward.value} 포인트
                     </Badge>
                   </div>
 
@@ -103,13 +98,13 @@ export default function RewardShop({ rewards, userPoints, onClaim }: RewardShopP
           </div>
 
           {/* 더 많은 보상 추가 예정 메시지 */}
-          <div className="mt-6 p-4 bg-muted rounded-lg border">
-            <p className="text-sm text-center text-muted-foreground">
-              🎯 더 많은 보상이 곧 추가됩니다! 계속 할 일을 완료하고 포인트를 모아보세요.
+          <div className="mt-6 flex items-center justify-center rounded-2xl bg-[oklch(0.95_0.055_95)] p-4 dark:bg-muted">
+            <p className="text-center text-sm text-muted-foreground">
+              오늘의 완료가 다음 보상에 가까워지게 해요.
             </p>
           </div>
         </CardContent>
-      </Card>
+      </section>
 
       <Dialog open={Boolean(selectedReward)} onOpenChange={(open) => !open && closeDialog()}>
         <DialogContent className="w-full max-w-sm">
@@ -126,12 +121,12 @@ export default function RewardShop({ rewards, userPoints, onClaim }: RewardShopP
             <div className="rounded-lg border bg-muted/50 px-4 py-3 text-sm">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-muted-foreground">현재 포인트</span>
-                <span className="font-semibold">⭐ {userPoints}</span>
+                <span className="font-semibold">{userPoints} P</span>
               </div>
               <div className="mt-2 flex items-center justify-between gap-3">
                 <span className="text-muted-foreground">교환 후 포인트</span>
                 <span className="font-semibold text-foreground">
-                  ⭐ {userPoints - selectedReward.value}
+                  {userPoints - selectedReward.value} P
                 </span>
               </div>
             </div>

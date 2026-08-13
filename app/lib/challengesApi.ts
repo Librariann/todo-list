@@ -37,7 +37,6 @@ export function mapUserChallengeProgress(c: UserChallengeProgressResponse): Chal
     currentCount: c.currentCount,
     rewardPoints: c.point,
     completed: c.isAchieved,
-    iconUrl: c.icon,
   };
 }
 
@@ -52,7 +51,6 @@ export function mapChallenge(c: ChallengesApiResponse): Challenge {
     currentCount: 0,
     rewardPoints: c.point,
     completed: false,
-    iconUrl: c.icon,
   };
 }
 

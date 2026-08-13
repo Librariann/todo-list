@@ -94,7 +94,7 @@ export default function Calendar({
   const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
 
   return (
-    <Card className="shadow-sm p-4">
+    <Card className="soft-panel border-border bg-card p-4 shadow-none">
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <Button onClick={goToPreviousMonth} variant="ghost" size="sm" aria-label="이전 달">
@@ -164,7 +164,7 @@ export default function Calendar({
               size="sm"
               className={`
                 aspect-square text-sm font-medium transition-all relative p-0
-                ${selectedFlag ? 'shadow-md scale-105' : ''}
+                ${selectedFlag ? 'font-bold' : ''}
                 ${todayFlag && !selectedFlag ? 'bg-primary/10 text-primary' : ''}
                 ${
                   !selectedFlag &&

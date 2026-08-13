@@ -1,5 +1,9 @@
 'use client';
 
+import { Habit, Goal } from '../types/todo';
+import { ProgressMetrics } from '../lib/rewardUtils';
+import { calculateStreak } from '../lib/habitUtils';
+
 export interface RewardItem {
   id: number;
   name: string;
@@ -31,129 +35,143 @@ export interface ChallengeItem {
 
 interface StatsPanelProps {
   totalPoints: number;
-  rewards: RewardItem[];
-  challenges: ChallengeItem[];
+  habits: Habit[];
+  goals: Goal[];
+  completedTodoDates: ReadonlySet<string>;
+  metrics: ProgressMetrics;
   loading: boolean;
 }
 
-export default function StatsPanel({ totalPoints, rewards, challenges, loading }: StatsPanelProps) {
-  function formatDate(dateStr: string) {
-    const d = new Date(dateStr);
-    return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
-  }
+const dayLabels = ['월', '화', '수', '목', '금', '토', '일'];
+const activeDotColors = [
+  'bg-primary',
+  'bg-primary',
+  'bg-primary',
+  'bg-[oklch(0.82_0.16_82)]',
+  'bg-[oklch(0.72_0.13_238)]',
+  'bg-[oklch(0.75_0.1_310)]',
+  'bg-[oklch(0.76_0.13_55)]',
+];
 
-  function recurrenceLabel(type: string) {
-    if (type === 'DAILY') return '일일';
-    if (type === 'WEEKLY') return '주간';
-    if (type === 'MONTHLY') return '월간';
-    return type;
+function toDateString(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+export default function StatsPanel({
+  totalPoints,
+  habits,
+  goals,
+  completedTodoDates,
+  metrics,
+  loading,
+}: StatsPanelProps) {
+  const today = new Date();
+  const monday = new Date(today);
+  const weekday = today.getDay() || 7;
+  monday.setDate(today.getDate() - weekday + 1);
+
+  const week = dayLabels.map((label, index) => {
+    const date = new Date(monday);
+    date.setDate(monday.getDate() + index);
+    const dateString = toDateString(date);
+    const hasHabit = habits.some((habit) => (habit.dailyProgress?.[dateString] ?? 0) > 0);
+    const hasGoal = goals.some((goal) => goal.completedDates.includes(dateString));
+
+    return {
+      label,
+      active: hasHabit || hasGoal || completedTodoDates.has(dateString),
+      future: date > today,
+    };
+  });
+
+  const longestStreak = Math.max(
+    0,
+    ...habits.map((habit) => habit.streak ?? calculateStreak(habit)),
+    ...goals.map((goal) => goal.streak)
+  );
+  const completedCount =
+    metrics.habitsCompletedToday + metrics.goalsCompletedToday + metrics.todosCompletedToday;
+  const totalCount = metrics.totalHabitsToday + metrics.totalGoalsToday + metrics.totalTodosToday;
+  const pathLength = Math.max(5, Math.min(7, totalCount || 5));
+
+  if (loading) {
+    return (
+      <div className="space-y-5">
+        <div className="h-24 animate-pulse rounded-2xl bg-muted" />
+        <div className="h-36 animate-pulse rounded-2xl bg-muted" />
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-3">
-      {/* 총 포인트 */}
-      <div className="bg-white dark:bg-card rounded-xl px-5 py-4 border border-stone-200 dark:border-white/[0.07] shadow-sm">
-        <p className="text-[11px] font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-widest mb-1">
-          총 포인트
-        </p>
-        <div className="flex items-baseline gap-1">
-          <span className="text-3xl font-bold text-stone-800 dark:text-white tabular-nums">
-            {totalPoints.toLocaleString()}
-          </span>
-          <span className="text-sm text-stone-400 dark:text-stone-500 font-medium">pt</span>
+    <div>
+      <section>
+        <h2 className="friendly-heading text-2xl font-bold">이번 주 습관</h2>
+        <div className="mt-7 grid grid-cols-7 gap-2">
+          {week.map((day, index) => (
+            <div key={day.label} className="text-center">
+              <span className="text-sm font-medium text-muted-foreground">{day.label}</span>
+              <span
+                className={`mx-auto mt-3 block h-8 w-8 rounded-full transition-colors ${
+                  day.active ? activeDotColors[index] : 'bg-muted'
+                } ${day.future ? 'opacity-55' : ''}`}
+              />
+            </div>
+          ))}
         </div>
-      </div>
+      </section>
 
-      {/* 최근 받은 보상 */}
-      <div className="bg-white dark:bg-card rounded-xl px-5 py-4 border border-stone-200 dark:border-white/[0.07] shadow-sm">
-        <p className="text-[11px] font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-widest mb-3">
-          최근 받은 보상
+      <section className="mt-8 rounded-[1.4rem] bg-secondary/65 px-6 py-6">
+        <p className="text-sm font-medium text-secondary-foreground">이번 주도 잘 이어가고 있어요</p>
+        <p className="friendly-heading mt-2 text-4xl font-bold text-primary">
+          {longestStreak}일 연속
         </p>
-        {loading ? (
-          <div className="space-y-2">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-8 bg-stone-100 dark:bg-white/5 rounded-lg animate-pulse" />
-            ))}
-          </div>
-        ) : rewards.length === 0 ? (
-          <p className="text-sm text-stone-400 dark:text-stone-500 text-center py-2">
-            받은 보상이 없습니다
-          </p>
-        ) : (
-          <ul className="space-y-1.5">
-            {rewards.map((r) => (
-              <li
-                key={r.id}
-                className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-stone-50 dark:bg-white/[0.04] border border-stone-100 dark:border-white/[0.05]"
-              >
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-base shrink-0">{r.type === 'COUPON' ? '🎫' : '⭐'}</span>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-stone-700 dark:text-stone-300 truncate">
-                      {r.name}
-                    </p>
-                    <p className="text-xs text-stone-400 dark:text-stone-500">
-                      {r.discount && r.discountRate
-                        ? `${r.discountRate}% 할인`
-                        : r.type === 'COUPON'
-                          ? '쿠폰'
-                          : '포인트'}
-                      · {r.point.toLocaleString()}pt
-                    </p>
-                  </div>
-                </div>
-                <span className="text-xs text-stone-400 dark:text-stone-500 shrink-0">
-                  {formatDate(r.createdAt)}
+      </section>
+
+      <section className="mt-8 border-t border-border pt-7">
+        <p className="text-base text-muted-foreground">
+          오늘 <strong className="text-2xl text-primary">{completedCount}개</strong> 완료
+        </p>
+        <div className="mt-6 flex items-center">
+          {Array.from({ length: pathLength }).map((_, index) => {
+            const complete = index < completedCount;
+            return (
+              <div key={index} className="flex flex-1 items-center last:flex-none">
+                <span
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 text-xs font-bold ${
+                    complete
+                      ? `${activeDotColors[index]} border-transparent text-white`
+                      : 'border-border bg-card text-muted-foreground'
+                  }`}
+                >
+                  {complete ? '✓' : index + 1}
                 </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      {/* 최근 달성 도전과제 */}
-      <div className="bg-white dark:bg-card rounded-xl px-5 py-4 border border-stone-200 dark:border-white/[0.07] shadow-sm">
-        <p className="text-[11px] font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-widest mb-3">
-          최근 달성 도전과제
-        </p>
-        {loading ? (
-          <div className="space-y-2">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-10 bg-stone-100 dark:bg-white/5 rounded-lg animate-pulse" />
-            ))}
-          </div>
-        ) : challenges.length === 0 ? (
-          <p className="text-sm text-stone-400 dark:text-stone-500 text-center py-2">
-            달성한 도전과제가 없습니다
-          </p>
-        ) : (
-          <ul className="space-y-1.5">
-            {challenges.map((c) => (
-              <li
-                key={c.id}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg bg-stone-50 dark:bg-white/[0.04] border border-stone-100 dark:border-white/[0.05]"
-              >
-                <span className="text-base shrink-0">{c.icon || '🏆'}</span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-stone-700 dark:text-stone-300 truncate">
-                    {c.name}
-                  </p>
-                  <p className="text-xs text-stone-400 dark:text-stone-500">
-                    {recurrenceLabel(c.periodType ?? c.recurrenceType)}
-                    {typeof c.currentCount === 'number' && ` · ${c.currentCount}/${c.targetCount}`}
-                    {` · ${c.point}pt`}
-                  </p>
-                </div>
-                {c.achievedAt && (
-                  <span className="text-xs text-stone-400 dark:text-stone-500 shrink-0">
-                    {formatDate(c.achievedAt)}
-                  </span>
+                {index < pathLength - 1 && (
+                  <span className={`h-0.5 flex-1 ${index < completedCount - 1 ? 'bg-primary' : 'bg-border'}`} />
                 )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+              </div>
+            );
+          })}
+        </div>
+        <p className="mt-4 text-sm text-muted-foreground">
+          {completedCount > 0 ? '좋아요. 이 흐름 그대로 이어가요.' : '첫 번째 완료부터 가볍게 시작해요.'}
+        </p>
+      </section>
+
+      <section className="mt-8 flex items-end justify-between border-t border-border pt-7">
+        <div>
+          <p className="text-sm font-medium text-muted-foreground">내 포인트</p>
+          <p className="friendly-heading mt-1 text-4xl font-bold tabular-nums">
+            {totalPoints.toLocaleString()} P
+          </p>
+        </div>
+        <span className="rounded-full bg-[oklch(0.94_0.08_78)] px-4 py-2 text-sm font-bold text-[oklch(0.54_0.13_58)] dark:bg-muted dark:text-accent">
+          오늘 +{metrics.totalPointsEarned}
+        </span>
+      </section>
     </div>
   );
 }

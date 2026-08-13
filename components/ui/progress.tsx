@@ -22,14 +22,12 @@ function Progress({
         aria-valuemax={100}
         className={cn('relative w-full rounded-full bg-primary/20', className)}
       >
-        {/* 채워지는 바 - 두 겹 글로우 (중심광 + 주변광) */}
         <div
-          className="relative h-full rounded-full bg-primary transition-all duration-500 animate-glow-pulse"
+          className="relative h-full rounded-full bg-primary transition-[width] duration-500"
           style={{ width: `${pct}%` }}
         >
-          {/* 끝부분 흰색 헤드라이트 팁 */}
           {pct > 3 && pct < 100 && (
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-2 h-4 bg-indigo-100 rounded-full blur-[4px] opacity-55 shadow-[0_0_8px_#c7d2fe]" />
+            <div className="absolute right-0 top-1/2 h-2 w-2 -translate-y-1/2 translate-x-1/2 rounded-full bg-accent" />
           )}
         </div>
       </div>

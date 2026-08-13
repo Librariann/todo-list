@@ -1,7 +1,6 @@
 'use client';
 
 import { GoalFrequency } from '../types/todo';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check } from 'lucide-react';
@@ -36,15 +35,8 @@ export default function GoalCard({ goal, onToggle }: GoalCardProps) {
   };
 
   return (
-    <Card
-      className={`
-      group relative p-4 hover:shadow-md transition-all duration-200 border-l-4
-      ${
-        goal.completed
-          ? 'border-l-amber-500 bg-amber-50/50 dark:bg-amber-950/20'
-          : 'border-l-primary'
-      }
-    `}
+    <article
+      className={`companion-entry group relative ${goal.completed ? 'border-primary/25 bg-secondary/55' : ''}`}
     >
       <div className="flex items-center gap-3">
         {/* 체크박스 */}
@@ -55,10 +47,10 @@ export default function GoalCard({ goal, onToggle }: GoalCardProps) {
           disabled={goal.completed}
           aria-disabled={goal.completed}
           className={`
-            flex-shrink-0 w-6 h-6 rounded border-2 p-0
+            h-11 w-11 flex-shrink-0 rounded-[14px] border-2 p-0
             ${
               goal.completed
-                ? 'bg-amber-500 border-amber-500 cursor-not-allowed opacity-100 hover:bg-amber-500'
+                ? 'bg-primary border-primary cursor-not-allowed opacity-100 hover:bg-primary'
                 : 'border-muted-foreground hover:border-primary'
             }
           `}
@@ -74,15 +66,15 @@ export default function GoalCard({ goal, onToggle }: GoalCardProps) {
             {goal.title}
           </h3>
           <div className="flex items-center gap-2 mt-1">
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="outline" className="rounded-full text-xs">
               {getFrequencyText(goal.frequency)}
             </Badge>
             {goal.streak > 0 && (
               <Badge
                 variant="outline"
-                className="text-xs bg-orange-50 dark:bg-orange-900/15 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800/30"
+                className="rounded-full text-xs bg-orange-50 dark:bg-orange-900/15 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800/30"
               >
-                🔥 {goal.streak}일 연속
+                {goal.streak}일 연속
               </Badge>
             )}
           </div>
@@ -91,6 +83,6 @@ export default function GoalCard({ goal, onToggle }: GoalCardProps) {
           )}
         </div>
       </div>
-    </Card>
+    </article>
   );
 }

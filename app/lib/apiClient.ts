@@ -19,16 +19,11 @@ function processPendingQueue(error: unknown, token: string | null) {
 async function refreshAccessToken(): Promise<string> {
   const { refreshToken, setAccessToken, clearAuth } = useAuthStore.getState();
 
-  if (!refreshToken) {
-    clearAuth();
-    window.location.href = '/login';
-    throw new Error('No refresh token');
-  }
-
   const res = await fetch(`${API_URL}/api/auth/refresh`, {
     method: 'POST',
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refresh: refreshToken }),
+    body: refreshToken ? JSON.stringify({ refresh: refreshToken }) : JSON.stringify({}),
   });
 
   if (!res.ok) {
@@ -37,15 +32,13 @@ async function refreshAccessToken(): Promise<string> {
     throw new Error('Token refresh failed');
   }
 
-  const data = await res.json();
+  const json = await res.json();
+  const data = json.data ?? json;
   setAccessToken(data.accessToken);
   return data.accessToken;
 }
 
-export async function apiFetch(
-  input: RequestInfo | URL,
-  init?: RequestInit,
-): Promise<Response> {
+export async function apiFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const { accessToken } = useAuthStore.getState();
 
   const headers = new Headers(init?.headers);
@@ -53,7 +46,11 @@ export async function apiFetch(
     headers.set('Authorization', `Bearer ${accessToken}`);
   }
 
-  const response = await fetch(input, { ...init, headers });
+  const response = await fetch(input, {
+    ...init,
+    credentials: init?.credentials ?? 'include',
+    headers,
+  });
 
   // 401 가 아니면 그대로 반환
   if (response.status !== 401) return response;
@@ -64,7 +61,13 @@ export async function apiFetch(
       pendingQueue.push({
         resolve: async (newToken) => {
           headers.set('Authorization', `Bearer ${newToken}`);
-          resolve(await fetch(input, { ...init, headers }));
+          resolve(
+            await fetch(input, {
+              ...init,
+              credentials: init?.credentials ?? 'include',
+              headers,
+            })
+          );
         },
         reject,
       });
@@ -77,7 +80,11 @@ export async function apiFetch(
     const newToken = await refreshAccessToken();
     processPendingQueue(null, newToken);
     headers.set('Authorization', `Bearer ${newToken}`);
-    return await fetch(input, { ...init, headers });
+    return await fetch(input, {
+      ...init,
+      credentials: init?.credentials ?? 'include',
+      headers,
+    });
   } catch (error) {
     processPendingQueue(error, null);
     throw error;

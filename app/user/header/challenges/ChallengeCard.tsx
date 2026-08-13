@@ -25,17 +25,6 @@ export default function ChallengeCard({ challenge }: ChallengeCardProps) {
     }
   };
 
-  const getTypeIconBg = (type: ChallengeType) => {
-    switch (type) {
-      case ChallengeType.DAILY:
-        return 'bg-sky-50 dark:bg-sky-900/20';
-      case ChallengeType.WEEKLY:
-        return 'bg-amber-50 dark:bg-amber-900/20';
-      default:
-        return 'bg-emerald-50 dark:bg-emerald-900/20';
-    }
-  };
-
   const getTypeLabel = (type: ChallengeType) => {
     switch (type) {
       case ChallengeType.DAILY:
@@ -50,26 +39,19 @@ export default function ChallengeCard({ challenge }: ChallengeCardProps) {
   return (
     <Card
       className={`
-      relative p-5 hover:shadow-md transition-all duration-200
+      relative rounded-[1.35rem] p-5 shadow-none transition-colors
       border ${
         isCompleted
-          ? 'border-amber-400 dark:border-amber-700/60 bg-amber-50/40 dark:bg-amber-900/10'
+          ? 'border-primary/30 bg-secondary/50'
           : 'border-stone-200 dark:border-white/[0.07]'
       }
     `}
     >
       {challenge.completed && (
-        <Badge className="absolute top-3 right-3 bg-amber-500 text-white text-xs">받기완료!</Badge>
+        <Badge className="absolute right-3 top-3 rounded-full bg-primary text-xs text-white">받기 완료</Badge>
       )}
 
-      <div className="flex items-start gap-4">
-        {/* 아이콘 */}
-        <div
-          className={`flex-shrink-0 w-13 h-13 w-12 h-12 rounded-xl ${getTypeIconBg(challenge.type)} flex items-center justify-center text-2xl`}
-        >
-          {challenge.iconUrl || '🎯'}
-        </div>
-
+      <div className="flex items-start">
         {/* 내용 */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -93,7 +75,7 @@ export default function ChallengeCard({ challenge }: ChallengeCardProps) {
                 {challenge.currentCount} / {challenge.targetCount}
               </span>
             </div>
-            <Progress value={progress} className="h-2" glow />
+            <Progress value={progress} className="h-2.5" glow />
           </div>
 
           {/* 보상 상태 */}
@@ -102,8 +84,8 @@ export default function ChallengeCard({ challenge }: ChallengeCardProps) {
               +{challenge.rewardPoints}pt
             </span>
             {challenge.completed ? (
-              <span className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
-                받기완료!
+              <span className="inline-flex items-center rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-primary">
+                받기 완료
               </span>
             ) : hasReachedTarget ? (
               <span className="text-xs font-medium text-amber-600 dark:text-amber-400">

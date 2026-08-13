@@ -3,7 +3,6 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Trophy, Target, Calendar, TrendingUp } from 'lucide-react';
 import { ProgressMetrics, getRewardTier, generateAchievements } from '../lib/rewardUtils';
 
 interface EnhancedStatsCardProps {
@@ -14,25 +13,6 @@ interface EnhancedStatsCardProps {
 export default function EnhancedStatsCard({ metrics, totalPoints }: EnhancedStatsCardProps) {
   const tierInfo = getRewardTier(totalPoints);
   const achievements = generateAchievements(metrics);
-
-  const getTierIcon = () => {
-    switch (tierInfo.tier) {
-      case '브론즈':
-        return '🥉';
-      case '실버':
-        return '🥈';
-      case '골드':
-        return '🥇';
-      case '플래티넘':
-        return '💎';
-      case '다이아몬드':
-        return '💠';
-      case '마스터':
-        return '👑';
-      default:
-        return '🏅';
-    }
-  };
 
   const getTierColor = () => {
     switch (tierInfo.tier) {
@@ -57,9 +37,7 @@ export default function EnhancedStatsCard({ metrics, totalPoints }: EnhancedStat
     <Card className="p-6">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="text-3xl">{getTierIcon()}</div>
-            <div>
+          <div>
               <div className="flex items-center gap-2">
                 <Badge className={`${getTierColor()} font-semibold`}>{tierInfo.tier} 티어</Badge>
                 <span className="text-2xl font-bold">{totalPoints.toLocaleString()}pt</span>
@@ -69,11 +47,9 @@ export default function EnhancedStatsCard({ metrics, totalPoints }: EnhancedStat
                   다음 티어까지 {tierInfo.nextTierPoints - totalPoints}pt
                 </p>
               )}
-            </div>
           </div>
           <div className="text-right">
-            <div className="flex items-center gap-1 text-emerald-600">
-              <TrendingUp className="h-4 w-4" />
+            <div className="text-emerald-600">
               <span className="font-semibold">+{metrics.totalPointsEarned}pt</span>
             </div>
             <p className="text-xs text-muted-foreground">오늘 획득</p>
@@ -92,8 +68,7 @@ export default function EnhancedStatsCard({ metrics, totalPoints }: EnhancedStat
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="text-center p-3 rounded-lg bg-muted/50">
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <Target className="h-4 w-4 text-blue-600" />
+            <div className="mb-1 flex items-center justify-center">
               <span className="font-semibold text-sm">습관</span>
             </div>
             <div className="text-lg font-bold">
@@ -105,8 +80,7 @@ export default function EnhancedStatsCard({ metrics, totalPoints }: EnhancedStat
           </div>
 
           <div className="text-center p-3 rounded-lg bg-muted/50">
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <Calendar className="h-4 w-4 text-green-600" />
+            <div className="mb-1 flex items-center justify-center">
               <span className="font-semibold text-sm">목표</span>
             </div>
             <div className="text-lg font-bold">
@@ -116,8 +90,7 @@ export default function EnhancedStatsCard({ metrics, totalPoints }: EnhancedStat
           </div>
 
           <div className="text-center p-3 rounded-lg bg-muted/50">
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <Trophy className="h-4 w-4 text-orange-600" />
+            <div className="mb-1 flex items-center justify-center">
               <span className="font-semibold text-sm">할일</span>
             </div>
             <div className="text-lg font-bold">

@@ -18,12 +18,6 @@ export interface RewardsApiResponse {
   updatedAt: string;
 }
 
-// ─── 매퍼 ────────────────────────────────────────────────────────────────────
-
-function iconFromType(type: 'COUPON' | 'POINT'): string {
-  return type === 'COUPON' ? '🎫' : '⭐';
-}
-
 export function mapApiReward(api: RewardsApiResponse): Reward {
   return {
     id: api.id.toString(),
@@ -31,7 +25,6 @@ export function mapApiReward(api: RewardsApiResponse): Reward {
     description: api.description ?? '',
     type: api.type === 'POINT' ? RewardType.POINTS : RewardType.CUSTOM,
     value: api.point,
-    iconUrl: iconFromType(api.type),
   };
 }
 

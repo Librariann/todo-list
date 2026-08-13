@@ -2,38 +2,51 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import {
+  Award,
+  House,
+  ListChecks,
+  LogOut,
+  Repeat2,
+  Shield,
+  Star,
+  Target,
+} from 'lucide-react';
 import ThemeToggleStandalone from './ThemeToggleStandalone';
 import { useAuthStore } from '../store/authStore';
-import { Menu, X } from 'lucide-react';
 
 type MainTabType = 'tasks' | 'rewards' | 'challenges';
+type TaskTabType = 'home' | 'habits' | 'goals' | 'todos';
 
 interface HeaderProps {
   mainTab: MainTabType;
   onTabChange: (tab: MainTabType) => void;
+  taskTab?: TaskTabType;
+  onTaskTabChange?: (tab: TaskTabType) => void;
   isMobileMenuOpen: boolean;
   onMobileMenuToggle: () => void;
 }
 
-export default function Header({
-  mainTab,
-  onTabChange,
-  isMobileMenuOpen,
-  onMobileMenuToggle,
-}: HeaderProps) {
+const navigation: Array<{
+  key: string;
+  label: string;
+  icon: typeof House;
+  mainTab: MainTabType;
+  taskTab?: TaskTabType;
+}> = [
+  { key: 'home', label: '홈', icon: House, mainTab: 'tasks', taskTab: 'home' },
+  { key: 'todos', label: '할 일', icon: ListChecks, mainTab: 'tasks', taskTab: 'todos' },
+  { key: 'habits', label: '습관', icon: Repeat2, mainTab: 'tasks', taskTab: 'habits' },
+  { key: 'goals', label: '목표', icon: Target, mainTab: 'tasks', taskTab: 'goals' },
+  { key: 'challenges', label: '챌린지', icon: Award, mainTab: 'challenges' },
+  { key: 'rewards', label: '포인트', icon: Star, mainTab: 'rewards' },
+];
+
+export default function Header({ mainTab, onTabChange, taskTab, onTaskTabChange }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, isAuthenticated, clearAuth, accessToken } = useAuthStore();
-
-  const isLoggedIn = isAuthenticated;
   const isAdminPage = pathname === '/admin';
-
-  const handleMobileTabClick = (tab: MainTabType) => {
-    onTabChange(tab);
-    onMobileMenuToggle();
-  };
 
   const handleLogout = async () => {
     try {
@@ -41,177 +54,108 @@ export default function Header({
         method: 'POST',
         headers: { Authorization: `Bearer ${accessToken}` },
       });
-    } catch {
-      // 백엔드 로그아웃 실패해도 프론트 상태는 초기화
     } finally {
       clearAuth();
       router.push('/login');
     }
   };
 
+  const handleNavigate = (item: (typeof navigation)[number]) => {
+    onTabChange(item.mainTab);
+    if (item.taskTab) onTaskTabChange?.(item.taskTab);
+  };
+
+  const isItemActive = (item: (typeof navigation)[number]) =>
+    item.mainTab === mainTab && (item.mainTab !== 'tasks' || item.taskTab === taskTab);
+
   return (
-    <header className="sticky top-0 z-50 bg-white/90 dark:bg-[oklch(0.168_0.03_248)]/90 backdrop-blur border-b border-stone-200 dark:border-white/[0.07] shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
-        <div className="flex items-center justify-between">
-          {/* 로고 */}
-          <div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-primary dark:text-primary">
-              GrowDo
-            </h1>
-            <p className="hidden sm:block text-sm text-muted-foreground mt-1">
-              습관을 만들고 목표를 달성하세요!
-            </p>
-          </div>
+    <>
+      <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 sm:px-6 lg:px-8">
+          <Link href="/" className="group flex items-center gap-2" aria-label="GrowDo 홈">
+            <span className="friendly-heading text-2xl font-bold tracking-[-0.06em] text-primary">GrowDo</span>
+          </Link>
 
-          {/* 데스크톱 메뉴 */}
-          <div className="hidden lg:flex items-center gap-4">
-            {!isAdminPage && (
-              <div className="flex gap-2 bg-muted p-1 rounded-lg">
-                <Button
-                  onClick={() => onTabChange('tasks')}
-                  variant={mainTab === 'tasks' ? 'default' : 'ghost'}
-                  className={`transition-all duration-300 active:scale-95 ${
-                    mainTab === 'tasks' ? 'scale-105' : 'hover:scale-105'
+          {!isAdminPage && (
+            <nav className="hidden items-center gap-1 md:flex" aria-label="주요 메뉴">
+              {navigation.map((item) => {
+                const Icon = item.icon;
+                const active = isItemActive(item);
+                return (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => handleNavigate(item)}
+                  className={`flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold transition-colors ${
+                    active
+                      ? 'bg-secondary text-primary'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                   }`}
+                  aria-current={active ? 'page' : undefined}
                 >
-                  작업
-                </Button>
-                <Button
-                  onClick={() => onTabChange('challenges')}
-                  variant={mainTab === 'challenges' ? 'default' : 'ghost'}
-                  className={`transition-all duration-300 active:scale-95 ${
-                    mainTab === 'challenges' ? 'scale-105' : 'hover:scale-105'
-                  }`}
-                >
-                  도전과제
-                </Button>
-                <Button
-                  onClick={() => onTabChange('rewards')}
-                  variant={mainTab === 'rewards' ? 'default' : 'ghost'}
-                  className={`transition-all duration-300 active:scale-95 ${
-                    mainTab === 'rewards' ? 'scale-105' : 'hover:scale-105'
-                  }`}
-                >
-                  보상
-                </Button>
-              </div>
+                  <Icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
+                  {item.label}
+                </button>
+                );
+              })}
+            </nav>
+          )}
+
+          <div className="flex items-center gap-2">
+            {isAuthenticated && user?.role === 'ADMIN' && (
+              <Link
+                href={isAdminPage ? '/' : '/admin'}
+                className="hidden h-11 items-center gap-2 rounded-full border border-border px-4 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:flex"
+              >
+                <Shield className="h-4 w-4" />
+                {isAdminPage ? '홈으로' : '관리'}
+              </Link>
             )}
-
-            {isLoggedIn ? (
-              <div className="flex items-center gap-4">
-                {user?.role === 'ADMIN' && (
-                  <Button
-                    asChild
-                    variant="outline"
-                    size="sm"
-                    className="border-primary/30 text-primary hover:bg-primary/5 hover:text-white"
-                  >
-                    <Link href={isAdminPage ? '/' : '/admin'}>
-                      {isAdminPage ? '메인' : '관리자'}
-                    </Link>
-                  </Button>
-                )}
-                <Badge variant="secondary" className="text-sm">
-                  <span className="font-semibold text-primary">{user?.username || '사용자'}</span>님
-                  어서오세요
-                </Badge>
-                <Button
-                  onClick={handleLogout}
-                  variant="ghost"
-                  size="sm"
-                  className="text-destructive hover:text-destructive"
-                >
-                  로그아웃
-                </Button>
-              </div>
-            ) : (
-              <Button asChild size="sm">
-                <Link href="/login">로그인</Link>
-              </Button>
+            {isAuthenticated && (
+              <span className="hidden max-w-36 truncate rounded-full bg-muted px-3 py-2 text-sm font-medium text-foreground lg:block">
+                {user?.username || '사용자'}님
+              </span>
             )}
-
             <ThemeToggleStandalone />
-          </div>
-
-          {/* 모바일 메뉴 버튼 */}
-          <div className="flex lg:hidden items-center gap-2">
-            <ThemeToggleStandalone />
-            <Button
-              onClick={onMobileMenuToggle}
-              variant="outline"
-              size="sm"
-              className="p-2"
-              aria-label="메뉴"
-            >
-              {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-            </Button>
+            {isAuthenticated && (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                aria-label="로그아웃"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            )}
           </div>
         </div>
+      </header>
 
-        {/* 모바일 메뉴 */}
-        {isMobileMenuOpen && (
-          <div className="lg:hidden mt-4 pt-4 border-t border-border animate-slide-in">
-            <div className="space-y-2">
-              {!isAdminPage && (
-                <>
-                  <Button
-                    onClick={() => handleMobileTabClick('tasks')}
-                    variant={mainTab === 'tasks' ? 'default' : 'ghost'}
-                    className={`w-full justify-start transition-all duration-300 active:scale-95 ${
-                      mainTab === 'tasks' ? 'scale-105' : 'hover:scale-105'
-                    }`}
-                  >
-                    작업
-                  </Button>
-                  <Button
-                    onClick={() => handleMobileTabClick('challenges')}
-                    variant={mainTab === 'challenges' ? 'default' : 'ghost'}
-                    className={`w-full justify-start transition-all duration-300 active:scale-95 ${
-                      mainTab === 'challenges' ? 'scale-105' : 'hover:scale-105'
-                    }`}
-                  >
-                    도전과제
-                  </Button>
-                  <Button
-                    onClick={() => handleMobileTabClick('rewards')}
-                    variant={mainTab === 'rewards' ? 'default' : 'ghost'}
-                    className={`w-full justify-start transition-all duration-300 active:scale-95 ${
-                      mainTab === 'rewards' ? 'scale-105' : 'hover:scale-105'
-                    }`}
-                  >
-                    보상
-                  </Button>
-                </>
-              )}
-
-              {isLoggedIn ? (
-                <div className="pt-2 mt-2 border-t border-border space-y-2">
-                  <Badge variant="secondary" className="mb-2 text-sm">
-                    <span className="font-semibold text-primary">{user?.username || '사용자'}</span>
-                    님 어서오세요
-                  </Badge>
-                  {user?.role === 'ADMIN' && (
-                    <Button asChild variant="outline" className="w-full" size="sm">
-                      <Link href={isAdminPage ? '/' : '/admin'}>
-                        {isAdminPage ? '메인으로' : '관리자 페이지'}
-                      </Link>
-                    </Button>
-                  )}
-                  <Button onClick={handleLogout} variant="destructive" className="w-full" size="sm">
-                    로그아웃
-                  </Button>
-                </div>
-              ) : (
-                <div className="pt-2 mt-2 border-t border-border">
-                  <Button asChild className="w-full" size="sm">
-                    <Link href="/login">로그인</Link>
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-    </header>
+      {!isAdminPage && (
+        <nav
+          className="fixed inset-x-0 bottom-0 z-50 flex overflow-x-auto border-t border-border bg-card px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_rgba(32,54,39,0.06)] md:hidden"
+          aria-label="모바일 주요 메뉴"
+        >
+          {navigation.map((item) => {
+            const Icon = item.icon;
+            const active = isItemActive(item);
+            return (
+            <button
+              key={item.key}
+              type="button"
+              onClick={() => handleNavigate(item)}
+              className={`flex min-h-12 min-w-[4.3rem] flex-1 flex-col items-center justify-center gap-1 rounded-xl text-[11px] font-semibold transition-colors ${
+                active ? 'bg-secondary text-primary' : 'text-muted-foreground'
+              }`}
+              aria-current={active ? 'page' : undefined}
+            >
+              <Icon className="h-4 w-4" strokeWidth={1.8} />
+              {item.label}
+            </button>
+            );
+          })}
+        </nav>
+      )}
+    </>
   );
 }

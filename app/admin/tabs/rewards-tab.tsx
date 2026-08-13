@@ -218,7 +218,6 @@ export default function RewardsTab() {
               key={r.id}
               className="flex items-center gap-3 bg-white dark:bg-card border border-stone-200 dark:border-white/[0.07] rounded-xl px-4 py-3 hover:shadow-sm transition-shadow"
             >
-              <span className="text-xl shrink-0 w-8 text-center">🎁</span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-medium text-foreground text-sm">{r.name}</span>

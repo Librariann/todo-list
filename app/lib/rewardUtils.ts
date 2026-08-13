@@ -150,31 +150,31 @@ export function generateAchievements(metrics: ProgressMetrics): string[] {
   const achievements: string[] = [];
 
   if (metrics.perfectDays >= 7) {
-    achievements.push('🏆 완벽한 일주일 달성!');
+    achievements.push('완벽한 일주일 달성!');
   }
 
   if (metrics.perfectDays >= 30) {
-    achievements.push('🌟 완벽한 한 달 달성!');
+    achievements.push('완벽한 한 달 달성!');
   }
 
   if (metrics.averageHabitStreak >= 10) {
-    achievements.push('🔥 습관 마스터 (평균 10일 연속!)');
+    achievements.push('습관 마스터 (평균 10일 연속!)');
   }
 
   if (metrics.habitsCompletedToday === metrics.totalHabitsToday && metrics.totalHabitsToday > 0) {
-    achievements.push('💪 오늘의 모든 습관 완료!');
+    achievements.push('오늘의 모든 습관 완료!');
   }
 
   if (metrics.goalsCompletedToday === metrics.totalGoalsToday && metrics.totalGoalsToday > 0) {
-    achievements.push('✅ 오늘의 모든 목표 완료!');
+    achievements.push('오늘의 모든 목표 완료!');
   }
 
   if (metrics.todosCompletedToday === metrics.totalTodosToday && metrics.totalTodosToday > 0) {
-    achievements.push('📝 오늘의 모든 할일 완료!');
+    achievements.push('오늘의 모든 할일 완료!');
   }
 
   if (metrics.totalPointsEarned >= 100) {
-    achievements.push('🎯 오늘 100포인트 돌파!');
+    achievements.push('오늘 100포인트 돌파!');
   }
 
   return achievements;

@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Download, Upload, Trash2, Database } from 'lucide-react';
+import { Download, Upload, Trash2 } from 'lucide-react';
 import { getUserStorage } from '@/app/lib/storage';
 
 export default function DataManager() {
@@ -114,7 +114,6 @@ export default function DataManager() {
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
-          <Database className="h-4 w-4 mr-2" />
           데이터 관리
         </Button>
       </DialogTrigger>

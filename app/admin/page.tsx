@@ -12,9 +12,9 @@ import UsersTab from './tabs/users-tab';
 type AdminTab = 'challenges' | 'rewards' | 'users';
 
 const tabs: { key: AdminTab; label: string }[] = [
-  { key: 'challenges', label: '🏆 도전과제' },
-  { key: 'rewards', label: '🎁 보상' },
-  { key: 'users', label: '👥 사용자' },
+  { key: 'challenges', label: '도전과제' },
+  { key: 'rewards', label: '보상' },
+  { key: 'users', label: '사용자' },
 ];
 
 export default function AdminPage() {
@@ -40,10 +40,12 @@ export default function AdminPage() {
       <Header
         mainTab="tasks"
         onTabChange={() => {}}
+        taskTab="home"
+        onTaskTabChange={() => {}}
         isMobileMenuOpen={false}
         onMobileMenuToggle={() => {}}
       />
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
         <div className="flex items-center justify-between mb-8">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -54,22 +56,25 @@ export default function AdminPage() {
                 ← 메인으로
               </Link>
             </div>
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">관리자 페이지</h1>
+            <p className="journal-kicker mb-2">GrowDo 운영</p>
+            <h1 className="friendly-heading text-3xl font-bold tracking-tight text-foreground">
+              관리 센터
+            </h1>
             <p className="text-sm text-muted-foreground mt-0.5">
               도전과제, 보상, 사용자를 관리합니다
             </p>
           </div>
         </div>
 
-        <div className="flex gap-1 p-1 rounded-xl bg-stone-100 dark:bg-card w-fit mb-6 border border-stone-200 dark:border-white/[0.07]">
+        <div className="mb-8 flex w-fit gap-6 border-b border-border">
           {tabs.map((t) => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`min-h-11 border-b-2 px-1 text-sm font-medium transition-colors ${
                 tab === t.key
-                  ? 'bg-white dark:bg-stone-700 shadow-sm text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
               {t.label}

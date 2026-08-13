@@ -95,7 +95,8 @@ export default function AddTaskModal({ isOpen, onClose, taskType, onAdd }: AddTa
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-full max-w-md">
         <DialogHeader>
-          <DialogTitle>{getModalTitle()}</DialogTitle>
+          <p className="journal-kicker">가볍게 시작해요</p>
+          <DialogTitle className="friendly-heading text-2xl">{getModalTitle()}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">

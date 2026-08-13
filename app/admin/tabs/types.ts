@@ -32,7 +32,7 @@ export interface ChallengeForm {
 export const defaultChallengeForm: ChallengeForm = {
   name: '',
   description: '',
-  icon: '🏆',
+  icon: '',
   recurrenceType: 'DAILY',
   targetCount: 1,
   dailyMaxCount: 1,

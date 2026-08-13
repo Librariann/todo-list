@@ -1,107 +1,51 @@
-# OAuth 전용 로그인 설정 가이드
+# Growdo OAuth 설정 가이드
 
-Todo Master 앱은 100% OAuth 기반 인증 시스템을 사용합니다. 별도의 회원가입 없이 소셜 계정으로만 로그인할 수 있습니다.
+Growdo는 Authorization Code + PKCE 방식으로 소셜 로그인을 처리합니다. 브라우저 URL에는 JWT가 노출되지 않으며, 백엔드가 발급한 60초짜리 일회용 코드만 전달됩니다.
 
-## 1. Google OAuth 설정
+## 로그인 흐름
 
-### Google Cloud Console에서 설정
-1. [Google Cloud Console](https://console.cloud.google.com/)에 접속
-2. 새 프로젝트 생성 또는 기존 프로젝트 선택
-3. "APIs & Services" → "Credentials"로 이동
-4. "+ CREATE CREDENTIALS" → "OAuth 2.0 Client IDs" 선택
-5. Application type: "Web application"
-6. Authorized redirect URIs에 추가:
-   - `http://localhost:3000/api/auth/callback/google`
-   - `https://yourdomain.com/api/auth/callback/google` (배포 시)
+1. 프론트가 PKCE `code_verifier`와 `code_challenge`를 생성합니다.
+2. `/api/auth/oauth/authorize/{provider}?code_challenge=...`로 로그인합니다.
+3. 소셜 공급자는 백엔드 콜백으로 Authorization Code를 전달합니다.
+4. 백엔드는 공급자 코드를 교환하고 Growdo 일회용 코드를 발급합니다.
+5. 프론트는 `/oauth/callback?code=...`에서 코드를 받습니다.
+6. `POST /api/auth/oauth/exchange`에 코드와 verifier를 보내 Access Token으로 교환합니다.
+7. Refresh Token은 `HttpOnly` 쿠키로만 저장됩니다.
 
-### 환경 변수 설정
-```bash
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-```
+## 공급자 콜백 URL
 
-## 2. Kakao OAuth 설정
+각 OAuth 공급자 콘솔에는 프론트 주소가 아니라 백엔드 콜백을 등록합니다.
 
-### Kakao Developers에서 설정
-1. [Kakao Developers](https://developers.kakao.com/)에 접속하여 로그인
-2. "내 애플리케이션" → "애플리케이션 추가하기"
-3. 앱 이름, 사업자명 입력 후 생성
-4. "플랫폼" → "Web 플랫폼 등록"
-5. 사이트 도메인 등록: `http://localhost:3000`
-6. "카카오 로그인" 활성화
-7. Redirect URI 설정:
-   - `http://localhost:3000/api/auth/callback/kakao`
-   - `https://yourdomain.com/api/auth/callback/kakao` (배포 시)
-8. 동의항목에서 필요한 정보 설정 (닉네임, 이메일)
+- Google: `http://localhost:8080/login/oauth2/code/google`
+- Kakao: `http://localhost:8080/login/oauth2/code/kakao`
+- Naver: `http://localhost:8080/login/oauth2/code/naver`
 
-### 환경 변수 설정
-```bash
-KAKAO_CLIENT_ID=your-kakao-rest-api-key
-KAKAO_CLIENT_SECRET=your-kakao-client-secret
-```
+프로덕션에서는 `http://localhost:8080`을 실제 HTTPS 백엔드 주소로 교체합니다.
 
-## 3. Naver OAuth 설정
+## 환경변수
 
-### 네이버 개발자센터에서 설정
-1. [네이버 개발자센터](https://developers.naver.com/)에 접속
-2. "Application" → "애플리케이션 등록"
-3. 애플리케이션 이름 입력
-4. 사용 API: "네아로(네이버 아이디로 로그인)" 선택
-5. 제공 정보: 이메일주소, 이름, 프로필 사진 선택
-6. 서비스 환경:
-   - PC 웹: `http://localhost:3000`
-   - Callback URL: `http://localhost:3000/api/auth/callback/naver`
+프론트 `.env.local`:
 
-### 환경 변수 설정
-```bash
-NAVER_CLIENT_ID=your-naver-client-id
-NAVER_CLIENT_SECRET=your-naver-client-secret
-```
-
-## 4. NextAuth 설정
-
-### 필수 환경 변수
-```bash
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-nextauth-secret-key-here
-```
-
-### NEXTAUTH_SECRET 생성 방법
-```bash
-openssl rand -base64 32
-```
-
-## 5. 전체 .env.local 예시
-
-```bash
+```dotenv
 NEXT_PUBLIC_API_URL=http://localhost:8080
-
-# NextAuth
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-nextauth-secret-key-here
-
-# Google OAuth
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-
-# Kakao OAuth
-KAKAO_CLIENT_ID=your-kakao-client-id
-KAKAO_CLIENT_SECRET=your-kakao-client-secret
-
-# Naver OAuth
-NAVER_CLIENT_ID=your-naver-client-id
-NAVER_CLIENT_SECRET=your-naver-client-secret
 ```
 
-## 6. 테스트 방법
+백엔드:
 
-1. 환경 변수를 올바르게 설정했는지 확인
-2. `npm run dev`로 개발 서버 시작
-3. `http://localhost:3000/login`에서 소셜 로그인 테스트
-4. 각 소셜 플랫폼의 로그인 버튼 클릭하여 인증 플로우 확인
+```dotenv
+OAUTH2_REDIRECT_URI=http://localhost:3000/oauth/callback
+COOKIE_SECURE=false
+COOKIE_SAME_SITE=Lax
+```
 
-## 주의사항
+프로덕션에서는 반드시 `COOKIE_SECURE=true`를 사용합니다. 프론트와 백엔드가 서로 다른 사이트에 있다면 HTTPS와 함께 `COOKIE_SAME_SITE=None`이 필요할 수 있습니다.
 
-- 각 플랫폼의 개발자 정책을 확인하여 적절한 앱 설정을 해주세요
-- 프로덕션 배포 시 도메인을 변경하고 각 플랫폼에서 콜백 URL을 업데이트해주세요
-- 환경 변수 파일(.env.local)은 Git에 커밋하지 마세요
+OAuth Client ID와 Client Secret은 백엔드 환경변수 또는 비밀 저장소에만 설정하고 프론트 환경변수에 넣지 않습니다.
+
+## 확인 사항
+
+- 콜백 URL에 `token` 또는 `refresh`가 나타나지 않아야 합니다.
+- `/oauth/callback`에는 짧게 `code`만 나타나고 프론트가 즉시 URL에서 제거해야 합니다.
+- `/api/auth/oauth/exchange` 응답에는 Access Token만 포함되어야 합니다.
+- Refresh Token 쿠키에는 `HttpOnly`, 프로덕션에서는 `Secure`가 설정되어야 합니다.
+- 같은 일회용 코드를 두 번 교환하면 두 번째 요청은 401이어야 합니다.

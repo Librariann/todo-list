@@ -44,7 +44,7 @@ export default function ChallengesTab() {
     setForm({
       name: c.name,
       description: c.description,
-      icon: c.icon || '🏆',
+      icon: c.icon || '',
       recurrenceType: c.recurrenceType,
       targetCount: c.targetCount,
       dailyMaxCount: c.targetCount,
@@ -126,14 +126,6 @@ export default function ChallengesTab() {
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                 placeholder="도전과제 이름"
-              />
-            </Field>
-            <Field label="아이콘">
-              <input
-                className="input-common"
-                value={form.icon}
-                onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
-                placeholder="🏆"
               />
             </Field>
             <Field label="설명" span2>
@@ -245,7 +237,6 @@ export default function ChallengesTab() {
               key={c.id}
               className="flex items-center gap-3 bg-white dark:bg-card border border-stone-200 dark:border-white/[0.07] rounded-xl px-4 py-3 hover:shadow-sm transition-shadow"
             >
-              <span className="text-xl shrink-0 w-8 text-center">{c.icon || '🏆'}</span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-medium text-foreground text-sm">{c.name}</span>

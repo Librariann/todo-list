@@ -10,27 +10,46 @@ function CallbackHandler() {
   const setAuth = useAuthStore((state) => state.setAuth);
 
   useEffect(() => {
-    const token = searchParams.get('token');
-    const refreshToken = searchParams.get('refresh');
+    const code = searchParams.get('code');
+    const error = searchParams.get('error');
+    const codeVerifier = sessionStorage.getItem('oauth_code_verifier');
 
-    if (!token || !refreshToken) {
+    window.history.replaceState({}, document.title, '/oauth/callback');
+
+    if (error || !code || !codeVerifier) {
+      sessionStorage.removeItem('oauth_code_verifier');
       router.replace('/login');
       return;
     }
 
-    const fetchUserAndStore = async () => {
+    const exchangeCodeAndStore = async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/users/me`,
-          { headers: { Authorization: `Bearer ${token}` } },
+        const exchangeRes = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/auth/oauth/exchange`,
+          {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code, codeVerifier }),
+          }
         );
+        if (!exchangeRes.ok) throw new Error('Failed to exchange OAuth code');
+
+        const exchangeJson = await exchangeRes.json();
+        const token = exchangeJson.data?.accessToken;
+        if (!token) throw new Error('Missing access token');
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/me`, {
+          credentials: 'include',
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         if (!res.ok) throw new Error('Failed to fetch user');
 
         const json = await res.json();
         const data = json.data;
 
-        setAuth(token, refreshToken, {
+        setAuth(token, null, {
           id: data.id,
           username: data.nickname || data.name || data.email,
           name: data.name || '',
@@ -41,10 +60,12 @@ function CallbackHandler() {
         router.replace('/');
       } catch {
         router.replace('/login');
+      } finally {
+        sessionStorage.removeItem('oauth_code_verifier');
       }
     };
 
-    fetchUserAndStore();
+    void exchangeCodeAndStore();
   }, [searchParams, router, setAuth]);
 
   return null;
