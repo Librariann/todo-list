@@ -38,7 +38,7 @@ import {
 import { apiFetch } from './lib/apiClient';
 import ChallengeComponent from './user/header/challenges/ChallengeComponent';
 import LoginPage from './login/page';
-import { Plus, SunMedium } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 type TaskTabType = 'home' | 'habits' | 'goals' | 'todos';
 type MainTabType = 'tasks' | 'rewards' | 'challenges';
@@ -74,7 +74,7 @@ export default function Home() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [todos, setTodos] = useState<Todo[]>([]);
   const [mainTab, setMainTab] = useState<MainTabType>('tasks');
-  const [taskTab, setTaskTab] = useState<TaskTabType>('home');
+  const [taskTab, setTaskTab] = useState<TaskTabType>('habits');
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTaskType, setModalTaskType] = useState<TaskType>(TaskType.HABIT);
@@ -314,33 +314,55 @@ export default function Home() {
 
   const handleTodoStatusChange = async (todoId: string, newStatus: TodoStatus) => {
     const snapshot = [...todos];
-    const target = snapshot.find((t) => t.id === todoId);
-    if (!target) return;
-    const optimistic = snapshot.map((t) => {
-      if (t.id !== todoId) return t;
-      return newStatus === TodoStatus.DONE
-        ? { ...t, status: newStatus, completedAt: new Date() }
-        : { ...t, status: newStatus, completedAt: undefined };
+    const target = snapshot.find((snapshot) => snapshot.id === todoId);
+
+    if (!target) {
+      return;
+    }
+
+    const optimistic = snapshot.map((snapshot) => {
+      if (snapshot.id !== todoId) {
+        return snapshot;
+      }
+
+      const result =
+        newStatus === TodoStatus.DONE
+          ? { ...snapshot, status: newStatus, completedAt: new Date() }
+          : { ...snapshot, status: newStatus, completedAt: undefined };
+
+      return result;
     });
+
     setTodos(optimistic);
+
     // 완료 상태 변경 시 달력 점 표시 업데이트
     setCompletedTodoDates((prev) => {
       const next = new Set(prev);
-      const hasDoneAfter = optimistic.some((t) => t.status === TodoStatus.DONE);
-      if (hasDoneAfter) next.add(selectedDate);
-      else next.delete(selectedDate);
+      const hasDoneAfter = optimistic.some((snapshot) => snapshot.status === TodoStatus.DONE);
+
+      if (hasDoneAfter) {
+        next.add(selectedDate);
+      } else {
+        next.delete(selectedDate);
+      }
+
       return next;
     });
+
     try {
       await updateTodoStatus(todoId, newStatus);
     } catch {
       setTodos(snapshot);
+
       // 롤백 시 completedTodoDates도 원래대로
       setCompletedTodoDates((prev) => {
         const next = new Set(prev);
-        const hadDone = snapshot.some((t) => t.status === TodoStatus.DONE);
-        if (hadDone) next.add(selectedDate);
-        else next.delete(selectedDate);
+        const hadDone = snapshot.some((snapshot) => snapshot.status === TodoStatus.DONE);
+        if (hadDone) {
+          next.add(selectedDate);
+        } else {
+          next.delete(selectedDate);
+        }
         return next;
       });
     }
@@ -354,7 +376,9 @@ export default function Home() {
     setCompletedTodoDates((prev) => {
       const next = new Set(prev);
       const hasDoneAfter = afterDelete.some((t) => t.status === TodoStatus.DONE);
-      if (!hasDoneAfter) next.delete(selectedDate);
+      if (!hasDoneAfter) {
+        next.delete(selectedDate);
+      }
       return next;
     });
     try {
@@ -364,9 +388,12 @@ export default function Home() {
       // 롤백 시 원래 상태 복원
       setCompletedTodoDates((prev) => {
         const next = new Set(prev);
-        const hadDone = snapshot.some((t) => t.status === TodoStatus.DONE);
-        if (hadDone) next.add(selectedDate);
-        else next.delete(selectedDate);
+        const hadDone = snapshot.some((snapshot) => snapshot.status === TodoStatus.DONE);
+        if (hadDone) {
+          next.add(selectedDate);
+        } else {
+          next.delete(selectedDate);
+        }
         return next;
       });
     }
@@ -458,6 +485,7 @@ export default function Home() {
         setTodos((prev) => [...prev, created]);
       } catch (err) {
         console.error('할일 생성 실패:', err);
+        toast.error(err instanceof Error ? err.message : '할 일을 생성하지 못했습니다.');
       }
     }
   };
@@ -488,343 +516,388 @@ export default function Home() {
     return <LoginPage />;
   }
 
+  const completedToday =
+    progressMetrics.habitsCompletedToday +
+    progressMetrics.goalsCompletedToday +
+    progressMetrics.todosCompletedToday;
+  const totalToday =
+    progressMetrics.totalHabitsToday +
+    progressMetrics.totalGoalsToday +
+    progressMetrics.totalTodosToday;
+
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0">
-      {/* 헤더 */}
-      <Header
-        mainTab={mainTab}
-        onTabChange={setMainTab}
-        taskTab={taskTab}
-        onTaskTabChange={(tab) => {
-          setTaskTab(tab);
-          if (tab === 'home') setSelectedDate(new Date().toISOString().split('T')[0]);
-        }}
-        isMobileMenuOpen={isMobileMenuOpen}
-        onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      />
+    <div className="min-h-screen bg-[#d9e1d5] px-3 pt-3 pb-24 dark:bg-background sm:px-6 sm:pt-6 md:pb-6">
+      <div className="mx-auto max-w-[1500px] overflow-hidden rounded-[2rem] bg-card shadow-[0_24px_70px_rgba(38,48,42,0.12)]">
+        {/* 헤더 */}
+        <Header
+          mainTab={mainTab}
+          onTabChange={setMainTab}
+          taskTab={taskTab}
+          onTaskTabChange={(tab) => {
+            setTaskTab(tab);
+            if (tab === 'home') setSelectedDate(new Date().toISOString().split('T')[0]);
+          }}
+          isMobileMenuOpen={isMobileMenuOpen}
+          onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        />
 
-      {/* 메인 컨텐츠 */}
-      <main
-        id="main-content"
-        className="page-reveal mx-auto max-w-7xl px-3 py-5 sm:px-6 sm:py-8 lg:px-8 lg:py-10"
-      >
-        <div
-          className={`daily-shell overflow-hidden ${
-            mainTab === 'tasks'
-              ? 'grid grid-cols-1 lg:grid-cols-[minmax(0,1.65fr)_minmax(20rem,0.95fr)]'
-              : ''
-          }`}
-        >
-          {/* 왼쪽: 통계 & 날짜 선택 */}
-          {mainTab === 'tasks' && (
-          <aside className="order-2 space-y-6 border-t border-border bg-card px-5 py-7 sm:px-8 sm:py-9 lg:border-l lg:border-t-0">
-            <StatsPanel
-              totalPoints={userSummary.points}
-              habits={habits}
-              goals={goals}
-              completedTodoDates={completedTodoDates}
-              metrics={progressMetrics}
-              loading={statsLoading}
-            />
+        {/* 메인 컨텐츠 */}
+        <main id="main-content" className="page-reveal">
+          <div
+            className={`overflow-hidden ${
+              mainTab === 'tasks'
+                ? 'grid grid-cols-1 lg:grid-cols-[minmax(0,1.38fr)_minmax(20rem,0.62fr)]'
+                : ''
+            }`}
+          >
+            {/* 왼쪽: 통계 & 날짜 선택 */}
+            {mainTab === 'tasks' && (
+              <aside className="order-2 space-y-6 border-t border-white/12 bg-[#28342d] px-6 py-9 sm:px-9 sm:py-11 lg:border-l lg:border-t-0 lg:px-10">
+                <StatsPanel
+                  totalPoints={userSummary.points}
+                  habits={habits}
+                  goals={goals}
+                  completedTodoDates={completedTodoDates}
+                  metrics={progressMetrics}
+                  loading={statsLoading}
+                />
 
-            {/* 날짜 선택 달력 (목표/할일 탭일 때만 표시) */}
-            {(taskTab === 'goals' || taskTab === 'todos') && (
-              <Calendar
-                selectedDate={selectedDate}
-                onDateSelect={handleDateSelect}
-                markedDates={markedDates}
-                currentMonth={currentMonth}
-                onMonthChange={setCurrentMonth}
-              />
+                {/* 날짜 선택 달력 (목표/할일 탭일 때만 표시) */}
+              </aside>
             )}
-          </aside>
-          )}
 
-          {/* 오른쪽: 컨텐츠 */}
-          <section className="order-1 min-w-0 bg-card">
-            <div className="overflow-hidden">
-              <div className="relative flex min-h-[15rem] flex-col justify-end gap-5 overflow-hidden border-b border-border bg-[oklch(0.985_0.008_92)] px-5 py-8 dark:bg-card sm:px-10 sm:py-10">
-                <div className="relative z-10">
-                  <p className="mb-3 text-sm font-semibold text-muted-foreground">
-                    {mainTab === 'tasks' ? formatDate(selectedDate) : 'GrowDo'}
-                  </p>
-                  <h1 className="friendly-heading text-3xl font-bold tracking-tight sm:text-5xl">
-                    {mainTab === 'tasks'
-                      ? `${greeting}, ${user?.username || '사용자'}님`
-                      : mainTab === 'challenges'
-                        ? '이번 주도 가볍게 도전해요'
-                        : '나를 위한 보상'}
-                  </h1>
-                  <p className="mt-3 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
-                    {mainTab === 'tasks'
-                      ? '오늘은 세 가지만 해봐요.'
-                      : mainTab === 'challenges'
-                        ? '평소 하던 일을 이어가면 자연스럽게 달성할 수 있어요.'
-                        : '꾸준히 모은 포인트로 오늘의 작은 기쁨을 골라보세요.'}
-                  </p>
+            {/* 오른쪽: 컨텐츠 */}
+            <section className="order-1 min-w-0 bg-[#fbf8ef] text-[#26302a] dark:bg-card dark:text-foreground">
+              <div className="overflow-hidden">
+                <div className="relative flex min-h-[17rem] flex-col justify-end gap-5 overflow-hidden px-5 pt-10 pb-5 sm:px-10 sm:pt-14 lg:px-12">
+                  <div className="relative z-10">
+                    <p className="mb-3 text-sm font-semibold text-[#2e8c54] dark:text-primary">
+                      {mainTab === 'tasks' ? formatDate(selectedDate) : 'GrowDo'}
+                    </p>
+                    <h1 className="friendly-heading max-w-3xl whitespace-pre-line text-4xl font-normal leading-[1.18] tracking-[-0.06em] sm:text-6xl">
+                      {mainTab === 'tasks'
+                        ? `${greeting}, ${user?.username || '사용자'}님.\n오늘 머물 곳을 정리해뒀어요.`
+                        : mainTab === 'challenges'
+                          ? '이번 주도 가볍게 도전해요'
+                          : '나를 위한 보상'}
+                    </h1>
+                    <p className="mt-4 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">
+                      {mainTab === 'tasks'
+                        ? '필요한 방부터 열어보고, 하나씩 가볍게 시작해요.'
+                        : mainTab === 'challenges'
+                          ? '평소 하던 일을 이어가면 자연스럽게 달성할 수 있어요.'
+                          : '꾸준히 모은 포인트로 오늘의 작은 기쁨을 골라보세요.'}
+                    </p>
+                  </div>
                 </div>
-                {mainTab === 'tasks' && (
-                  <SunMedium
-                    className="absolute right-12 top-10 hidden h-20 w-20 text-[oklch(0.82_0.17_82)] sm:block"
-                    strokeWidth={1.6}
-                    aria-hidden="true"
-                  />
-                )}
-              </div>
 
-              <div className="px-5 py-7 sm:px-10 sm:py-9">
-                {mainTab === 'tasks' ? (
-                  <div>
-                    {/* 작업 카테고리 탭 */}
-                    <div className="mb-8 rounded-2xl bg-muted p-1.5 md:hidden">
-                      <div
-                        className="grid grid-cols-4 gap-1"
-                        role="tablist"
-                        aria-label="기록 유형"
+                <div className="px-5 pt-5 pb-10 sm:px-10 sm:pb-12 lg:px-12">
+                  {mainTab === 'tasks' ? (
+                    <div>
+                      <nav
+                        className="mb-5 grid grid-cols-3 overflow-hidden rounded-[1.35rem] border border-[#26302a]/12 bg-[#f4f1e8] dark:border-border dark:bg-muted"
+                        aria-label="작업 공간"
                       >
-                        <button
-                          onClick={() => setTaskTab('home')}
-                          className={`min-h-11 whitespace-nowrap rounded-xl px-2 text-sm font-semibold transition-colors ${
-                            taskTab === 'home'
-                              ? 'bg-card text-primary shadow-sm'
-                              : 'text-muted-foreground hover:text-foreground'
-                          }`}
-                          role="tab"
-                          aria-selected={taskTab === 'home'}
-                        >
-                          홈
-                        </button>
-                        <button
-                          onClick={() => setTaskTab('habits')}
-                          className={`min-h-11 whitespace-nowrap rounded-xl px-3 text-sm font-semibold transition-colors ${
-                            taskTab === 'habits'
-                              ? 'bg-card text-primary shadow-sm'
-                              : 'text-muted-foreground hover:text-foreground'
-                          }`}
-                          role="tab"
-                          aria-selected={taskTab === 'habits'}
-                        >
-                          습관
-                        </button>
-                        <button
-                          onClick={() => setTaskTab('goals')}
-                          className={`min-h-11 whitespace-nowrap rounded-xl px-3 text-sm font-semibold transition-colors ${
-                            taskTab === 'goals'
-                              ? 'bg-card text-primary shadow-sm'
-                              : 'text-muted-foreground hover:text-foreground'
-                          }`}
-                          role="tab"
-                          aria-selected={taskTab === 'goals'}
-                        >
-                          목표
-                        </button>
-                        <button
-                          onClick={() => setTaskTab('todos')}
-                          className={`min-h-11 whitespace-nowrap rounded-xl px-3 text-sm font-semibold transition-colors ${
-                            taskTab === 'todos'
-                              ? 'bg-card text-primary shadow-sm'
-                              : 'text-muted-foreground hover:text-foreground'
-                          }`}
-                          role="tab"
-                          aria-selected={taskTab === 'todos'}
-                        >
-                          할일
-                        </button>
+                        {[
+                          {
+                            key: 'habits' as const,
+                            label: '습관',
+                            description: '매일 이어가는 행동',
+                          },
+                          {
+                            key: 'todos' as const,
+                            label: '할 일',
+                            description: '오늘과 앞으로의 일',
+                          },
+                          {
+                            key: 'goals' as const,
+                            label: '목표',
+                            description: '길게 보고 가는 방향',
+                          },
+                        ].map((item, index) => {
+                          const active =
+                            item.key === 'habits' ? taskTab === 'habits' : taskTab === item.key;
+
+                          return (
+                            <button
+                              key={item.key}
+                              type="button"
+                              onClick={() => {
+                                setTaskTab(item.key);
+                              }}
+                              className={`relative min-h-[4.5rem] px-3 text-left transition-colors sm:min-h-20 sm:px-5 ${
+                                index > 0 ? 'border-l border-[#26302a]/10 dark:border-border' : ''
+                              } ${
+                                active
+                                  ? 'bg-[#e4eddf] text-[#216c40] dark:bg-secondary dark:text-primary'
+                                  : 'text-[#687169] hover:bg-white/60 dark:text-muted-foreground dark:hover:bg-card'
+                              }`}
+                              aria-current={active ? 'page' : undefined}
+                            >
+                              <span className="block text-base font-bold sm:text-lg">
+                                {item.label}
+                              </span>
+                              <span className="mt-1 hidden text-xs font-medium opacity-75 sm:block">
+                                {item.description}
+                              </span>
+                              {active && (
+                                <span className="absolute inset-x-4 bottom-0 h-1 rounded-t-full bg-[#2e8c54] dark:bg-primary" />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </nav>
+
+                      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(17rem,0.7fr)]">
+                        <section className="rounded-[1.75rem] bg-[#eef0e7] px-5 py-6 dark:bg-muted sm:px-7 sm:py-7 xl:row-span-2">
+                          {/* 메인 룸: 작업 컨텐츠 */}
+                          {taskTab === 'habits' && (
+                            <div>
+                              <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div>
+                                  <h2 className="friendly-heading text-2xl font-bold text-foreground">
+                                    오늘의 습관
+                                  </h2>
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    이번 주도 잘 이어가고 있어요
+                                  </p>
+                                </div>
+                                <button
+                                  onClick={() => openAddModal(TaskType.HABIT)}
+                                  className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-primary/90"
+                                  aria-label="습관 추가"
+                                >
+                                  <Plus className="h-5 w-5" />
+                                </button>
+                              </div>
+
+                              <div className="space-y-3">
+                                {habitsLoading ? (
+                                  <div className="bg-card rounded-lg p-8 text-center border border-border">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3" />
+                                    <p className="text-muted-foreground text-sm">습관 로딩 중...</p>
+                                  </div>
+                                ) : habits.length === 0 ? (
+                                  <div className="bg-card rounded-lg p-8 text-center border border-border">
+                                    <p className="font-medium text-foreground">
+                                      아직 기록한 습관이 없어요.
+                                    </p>
+                                    <p className="mt-1 text-sm text-muted-foreground">
+                                      매일 이어가고 싶은 작은 행동부터 적어보세요.
+                                    </p>
+                                  </div>
+                                ) : (
+                                  habits.map((habit) => (
+                                    <HabitCard
+                                      key={habit.id}
+                                      habit={habit}
+                                      onPositive={handleHabitPositive}
+                                      onNegative={handleHabitNegative}
+                                    />
+                                  ))
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {taskTab === 'goals' && (
+                            <div>
+                              <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div>
+                                  <h2 className="friendly-heading text-2xl font-bold text-foreground">
+                                    {formatDate(selectedDate)}의 목표
+                                  </h2>
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    내가 정한 속도로 천천히 이어가요
+                                  </p>
+                                </div>
+                                <button
+                                  onClick={() => openAddModal(TaskType.GOAL)}
+                                  className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-primary/90"
+                                  aria-label="목표 추가"
+                                >
+                                  <Plus className="h-5 w-5" />
+                                </button>
+                              </div>
+
+                              <div className="space-y-3">
+                                {goalsLoading ? (
+                                  <div className="bg-card rounded-lg p-8 text-center border border-border">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3" />
+                                    <p className="text-muted-foreground text-sm">목표 로딩 중...</p>
+                                  </div>
+                                ) : goalsWithCompletion.length === 0 ? (
+                                  <div className="bg-card rounded-lg p-8 text-center border border-border">
+                                    <p className="font-medium text-foreground">
+                                      아직 적어둔 목표가 없어요.
+                                    </p>
+                                    <p className="mt-1 text-sm text-muted-foreground">
+                                      이번 주에 꼭 지키고 싶은 한 가지를 남겨보세요.
+                                    </p>
+                                  </div>
+                                ) : (
+                                  goalsWithCompletion.map((goal) => (
+                                    <GoalCard
+                                      key={goal.id}
+                                      goal={goal}
+                                      onToggle={handleGoalToggle}
+                                    />
+                                  ))
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {taskTab === 'todos' && (
+                            <div>
+                              <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div>
+                                  <h2 className="friendly-heading text-2xl font-bold text-foreground">
+                                    {formatDate(selectedDate)}의 할 일
+                                  </h2>
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    오늘 필요한 일만 가볍게 적어보세요
+                                  </p>
+                                </div>
+                                <button
+                                  onClick={() => openAddModal(TaskType.TODO)}
+                                  className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-primary/90"
+                                  aria-label="할 일 추가"
+                                >
+                                  <Plus className="h-5 w-5" />
+                                </button>
+                              </div>
+
+                              <div className="space-y-3">
+                                {todosLoading ? (
+                                  <div className="bg-card rounded-lg p-8 text-center border border-border">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3" />
+                                    <p className="text-muted-foreground text-sm">
+                                      할 일 로딩 중...
+                                    </p>
+                                  </div>
+                                ) : todos.length === 0 ? (
+                                  <div className="bg-card rounded-lg p-8 text-center border border-border">
+                                    <p className="font-medium text-foreground">
+                                      오늘 페이지가 비어 있어요.
+                                    </p>
+                                    <p className="mt-1 text-sm text-muted-foreground">
+                                      지금 끝내고 싶은 일을 한 줄로 적어보세요.
+                                    </p>
+                                  </div>
+                                ) : (
+                                  todos.map((todo, index) => (
+                                    <SimpleTodoCard
+                                      key={todo.id}
+                                      todo={todo}
+                                      featured={index === 0}
+                                      onStatusChange={handleTodoStatusChange}
+                                      onDelete={handleDeleteTodo}
+                                    />
+                                  ))
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </section>
+
+                        <aside className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+                          <section className="rounded-[1.75rem] bg-[#f4d89e] p-6 text-[#3f3625] dark:bg-[oklch(0.45_0.08_75)] dark:text-foreground">
+                            <p className="text-xs font-bold tracking-[0.16em] text-[#765f31] dark:text-foreground/70">
+                              SUNNY CORNER
+                            </p>
+                            <p className="friendly-heading mt-8 text-4xl font-bold tracking-[-0.06em]">
+                              {completedToday}개 완료
+                            </p>
+                            <p className="mt-2 text-sm leading-6 text-[#6d5b37] dark:text-foreground/75">
+                              {completedToday > 0
+                                ? `오늘의 ${totalToday || completedToday}개 중 여기까지 잘 왔어요.`
+                                : '첫 번째 일을 끝내면 오늘의 흐름이 시작돼요.'}
+                            </p>
+                          </section>
+
+                          <section className="rounded-[1.75rem] bg-[#cfe6ed] p-6 text-[#294850] dark:bg-[oklch(0.4_0.055_225)] dark:text-foreground">
+                            <div className="flex items-center justify-between gap-4">
+                              <p className="text-xs font-bold tracking-[0.16em] text-[#3f6873] dark:text-foreground/70">
+                                WINDOW VIEW
+                              </p>
+                              <span className="text-xs font-semibold">
+                                {userSummary.points.toLocaleString()} P
+                              </span>
+                            </div>
+                            {taskTab === 'goals' || taskTab === 'todos' ? (
+                              <div className="mt-5 rounded-2xl bg-[#fbf8ef]/80 p-2 text-[#26302a] dark:bg-card dark:text-foreground">
+                                <Calendar
+                                  selectedDate={selectedDate}
+                                  onDateSelect={handleDateSelect}
+                                  markedDates={markedDates}
+                                  currentMonth={currentMonth}
+                                  onMonthChange={setCurrentMonth}
+                                />
+                              </div>
+                            ) : (
+                              <div className="mt-8">
+                                <p className="friendly-heading text-3xl font-bold">
+                                  오늘 +{progressMetrics.totalPointsEarned}
+                                </p>
+                                <p className="mt-2 text-sm leading-6 text-[#4f6c73] dark:text-foreground/75">
+                                  완료할 때마다 내일 다시 돌아올 이유가 쌓여요.
+                                </p>
+                              </div>
+                            )}
+                          </section>
+                        </aside>
                       </div>
                     </div>
+                  ) : mainTab === 'challenges' ? (
+                    /* 도전과제 탭 */
+                    <div>
+                      {/* 일일 도전과제 */}
+                      <ChallengeComponent
+                        title="일일 도전과제"
+                        challengeOptions={dailyChallenges}
+                        comment={'매일 자정에 초기화됩니다'}
+                        loading={challengesLoading}
+                      />
 
-                    {/* 작업 컨텐츠 */}
-                    {taskTab === 'habits' && (
-                      <div>
-                        <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                          <div>
-                            <h2 className="friendly-heading text-2xl font-bold text-foreground">
-                              오늘의 습관
-                            </h2>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              이번 주도 잘 이어가고 있어요
-                            </p>
-                          </div>
-                          <button
-                            onClick={() => openAddModal(TaskType.HABIT)}
-                            className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-primary/90"
-                            aria-label="습관 추가"
-                          >
-                            <Plus className="h-5 w-5" />
-                          </button>
-                        </div>
+                      {/* 주간 도전과제 */}
+                      <ChallengeComponent
+                        title="주간 도전과제"
+                        challengeOptions={weeklyChallenges}
+                        comment={'매주 월요일에 초기화됩니다'}
+                        loading={challengesLoading}
+                      />
 
-                        <div className="space-y-3">
-                          {habitsLoading ? (
-                            <div className="bg-card rounded-lg p-8 text-center border border-border">
-                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3" />
-                              <p className="text-muted-foreground text-sm">습관 로딩 중...</p>
-                            </div>
-                          ) : habits.length === 0 ? (
-                            <div className="bg-card rounded-lg p-8 text-center border border-border">
-                              <p className="font-medium text-foreground">
-                                아직 기록한 습관이 없어요.
-                              </p>
-                              <p className="mt-1 text-sm text-muted-foreground">
-                                매일 이어가고 싶은 작은 행동부터 적어보세요.
-                              </p>
-                            </div>
-                          ) : (
-                            habits.map((habit) => (
-                              <HabitCard
-                                key={habit.id}
-                                habit={habit}
-                                onPositive={handleHabitPositive}
-                                onNegative={handleHabitNegative}
-                              />
-                            ))
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {taskTab === 'goals' && (
-                      <div>
-                        <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                          <div>
-                            <h2 className="friendly-heading text-2xl font-bold text-foreground">
-                              {formatDate(selectedDate)}의 목표
-                            </h2>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              내가 정한 속도로 천천히 이어가요
-                            </p>
-                          </div>
-                          <button
-                            onClick={() => openAddModal(TaskType.GOAL)}
-                            className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-primary/90"
-                            aria-label="목표 추가"
-                          >
-                            <Plus className="h-5 w-5" />
-                          </button>
-                        </div>
-
-                        <div className="space-y-3">
-                          {goalsLoading ? (
-                            <div className="bg-card rounded-lg p-8 text-center border border-border">
-                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3" />
-                              <p className="text-muted-foreground text-sm">목표 로딩 중...</p>
-                            </div>
-                          ) : goalsWithCompletion.length === 0 ? (
-                            <div className="bg-card rounded-lg p-8 text-center border border-border">
-                              <p className="font-medium text-foreground">
-                                아직 적어둔 목표가 없어요.
-                              </p>
-                              <p className="mt-1 text-sm text-muted-foreground">
-                                이번 주에 꼭 지키고 싶은 한 가지를 남겨보세요.
-                              </p>
-                            </div>
-                          ) : (
-                            goalsWithCompletion.map((goal) => (
-                              <GoalCard key={goal.id} goal={goal} onToggle={handleGoalToggle} />
-                            ))
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {(taskTab === 'todos' || taskTab === 'home') && (
-                      <div>
-                        <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                          <div>
-                            <h2 className="friendly-heading text-2xl font-bold text-foreground">
-                              {taskTab === 'home' ? '오늘의 할 일' : `${formatDate(selectedDate)}의 할 일`}
-                            </h2>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              오늘 필요한 일만 가볍게 적어보세요
-                            </p>
-                          </div>
-                          <button
-                            onClick={() => openAddModal(TaskType.TODO)}
-                            className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-primary/90"
-                            aria-label="할 일 추가"
-                          >
-                            <Plus className="h-5 w-5" />
-                          </button>
-                        </div>
-
-                        <div className="space-y-3">
-                          {todosLoading ? (
-                            <div className="bg-card rounded-lg p-8 text-center border border-border">
-                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3" />
-                              <p className="text-muted-foreground text-sm">할일 로딩 중...</p>
-                            </div>
-                          ) : todos.length === 0 ? (
-                            <div className="bg-card rounded-lg p-8 text-center border border-border">
-                              <p className="font-medium text-foreground">
-                                오늘 페이지가 비어 있어요.
-                              </p>
-                              <p className="mt-1 text-sm text-muted-foreground">
-                                지금 끝내고 싶은 일을 한 줄로 적어보세요.
-                              </p>
-                            </div>
-                          ) : (
-                            todos.map((todo, index) => (
-                              <SimpleTodoCard
-                                key={todo.id}
-                                todo={todo}
-                                featured={index === 0}
-                                onStatusChange={handleTodoStatusChange}
-                                onDelete={handleDeleteTodo}
-                              />
-                            ))
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : mainTab === 'challenges' ? (
-                  /* 도전과제 탭 */
-                  <div>
-                    {/* 일일 도전과제 */}
-                    <ChallengeComponent
-                      title="일일 도전과제"
-                      challengeOptions={dailyChallenges}
-                      comment={'매일 자정에 초기화됩니다'}
-                      loading={challengesLoading}
+                      {/* 월간 도전과제 */}
+                      <ChallengeComponent
+                        title="월간 도전과제"
+                        challengeOptions={monthlyChallenges}
+                        comment={'매달 1일에 초기화됩니다'}
+                        loading={challengesLoading}
+                      />
+                    </div>
+                  ) : (
+                    /* 보상 탭 */
+                    <RewardShop
+                      rewards={rewardsLoading ? [] : rewards}
+                      userPoints={userSummary.points}
+                      onClaim={handleClaimReward}
                     />
-
-                    {/* 주간 도전과제 */}
-                    <ChallengeComponent
-                      title="주간 도전과제"
-                      challengeOptions={weeklyChallenges}
-                      comment={'매주 월요일에 초기화됩니다'}
-                      loading={challengesLoading}
-                    />
-
-                    {/* 월간 도전과제 */}
-                    <ChallengeComponent
-                      title="월간 도전과제"
-                      challengeOptions={monthlyChallenges}
-                      comment={'매달 1일에 초기화됩니다'}
-                      loading={challengesLoading}
-                    />
-                  </div>
-                ) : (
-                  /* 보상 탭 */
-                  <RewardShop
-                    rewards={rewardsLoading ? [] : rewards}
-                    userPoints={userSummary.points}
-                    onClaim={handleClaimReward}
-                  />
-                )}
+                  )}
+                </div>
               </div>
-            </div>
-          </section>
-        </div>
-      </main>
+            </section>
+          </div>
+        </main>
 
-      {/* 추가 모달 */}
-      <AddTaskModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        taskType={modalTaskType}
-        onAdd={handleAddTask}
-      />
+        {/* 추가 모달 */}
+        <AddTaskModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          taskType={modalTaskType}
+          onAdd={handleAddTask}
+        />
+      </div>
     </div>
   );
 }

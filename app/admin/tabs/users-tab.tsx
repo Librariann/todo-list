@@ -38,7 +38,7 @@ function GrantModal({ target, onClose }: { target: GrantTarget; onClose: () => v
       await apiFetch(`${API_URL}/api/user/points/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: target.userId, point: amount }),
+        body: JSON.stringify({ id: +target.userId, point: amount }),
       });
       onClose();
     } finally {

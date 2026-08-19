@@ -1,5 +1,6 @@
 import { apiFetch } from './apiClient';
 import { Todo, TodoStatus } from '../types/todo';
+import { toast } from 'sonner';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -49,7 +50,12 @@ export async function createTodo(name: string, targetDate: string): Promise<Todo
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, targetDate }),
   });
-  if (!res.ok) throw new Error('Failed to create todo');
+
+  if (!res.ok) {
+    const errorBody = (await res.json().catch(() => null)) as { message?: string } | null;
+    throw new Error(errorBody?.message ?? '할 일을 생성하지 못했습니다.');
+  }
+
   const data = await res.json();
   return mapApiTodo(data.data as TodoApiResponse);
 }
@@ -59,12 +65,23 @@ export async function updateTodoStatus(id: string, status: TodoStatus): Promise<
   const res = await apiFetch(`${API_URL}/api/todos/${id}/status/${apiStatus}`, {
     method: 'PATCH',
   });
-  if (!res.ok) throw new Error('Failed to update todo status');
+
+  if (!res.ok) {
+    const errorBody = (await res.json().catch(() => null)) as { message?: string } | null;
+    toast.error(
+      errorBody?.message ?? '할 일 상태를 업데이트 하지 못했습니다. 관리자에게 문의해주세요'
+    );
+    throw new Error(
+      errorBody?.message ?? '할 일 상태를 업데이트 하지 못했습니다. 관리자에게 문의해주세요'
+    );
+  }
 }
 
 export async function deleteTodo(id: string): Promise<void> {
   const res = await apiFetch(`${API_URL}/api/todos/${id}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error('Failed to delete todo');
+  if (!res.ok) {
+    throw new Error('Failed to delete todo');
+  }
 }
 
 export async function fetchCompletedDatesInMonth(

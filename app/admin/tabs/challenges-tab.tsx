@@ -74,7 +74,6 @@ export default function ChallengesTab() {
           }),
         });
       } else {
-        console.log(form);
         await apiFetch(`${API_URL}/api/challenges/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

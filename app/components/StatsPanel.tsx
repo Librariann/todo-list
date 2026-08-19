@@ -2,7 +2,7 @@
 
 import { Habit, Goal } from '../types/todo';
 import { ProgressMetrics } from '../lib/rewardUtils';
-import { calculateStreak } from '../lib/habitUtils';
+import { calculateStreak, getProgressPercentage, getTodayProgress } from '../lib/habitUtils';
 
 export interface RewardItem {
   id: number;
@@ -43,16 +43,6 @@ interface StatsPanelProps {
 }
 
 const dayLabels = ['월', '화', '수', '목', '금', '토', '일'];
-const activeDotColors = [
-  'bg-primary',
-  'bg-primary',
-  'bg-primary',
-  'bg-[oklch(0.82_0.16_82)]',
-  'bg-[oklch(0.72_0.13_238)]',
-  'bg-[oklch(0.75_0.1_310)]',
-  'bg-[oklch(0.76_0.13_55)]',
-];
-
 function toDateString(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -95,82 +85,101 @@ export default function StatsPanel({
   const completedCount =
     metrics.habitsCompletedToday + metrics.goalsCompletedToday + metrics.todosCompletedToday;
   const totalCount = metrics.totalHabitsToday + metrics.totalGoalsToday + metrics.totalTodosToday;
-  const pathLength = Math.max(5, Math.min(7, totalCount || 5));
 
   if (loading) {
     return (
-      <div className="space-y-5">
-        <div className="h-24 animate-pulse rounded-2xl bg-muted" />
-        <div className="h-36 animate-pulse rounded-2xl bg-muted" />
+      <div className="space-y-5 py-4">
+        <div className="h-24 animate-pulse rounded-2xl bg-white/10" />
+        <div className="h-40 animate-pulse rounded-2xl bg-white/10" />
       </div>
     );
   }
 
   return (
-    <div>
-      <section>
-        <h2 className="friendly-heading text-2xl font-bold">이번 주 습관</h2>
-        <div className="mt-7 grid grid-cols-7 gap-2">
-          {week.map((day, index) => (
+    <div className="text-[#f5f2e9]">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-bold tracking-[0.18em] text-[#aeb9b1]">SIDE ROOM</p>
+        <span className="text-xs text-[#aeb9b1]">습관 {habits.length}</span>
+      </div>
+
+      <h2 className="friendly-heading mt-12 text-3xl leading-tight tracking-[-0.04em]">
+        매일 두드리는<br />작은 문들
+      </h2>
+
+      <div className="mt-9 divide-y divide-white/12">
+        {habits.length === 0 ? (
+          <p className="py-8 text-sm leading-6 text-[#aeb9b1]">
+            아직 습관이 없어요.<br />작은 행동 하나를 만들어보세요.
+          </p>
+        ) : (
+          habits.slice(0, 4).map((habit) => {
+            const target = habit.dailyTarget || 5;
+            const progress = getTodayProgress(habit);
+            const percentage = getProgressPercentage(habit);
+
+            return (
+              <div key={habit.id} className="py-5">
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="truncate font-semibold">{habit.title}</span>
+                  <span className="shrink-0 text-xs tabular-nums text-[#aeb9b1]">
+                    {progress} / {target}
+                  </span>
+                </div>
+                <span className="mt-4 block h-1 overflow-hidden rounded-full bg-white/12">
+                  <span
+                    className="block h-full rounded-full bg-[#79c995] transition-transform"
+                    style={{ width: `${Math.min(100, percentage)}%` }}
+                  />
+                </span>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      <section className="mt-10 border-t border-white/12 pt-8">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="text-xs text-[#aeb9b1]">오늘의 흐름</p>
+            <p className="friendly-heading mt-2 text-3xl font-bold">{completedCount}개 완료</p>
+          </div>
+          <p className="text-sm font-bold tabular-nums text-[#79c995]">{completedCount} / {totalCount}</p>
+        </div>
+        <span className="mt-5 block h-2 overflow-hidden rounded-full bg-white/12">
+          <span
+            className="block h-full rounded-full bg-[#f2c66d]"
+            style={{ width: `${totalCount > 0 ? Math.min(100, (completedCount / totalCount) * 100) : 0}%` }}
+          />
+        </span>
+      </section>
+
+      <section className="mt-10 border-t border-white/12 pt-8">
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-[#aeb9b1]">이번 주의 리듬</p>
+          <p className="text-sm font-semibold">{longestStreak}일째</p>
+        </div>
+        <div className="mt-6 grid grid-cols-7 gap-2">
+          {week.map((day) => (
             <div key={day.label} className="text-center">
-              <span className="text-sm font-medium text-muted-foreground">{day.label}</span>
+              <span className="block text-[0.65rem] text-[#aeb9b1]">{day.label}</span>
               <span
-                className={`mx-auto mt-3 block h-8 w-8 rounded-full transition-colors ${
-                  day.active ? activeDotColors[index] : 'bg-muted'
-                } ${day.future ? 'opacity-55' : ''}`}
+                className={`mx-auto mt-2 block h-8 w-1.5 rounded-full ${
+                  day.active ? 'bg-[#79c995]' : 'bg-white/14'
+                } ${day.future ? 'opacity-45' : ''}`}
               />
             </div>
           ))}
         </div>
       </section>
 
-      <section className="mt-8 rounded-[1.4rem] bg-secondary/65 px-6 py-6">
-        <p className="text-sm font-medium text-secondary-foreground">이번 주도 잘 이어가고 있어요</p>
-        <p className="friendly-heading mt-2 text-4xl font-bold text-primary">
-          {longestStreak}일 연속
-        </p>
-      </section>
-
-      <section className="mt-8 border-t border-border pt-7">
-        <p className="text-base text-muted-foreground">
-          오늘 <strong className="text-2xl text-primary">{completedCount}개</strong> 완료
-        </p>
-        <div className="mt-6 flex items-center">
-          {Array.from({ length: pathLength }).map((_, index) => {
-            const complete = index < completedCount;
-            return (
-              <div key={index} className="flex flex-1 items-center last:flex-none">
-                <span
-                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 text-xs font-bold ${
-                    complete
-                      ? `${activeDotColors[index]} border-transparent text-white`
-                      : 'border-border bg-card text-muted-foreground'
-                  }`}
-                >
-                  {complete ? '✓' : index + 1}
-                </span>
-                {index < pathLength - 1 && (
-                  <span className={`h-0.5 flex-1 ${index < completedCount - 1 ? 'bg-primary' : 'bg-border'}`} />
-                )}
-              </div>
-            );
-          })}
-        </div>
-        <p className="mt-4 text-sm text-muted-foreground">
-          {completedCount > 0 ? '좋아요. 이 흐름 그대로 이어가요.' : '첫 번째 완료부터 가볍게 시작해요.'}
-        </p>
-      </section>
-
-      <section className="mt-8 flex items-end justify-between border-t border-border pt-7">
+      <section className="mt-10 flex items-end justify-between border-t border-white/12 pt-8">
         <div>
-          <p className="text-sm font-medium text-muted-foreground">내 포인트</p>
-          <p className="friendly-heading mt-1 text-4xl font-bold tabular-nums">
+          <p className="text-xs text-[#aeb9b1]">모아둔 포인트</p>
+          <p className="friendly-heading mt-2 text-3xl font-bold tabular-nums">
             {totalPoints.toLocaleString()} P
           </p>
         </div>
-        <span className="rounded-full bg-[oklch(0.94_0.08_78)] px-4 py-2 text-sm font-bold text-[oklch(0.54_0.13_58)] dark:bg-muted dark:text-accent">
-          오늘 +{metrics.totalPointsEarned}
-        </span>
+        <span className="text-xs font-bold text-[#f2c66d]">오늘 +{metrics.totalPointsEarned}</span>
       </section>
     </div>
   );
