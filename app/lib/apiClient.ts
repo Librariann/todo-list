@@ -1,4 +1,5 @@
 import { useAuthStore } from '@/app/store/authStore';
+import { postNativeAuthEvent } from '@/app/lib/nativeBridge';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -27,8 +28,9 @@ async function refreshAccessToken(): Promise<string> {
   });
 
   if (!res.ok) {
+    const handledByNative = postNativeAuthEvent('AUTH_EXPIRED');
     clearAuth();
-    window.location.href = '/login';
+    if (!handledByNative) window.location.href = '/login';
     throw new Error('Token refresh failed');
   }
 
