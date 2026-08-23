@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import ThemeToggleStandalone from '../components/ThemeToggleStandalone';
+import { postNativeAuthEvent } from '../lib/nativeBridge';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -57,6 +58,13 @@ async function createCodeChallenge(codeVerifier: string): Promise<string> {
 export default function LoginPage() {
   const [pendingProvider, setPendingProvider] = useState<OAuthProvider | null>(null);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [isReturningToNativeLogin, setIsReturningToNativeLogin] = useState(false);
+
+  useEffect(() => {
+    if (postNativeAuthEvent('AUTH_EXPIRED')) {
+      setIsReturningToNativeLogin(true);
+    }
+  }, []);
 
   const handleOAuthLogin = async (provider: OAuthProvider) => {
     if (!API_URL) {
@@ -81,6 +89,14 @@ export default function LoginPage() {
       setLoginError('로그인을 시작하지 못했습니다. 잠시 후 다시 시도해 주세요.');
     }
   };
+
+  if (isReturningToNativeLogin) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background">
+        <p className="text-sm text-muted-foreground">앱 로그인 화면으로 이동 중...</p>
+      </main>
+    );
+  }
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-background px-4 py-8 sm:px-6 lg:flex lg:items-center lg:px-12">
