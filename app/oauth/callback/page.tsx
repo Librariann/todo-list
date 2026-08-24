@@ -1,15 +1,20 @@
 'use client';
 
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/app/store/authStore';
+import { postNativeAuthEvent } from '@/app/lib/nativeBridge';
 
 function CallbackHandler() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const setAuth = useAuthStore((state) => state.setAuth);
+  const hasStartedExchange = useRef(false);
 
   useEffect(() => {
+    if (hasStartedExchange.current) return;
+    hasStartedExchange.current = true;
+
     const code = searchParams.get('code');
     const error = searchParams.get('error');
     const codeVerifier = sessionStorage.getItem('oauth_code_verifier');
@@ -18,7 +23,7 @@ function CallbackHandler() {
 
     if (error || !code || !codeVerifier) {
       sessionStorage.removeItem('oauth_code_verifier');
-      router.replace('/login');
+      if (!postNativeAuthEvent('AUTH_EXPIRED')) router.replace('/login');
       return;
     }
 
@@ -59,7 +64,7 @@ function CallbackHandler() {
 
         router.replace('/');
       } catch {
-        router.replace('/login');
+        if (!postNativeAuthEvent('AUTH_EXPIRED')) router.replace('/login');
       } finally {
         sessionStorage.removeItem('oauth_code_verifier');
       }
