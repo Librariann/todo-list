@@ -7,6 +7,7 @@ import { LogOut, Shield, Ticket, UserRound } from 'lucide-react';
 import ThemeToggleStandalone from './ThemeToggleStandalone';
 import { useAuthStore } from '../store/authStore';
 import { apiFetch } from '../lib/apiClient';
+import { postNativeAuthEvent } from '../lib/nativeBridge';
 import type { MainTabType } from '../types/navigation';
 
 interface HeaderProps {
@@ -64,8 +65,9 @@ export default function Header({ mainTab, onTabChange }: HeaderProps) {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
     } finally {
+      const handledByNative = postNativeAuthEvent('LOGOUT');
       clearAuth();
-      router.push('/login');
+      if (!handledByNative) router.push('/login');
     }
   };
 
