@@ -1,8 +1,5 @@
 import { Habit } from '@/app/types/todo';
-
-export function getTodayDateString(): string {
-  return new Date().toISOString().split('T')[0];
-}
+import { getTodayDateString } from '@/app/lib/dateUtils';
 
 export function getYesterdayDateString(): string {
   const yesterday = new Date();
