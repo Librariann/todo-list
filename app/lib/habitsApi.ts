@@ -1,5 +1,6 @@
 import { apiFetch } from './apiClient';
 import { Habit, HabitType } from '../types/todo';
+import { getTodayDateString } from './dateUtils';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -36,7 +37,7 @@ export interface UpdateHabitPayload {
 // ─── 매퍼 ────────────────────────────────────────────────────────────────────
 
 export function mapApiHabit(api: HabitsApiResponse): Habit {
-  const today = new Date().toISOString().split('T')[0];
+  const today = getTodayDateString();
   return {
     id: api.id.toString(),
     title: api.name,
