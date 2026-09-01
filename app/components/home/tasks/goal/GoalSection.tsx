@@ -2,22 +2,29 @@
 
 import GoalCard from '@/app/components/GoalCard';
 import type { Goal, GoalWithDate } from '@/app/types/todo';
-import { achieveGoal, deleteGoal, fetchGoalsByDate } from '@/app/lib/goalsApi';
+import { achieveGoal, createGoal, deleteGoal } from '@/app/lib/goalsApi';
 import { useCalendarStore } from '@/app/store/calendarStore';
 import { useEffect, useMemo, useState } from 'react';
 import { TaskEmptyState, TaskLoadingState, TaskSectionHeader } from '../TaskSectionLayout';
-import CreateGoalModal from './CreateGoalModal';
+import CreateGoalModal, { type CreateGoalInput } from './CreateGoalModal';
 import ConfirmModal from '@/app/components/ConfirmModal';
 import { toast } from 'sonner';
 import { formatDate, getDatesInRange, getTodayDateString } from '@/app/lib/dateUtils';
 import { useAuthStore } from '@/app/store/authStore';
+import { useGoalsStore } from '@/app/store/goalsStore';
+import { useUserSummaryStore } from '@/app/store/userSummaryStore';
+
+const EMPTY_GOALS: Goal[] = [];
 
 export default function GoalSection() {
   const selectedDate = useCalendarStore((calendar) => calendar.selectedDate);
-  const [goals, setGoals] = useState<Goal[]>([]);
+  const goals = useGoalsStore((state) => state.goalsByDate[selectedDate] ?? EMPTY_GOALS);
+  const loading = useGoalsStore((state) => state.loadingByDate[selectedDate] ?? false);
+  const fetchGoals = useGoalsStore((state) => state.fetchGoals);
+  const setGoalsForDate = useGoalsStore((state) => state.setGoals);
+  const refreshSummary = useUserSummaryStore((summary) => summary.refreshSummary);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<GoalWithDate | null>(null);
-  const [loading, setLoading] = useState(false);
   const dateLabel = formatDate(selectedDate);
   const canCreate = selectedDate >= getTodayDateString();
   const isAuthenticated = useAuthStore((auth) => auth.isAuthenticated);
@@ -26,28 +33,8 @@ export default function GoalSection() {
     if (!isAuthenticated) {
       return;
     }
-    const controller = new AbortController();
-    let active = true;
-    setLoading(true);
-    fetchGoalsByDate(selectedDate, controller.signal)
-      .then((data) => {
-        if (active) setGoals(data);
-      })
-      .catch((error) => {
-        if (error instanceof DOMException && error.name === 'AbortError') {
-          return;
-        }
-        console.error('목표 로드 실패:', error);
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-
-    return () => {
-      active = false;
-      controller.abort();
-    };
-  }, [isAuthenticated, selectedDate]);
+    void fetchGoals(selectedDate);
+  }, [fetchGoals, isAuthenticated, selectedDate]);
 
   // 선택된 날짜의 목표 (완료 여부 포함)
   const goalsWithCompletion = useMemo<GoalWithDate[]>(() => {
@@ -70,7 +57,7 @@ export default function GoalSection() {
     const snapshot = goals;
     const achievedAt = new Date().toISOString();
 
-    setGoals((prev) =>
+    setGoalsForDate(selectedDate, (prev) =>
       prev.map((d) => {
         if (d.id !== id) return d;
         return {
@@ -89,13 +76,13 @@ export default function GoalSection() {
     );
     try {
       await achieveGoal(id);
-      const refreshedGoals = await fetchGoalsByDate(selectedDate);
-      setGoals(refreshedGoals);
+      await fetchGoals(selectedDate, true);
+      await refreshSummary();
       toast.success('목표가 완료됐어요', {
         description: '이번 기간 전체에 완료 상태가 반영됐어요.',
       });
     } catch (error) {
-      setGoals(snapshot);
+      setGoalsForDate(selectedDate, snapshot);
       toast.error(error instanceof Error ? error.message : '목표를 완료하지 못했습니다.');
     }
   };
@@ -108,13 +95,15 @@ export default function GoalSection() {
       return;
     }
 
-    setGoals((previousGoals) => previousGoals.filter((goal) => goal.id !== id));
+    setGoalsForDate(selectedDate, (previousGoals) =>
+      previousGoals.filter((goal) => goal.id !== id)
+    );
 
     try {
       await deleteGoal(id);
       toast.success('목표를 삭제했어요.');
     } catch (error) {
-      setGoals((previousGoals) => {
+      setGoalsForDate(selectedDate, (previousGoals) => {
         if (previousGoals.some((goal) => goal.id === id)) return previousGoals;
 
         const restoredGoals = [...previousGoals];
@@ -126,8 +115,10 @@ export default function GoalSection() {
     }
   };
 
-  const handleGoalCreated = async () => {
-    setGoals(await fetchGoalsByDate(selectedDate));
+  const handleGoalCreated = async (input: CreateGoalInput) => {
+    await createGoal(input.name, input.recurrenceType, selectedDate);
+    await fetchGoals(selectedDate, true);
+    toast.success('목표를 추가했어요.');
   };
 
   return (
