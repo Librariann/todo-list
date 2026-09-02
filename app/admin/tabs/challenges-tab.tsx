@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { apiFetch } from '@/app/lib/apiClient';
+import EditableNumberInput from '@/app/components/EditableNumberInput';
 import { ActionBtn, Field } from './components';
 import {
   Challenge,
@@ -84,12 +85,11 @@ function SettingStepper({ label, value, min, max, suffix, onChange }: SettingSte
         </button>
         <label className="flex h-11 items-center border-x border-stone-200 dark:border-white/[0.1]">
           <span className="sr-only">{label}</span>
-          <input
-            type="number"
+          <EditableNumberInput
             min={min}
             max={max}
             value={value}
-            onChange={(event) => onChange(event.currentTarget.valueAsNumber || min)}
+            onValueChange={onChange}
             className="h-full w-12 bg-transparent text-right text-sm font-bold text-foreground outline-none"
           />
           <span className="w-8 pr-2 text-xs font-semibold text-muted-foreground">{suffix}</span>
@@ -615,30 +615,27 @@ export default function ChallengesTab() {
               </select>
             </Field>
             <Field label="목표 횟수">
-              <input
+              <EditableNumberInput
                 className="input-common"
-                type="number"
                 min={1}
                 value={form.targetCount}
-                onChange={(e) => setForm((f) => ({ ...f, targetCount: +e.target.value }))}
+                onValueChange={(targetCount) => setForm((f) => ({ ...f, targetCount }))}
               />
             </Field>
             <Field label="하루 인정 한도 *">
-              <input
+              <EditableNumberInput
                 className="input-common"
-                type="number"
                 min={1}
                 value={form.dailyMaxCount}
-                onChange={(e) => setForm((f) => ({ ...f, dailyMaxCount: +e.target.value }))}
+                onValueChange={(dailyMaxCount) => setForm((f) => ({ ...f, dailyMaxCount }))}
               />
             </Field>
             <Field label="보상 포인트 *">
-              <input
+              <EditableNumberInput
                 className="input-common"
-                type="number"
                 min={0}
                 value={form.point}
-                onChange={(e) => setForm((f) => ({ ...f, point: +e.target.value }))}
+                onValueChange={(point) => setForm((f) => ({ ...f, point }))}
               />
             </Field>
             <Field label="순환 후보">
