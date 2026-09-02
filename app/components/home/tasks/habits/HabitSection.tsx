@@ -1,18 +1,22 @@
 'use client';
 
 import HabitCard from '@/app/components/HabitCard';
-import type { Habit } from '@/app/types/todo';
 import { TaskEmptyState, TaskLoadingState, TaskSectionHeader } from '../TaskSectionLayout';
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/app/store/authStore';
-import { createHabit, decrementHabit, fetchHabits, incrementHabit } from '@/app/lib/habitsApi';
+import { createHabit, decrementHabit, incrementHabit } from '@/app/lib/habitsApi';
 import { updateHabitProgress } from '@/app/lib/habitUtils';
 import CreateHabitsModal, { type CreateHabitInput } from './CreateHabitsModal';
+import { useHabitsStore } from '@/app/store/habitsStore';
+import { useUserSummaryStore } from '@/app/store/userSummaryStore';
 
 export default function HabitSection() {
   const isAuthenticated = useAuthStore((auth) => auth.isAuthenticated);
-  const [loading, setLoading] = useState(false);
-  const [habits, setHabits] = useState<Habit[]>([]);
+  const habits = useHabitsStore((state) => state.habits);
+  const loading = useHabitsStore((state) => state.isLoading);
+  const fetchHabits = useHabitsStore((state) => state.fetchHabits);
+  const setHabits = useHabitsStore((state) => state.setHabits);
+  const refreshSummary = useUserSummaryStore((summary) => summary.refreshSummary);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   useEffect(() => {
@@ -20,12 +24,8 @@ export default function HabitSection() {
       return;
     }
 
-    setLoading(true);
-    fetchHabits()
-      .then((data) => setHabits(data))
-      .catch((err) => console.error('습관 로드 실패:', err))
-      .finally(() => setLoading(false));
-  }, [isAuthenticated]);
+    void fetchHabits();
+  }, [isAuthenticated, fetchHabits]);
 
   const handleHabitPositive = async (id: string) => {
     // 낙관적 업데이트
@@ -33,6 +33,7 @@ export default function HabitSection() {
     try {
       const updated = await incrementHabit(id);
       setHabits((prev) => prev.map((h) => (h.id === id ? updated : h)));
+      await refreshSummary();
     } catch {
       setHabits((prev) => prev.map((h) => (h.id === id ? updateHabitProgress(h, -1) : h)));
     }
@@ -43,6 +44,7 @@ export default function HabitSection() {
     try {
       const updated = await decrementHabit(id);
       setHabits((prev) => prev.map((h) => (h.id === id ? updated : h)));
+      await refreshSummary();
     } catch {
       setHabits((prev) => prev.map((h) => (h.id === id ? updateHabitProgress(h, 1) : h)));
     }
