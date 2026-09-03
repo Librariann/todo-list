@@ -5,22 +5,26 @@ import { Todo, TodoStatus } from '@/app/types/todo';
 import { TaskEmptyState, TaskLoadingState, TaskSectionHeader } from '../TaskSectionLayout';
 import { useEffect, useState } from 'react';
 import { formatDate, getTodayDateString } from '@/app/lib/dateUtils';
-import { createTodo, deleteTodo, fetchTodos, updateTodoStatus } from '@/app/lib/todosApi';
+import { createTodo, deleteTodo, updateTodoStatus } from '@/app/lib/todosApi';
 import { useCalendarStore } from '@/app/store/calendarStore';
 import { useUserSummaryStore } from '@/app/store/userSummaryStore';
 import { useAuthStore } from '@/app/store/authStore';
 import { toast } from 'sonner';
 import CreateTodoModal, { type CreateTodoInput } from './CreateTodoModal';
 import ConfirmModal from '@/app/components/ConfirmModal';
+import { useTodosStore } from '@/app/store/todosStore';
+
+const EMPTY_TODOS: Todo[] = [];
 
 export default function TodoSection() {
   const isAuthenticated = useAuthStore((auth) => auth.isAuthenticated);
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [completedTodoDates, setCompletedTodoDates] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Todo | null>(null);
   const selectedDate = useCalendarStore((calendar) => calendar.selectedDate);
+  const todos = useTodosStore((state) => state.todosByDate[selectedDate] ?? EMPTY_TODOS);
+  const loading = useTodosStore((state) => state.loadingByDate[selectedDate] ?? false);
+  const fetchTodos = useTodosStore((state) => state.fetchTodos);
+  const setTodosForDate = useTodosStore((state) => state.setTodos);
   const refreshSummary = useUserSummaryStore((summary) => summary.refreshSummary);
   const dateLabel = formatDate(selectedDate);
   const canCreate = selectedDate >= getTodayDateString();
@@ -31,43 +35,28 @@ export default function TodoSection() {
       return;
     }
 
-    let active = true;
-    setLoading(true);
-    fetchTodos(selectedDate)
-      .then((data) => {
-        if (!active) {
-          return;
-        }
-        setTodos(data);
-      })
-      .catch((error) => console.error('할 일 로드 실패:', error))
-      .finally(() => {
-        if (active) {
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [isAuthenticated, selectedDate]);
+    void fetchTodos(selectedDate);
+  }, [fetchTodos, isAuthenticated, selectedDate]);
 
   const handleCreateTodo = async (input: CreateTodoInput) => {
     const created = await createTodo(input.name, selectedDate);
-    setTodos((previousTodos) => [...previousTodos, created]);
+    setTodosForDate(selectedDate, (previousTodos) => [...previousTodos, created]);
     toast.success('할 일을 추가했어요.');
   };
 
   const handleDeleteTodo = async (todoId: string) => {
     const snapshot = todos;
     const afterDelete = todos.filter((t) => t.id !== todoId);
-    setTodos(afterDelete);
+    setTodosForDate(selectedDate, afterDelete);
 
     try {
       await deleteTodo(todoId);
+      if (snapshot.some((todo) => todo.id === todoId && todo.status === TodoStatus.DONE)) {
+        await refreshSummary();
+      }
       toast.success('할 일을 삭제했어요.');
     } catch (error) {
-      setTodos(snapshot);
+      setTodosForDate(selectedDate, snapshot);
       throw error;
     }
   };
@@ -94,38 +83,12 @@ export default function TodoSection() {
       return result;
     });
 
-    setTodos(optimistic);
-
-    // 완료 상태 변경 시 달력 점 표시 업데이트
-    setCompletedTodoDates((prev) => {
-      const next = new Set(prev);
-      const hasDoneAfter = optimistic.some((snapshot) => snapshot.status === TodoStatus.DONE);
-
-      if (hasDoneAfter) {
-        next.add(selectedDate);
-      } else {
-        next.delete(selectedDate);
-      }
-
-      return next;
-    });
+    setTodosForDate(selectedDate, optimistic);
 
     try {
       await updateTodoStatus(todoId, newStatus);
     } catch {
-      setTodos(snapshot);
-
-      // 롤백 시 completedTodoDates도 원래대로
-      setCompletedTodoDates((prev) => {
-        const next = new Set(prev);
-        const hadDone = snapshot.some((snapshot) => snapshot.status === TodoStatus.DONE);
-        if (hadDone) {
-          next.add(selectedDate);
-        } else {
-          next.delete(selectedDate);
-        }
-        return next;
-      });
+      setTodosForDate(selectedDate, snapshot);
       return;
     }
 
