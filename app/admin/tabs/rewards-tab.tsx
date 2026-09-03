@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { CalendarClock, ImageIcon, PackageCheck, PackageX, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiFetch } from '@/app/lib/apiClient';
+import EditableNumberInput from '@/app/components/EditableNumberInput';
 import { ActionBtn, Field } from './components';
 import { Reward, RewardForm, RewardType, defaultRewardForm } from './types';
 import ConfirmModal from '@/app/components/ConfirmModal';
@@ -203,12 +204,11 @@ export default function RewardsTab() {
               </select>
             </Field>
             <Field label="포인트 *">
-              <input
+              <EditableNumberInput
                 className="input-common"
-                type="number"
                 min={0}
                 value={form.point}
-                onChange={(e) => setForm((f) => ({ ...f, point: +e.target.value }))}
+                onValueChange={(point) => setForm((f) => ({ ...f, point }))}
               />
             </Field>
             <Field label="설명">
@@ -280,15 +280,12 @@ export default function RewardsTab() {
               />
             </Field>
             <Field label={form.type === 'COUPON' ? '준비된 쿠폰 재고' : '재고 관리 안 함'}>
-              <input
+              <EditableNumberInput
                 className="input-common"
-                type="number"
                 min={0}
                 disabled={form.type !== 'COUPON'}
                 value={form.stockQuantity}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, stockQuantity: Math.max(0, +e.target.value) }))
-                }
+                onValueChange={(stockQuantity) => setForm((f) => ({ ...f, stockQuantity }))}
               />
             </Field>
             <Field label="교환 운영">
@@ -326,13 +323,12 @@ export default function RewardsTab() {
             </Field>
             {form.discount && (
               <Field label="할인율 (%)">
-                <input
+                <EditableNumberInput
                   className="input-common"
-                  type="number"
                   min={0}
                   max={100}
                   value={form.discountRate}
-                  onChange={(e) => setForm((f) => ({ ...f, discountRate: +e.target.value }))}
+                  onValueChange={(discountRate) => setForm((f) => ({ ...f, discountRate }))}
                 />
               </Field>
             )}
