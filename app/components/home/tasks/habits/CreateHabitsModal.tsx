@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import EditableNumberInput from '@/app/components/EditableNumberInput';
 import TaskModalLayout from '../TaskModalLayout';
 import type { Habit } from '@/app/types/todo';
 
@@ -91,13 +92,12 @@ export default function CreateHabitsModal({
         <Label htmlFor="habit-daily-target" className="mb-2 text-sm font-medium">
           하루 목표 횟수
         </Label>
-        <Input
+        <EditableNumberInput
           id="habit-daily-target"
-          type="number"
           min={1}
           max={50}
           value={dailyTarget}
-          onChange={(event) => setDailyTarget(Math.max(1, Number(event.target.value) || 1))}
+          onValueChange={setDailyTarget}
         />
         <p className="mt-1 text-xs text-muted-foreground">하루에 몇 번 실천할지 정해주세요.</p>
       </div>
