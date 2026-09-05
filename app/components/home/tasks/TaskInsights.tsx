@@ -1,32 +1,35 @@
 import Calendar from '@/app/components/Calendar';
+import { getTodayDateString } from '@/app/lib/dateUtils';
+import { calculateTodayFlowMetrics } from '@/app/lib/taskMetrics';
 import { useCalendarStore } from '@/app/store/calendarStore';
+import { useGoalsStore } from '@/app/store/goalsStore';
+import { useHabitsStore } from '@/app/store/habitsStore';
+import { useTodosStore } from '@/app/store/todosStore';
+import { useUserSummaryStore } from '@/app/store/userSummaryStore';
 import type { TaskTabType } from '@/app/types/navigation';
 
 interface TaskInsightsProps {
   activeTab: TaskTabType;
-  completedToday: number;
-  totalToday: number;
-  userPoints: number;
-  // progressMetrics: ProgressMetrics;
-  selectedDate: string;
-  // markedDates: string[];
-  currentMonth: Date;
-  onMonthChange: (date: Date) => void;
 }
 
-export default function TaskInsights({
-  activeTab,
-  completedToday,
-  totalToday,
-  userPoints,
-  // progressMetrics,
-  selectedDate,
-  // markedDates,
-  currentMonth,
-  onMonthChange,
-}: TaskInsightsProps) {
+export default function TaskInsights({ activeTab }: TaskInsightsProps) {
   const showsCalendar = activeTab === 'goals' || activeTab === 'todos';
+  const today = getTodayDateString();
+  const habits = useHabitsStore((state) => state.habits);
+  const goalsByDate = useGoalsStore((state) => state.goalsByDate);
+  const todosByDate = useTodosStore((state) => state.todosByDate);
+  const userPoints = useUserSummaryStore((summary) => summary.points);
+  const selectedDate = useCalendarStore((calendar) => calendar.selectedDate);
+  const currentMonth = useCalendarStore((calendar) => calendar.currentMonth);
   const setSelectedDate = useCalendarStore((calendar) => calendar.setSelectedDate);
+  const onMonthChange = useCalendarStore((calendar) => calendar.setCurrentMonth);
+  const goals = goalsByDate[today] ?? [];
+  const todos = todosByDate[today] ?? [];
+  const { completed: completedToday, total: totalToday } = calculateTodayFlowMetrics(
+    habits,
+    goals,
+    todos
+  );
 
   const handleDateSelect = (date: string) => {
     setSelectedDate(date);
@@ -35,9 +38,7 @@ export default function TaskInsights({
   return (
     <aside className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
       <section className="rounded-[1.75rem] bg-[#f4d89e] p-6 text-[#3f3625] dark:bg-[oklch(0.45_0.08_75)] dark:text-foreground">
-        <p className="text-xs font-bold tracking-[0.16em] text-[#765f31] dark:text-foreground/70">
-          SUNNY CORNER
-        </p>
+        <p className="text-xs font-bold text-[#765f31] dark:text-foreground/70">오늘 한눈에</p>
         <p className="friendly-heading mt-8 text-4xl font-bold tracking-[-0.06em]">
           {completedToday}개 완료
         </p>
@@ -50,8 +51,8 @@ export default function TaskInsights({
 
       <section className="rounded-[1.75rem] bg-[#cfe6ed] p-6 text-[#294850] dark:bg-[oklch(0.4_0.055_225)] dark:text-foreground">
         <div className="flex items-center justify-between gap-4">
-          <p className="text-xs font-bold tracking-[0.16em] text-[#3f6873] dark:text-foreground/70">
-            WINDOW VIEW
+          <p className="text-xs font-bold text-[#3f6873] dark:text-foreground/70">
+            {showsCalendar ? '날짜별 기록' : '내 포인트'}
           </p>
           <span className="text-xs font-semibold">{userPoints.toLocaleString()} P</span>
         </div>
@@ -60,16 +61,12 @@ export default function TaskInsights({
             <Calendar
               selectedDate={selectedDate}
               onDateSelect={handleDateSelect}
-              // markedDates={markedDates}
               currentMonth={currentMonth}
               onMonthChange={onMonthChange}
             />
           </div>
         ) : (
           <div className="mt-8">
-            <p className="friendly-heading text-3xl font-bold">
-              {/* 오늘 +{progressMetrics.totalPointsEarned} */}
-            </p>
             <p className="mt-2 text-sm leading-6 text-[#4f6c73] dark:text-foreground/75">
               완료할 때마다 내일 다시 돌아올 이유가 쌓여요.
             </p>
