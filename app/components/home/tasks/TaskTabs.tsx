@@ -25,7 +25,7 @@ export default function TaskTabs({ activeTab, onChange }: TaskTabsProps) {
             key={tab.key}
             type="button"
             onClick={() => onChange(tab.key)}
-            className={`relative min-h-[4.5rem] px-3 text-left transition-colors sm:min-h-20 sm:px-5 ${
+            className={`relative min-h-[4.5rem] px-3 text-center transition-colors sm:min-h-20 sm:px-5 sm:text-left ${
               index > 0 ? 'border-l border-[#26302a]/10 dark:border-border' : ''
             } ${
               isActive
