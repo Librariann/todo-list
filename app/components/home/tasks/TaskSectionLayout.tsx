@@ -32,6 +32,7 @@ export function TaskSectionHeader({
         <button
           type="button"
           onClick={onAdd}
+          data-tour="task-add"
           className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-primary/90"
           aria-label={addLabel}
         >
