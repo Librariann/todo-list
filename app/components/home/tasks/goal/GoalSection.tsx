@@ -17,7 +17,11 @@ import { getAwardedPoints, notifyChallengeAchievements } from '@/app/lib/challen
 
 const EMPTY_GOALS: Goal[] = [];
 
-export default function GoalSection() {
+interface GoalSectionProps {
+  createRequestKey?: number;
+}
+
+export default function GoalSection({ createRequestKey }: GoalSectionProps) {
   const selectedDate = useCalendarStore((calendar) => calendar.selectedDate);
   const goals = useGoalsStore((state) => state.goalsByDate[selectedDate] ?? EMPTY_GOALS);
   const loading = useGoalsStore((state) => state.loadingByDate[selectedDate] ?? false);
@@ -38,6 +42,12 @@ export default function GoalSection() {
     }
     void fetchGoals(selectedDate);
   }, [fetchGoals, isAuthenticated, selectedDate]);
+
+  useEffect(() => {
+    if (createRequestKey === undefined || !canCreate) return;
+    setEditTarget(null);
+    setIsCreateOpen(true);
+  }, [canCreate, createRequestKey]);
 
   // 선택된 날짜의 목표 (완료 여부 포함)
   const goalsWithCompletion = useMemo<GoalWithDate[]>(() => {
