@@ -20,7 +20,7 @@ export default function Calendar({
   currentMonth,
   onMonthChange,
 }: CalendarProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   // 달력 데이터 생성
   const calendarDays = useMemo(() => {
     const year = currentMonth.getFullYear();
