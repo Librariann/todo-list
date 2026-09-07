@@ -2,12 +2,7 @@
 
 import type { FormEvent, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface TaskModalLayoutProps {
   open: boolean;
@@ -37,7 +32,10 @@ export default function TaskModalLayout({
         if (!submitting) onOpenChange(nextOpen);
       }}
     >
-      <DialogContent className="w-full max-w-md">
+      <DialogContent
+        className="w-full max-w-md"
+        onOpenAutoFocus={(event) => event.preventDefault()}
+      >
         <DialogHeader>
           <p className="journal-kicker">가볍게 시작해요</p>
           <DialogTitle className="friendly-heading text-2xl">{title}</DialogTitle>
