@@ -84,7 +84,6 @@ export default function CreateTodoModal({
           onChange={(event) => setName(event.target.value)}
           placeholder="이번에 끝내고 싶은 일"
           maxLength={50}
-          autoFocus
         />
       </div>
 
