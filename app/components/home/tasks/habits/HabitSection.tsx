@@ -12,7 +12,11 @@ import { useHabitsStore } from '@/app/store/habitsStore';
 import { useUserSummaryStore } from '@/app/store/userSummaryStore';
 import { getAwardedPoints, notifyChallengeAchievements } from '@/app/lib/challengeNotifications';
 
-export default function HabitSection() {
+interface HabitSectionProps {
+  createRequestKey?: number;
+}
+
+export default function HabitSection({ createRequestKey }: HabitSectionProps) {
   const isAuthenticated = useAuthStore((auth) => auth.isAuthenticated);
   const habits = useHabitsStore((state) => state.habits);
   const loading = useHabitsStore((state) => state.isLoading);
@@ -30,6 +34,12 @@ export default function HabitSection() {
 
     void fetchHabits();
   }, [isAuthenticated, fetchHabits]);
+
+  useEffect(() => {
+    if (createRequestKey === undefined) return;
+    setEditTarget(null);
+    setIsCreateOpen(true);
+  }, [createRequestKey]);
 
   const handleHabitPositive = async (id: string) => {
     // 낙관적 업데이트
