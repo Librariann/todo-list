@@ -9,6 +9,15 @@ export interface UserSummaryResponse {
   achievedChallenges?: SummaryChallengeResponse[];
 }
 
+export interface ChallengeAchievement {
+  challengeId: number;
+  name: string;
+  description: string | null;
+  point: number;
+  periodType: string;
+  periodKey: string;
+}
+
 export interface RewardItem {
   id: number;
   name: string;

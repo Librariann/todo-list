@@ -18,6 +18,8 @@ const initialSummary: UserSummaryResponse = {
   achievedChallenges: [],
 };
 
+let latestSummaryRequestId = 0;
+
 function mapSummary(data: UserSummaryResponse): UserSummaryResponse {
   return {
     points: typeof data.points === 'number' ? data.points : 0,
@@ -36,15 +38,18 @@ export const useUserSummaryStore = create<UserSummaryState>((set) => ({
   error: null,
 
   fetchSummary: async () => {
+    const requestId = ++latestSummaryRequestId;
     set({ isLoading: true, error: null });
 
     try {
       const data = await fetchUserSummary();
+      if (requestId !== latestSummaryRequestId) return;
       set({
         ...mapSummary(data),
         isLoading: false,
       });
     } catch {
+      if (requestId !== latestSummaryRequestId) return;
       set({
         isLoading: false,
         error: '사용자 요약 정보를 불러오지 못했습니다.',
@@ -53,11 +58,18 @@ export const useUserSummaryStore = create<UserSummaryState>((set) => ({
   },
 
   refreshSummary: async () => {
+    const requestId = ++latestSummaryRequestId;
     try {
       const data = await fetchUserSummary();
-      set(mapSummary(data));
+      if (requestId !== latestSummaryRequestId) return;
+      set({
+        ...mapSummary(data),
+        isLoading: false,
+        error: null,
+      });
     } catch {
-      // 기존 화면 데이터 유지
+      if (requestId !== latestSummaryRequestId) return;
+      set({ isLoading: false });
     }
   },
 
@@ -68,6 +80,7 @@ export const useUserSummaryStore = create<UserSummaryState>((set) => ({
   },
 
   resetSummary: () => {
+    latestSummaryRequestId += 1;
     set({
       ...initialSummary,
       isLoading: false,

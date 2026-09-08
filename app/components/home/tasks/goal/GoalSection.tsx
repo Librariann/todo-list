@@ -13,6 +13,7 @@ import { formatDate, getDatesInRange, getTodayDateString } from '@/app/lib/dateU
 import { useAuthStore } from '@/app/store/authStore';
 import { useGoalsStore } from '@/app/store/goalsStore';
 import { useUserSummaryStore } from '@/app/store/userSummaryStore';
+import { getAwardedPoints, notifyChallengeAchievements } from '@/app/lib/challengeNotifications';
 
 const EMPTY_GOALS: Goal[] = [];
 
@@ -23,6 +24,7 @@ export default function GoalSection() {
   const fetchGoals = useGoalsStore((state) => state.fetchGoals);
   const setGoalsForDate = useGoalsStore((state) => state.setGoals);
   const refreshSummary = useUserSummaryStore((summary) => summary.refreshSummary);
+  const adjustPoints = useUserSummaryStore((summary) => summary.adjustPoints);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<GoalWithDate | null>(null);
   const dateLabel = formatDate(selectedDate);
@@ -62,6 +64,7 @@ export default function GoalSection() {
         if (d.id !== id) return d;
         return {
           ...d,
+          streak: d.streak + 1,
           completedDates: getDatesInRange(target.period!.start, target.period!.end),
           period: {
             ...target.period!,
@@ -75,12 +78,15 @@ export default function GoalSection() {
       })
     );
     try {
-      await achieveGoal(id);
-      await fetchGoals(selectedDate, true);
-      await refreshSummary();
-      toast.success('목표가 완료됐어요', {
-        description: '이번 기간 전체에 완료 상태가 반영됐어요.',
-      });
+      const result = await achieveGoal(id);
+      adjustPoints(getAwardedPoints(result.achievements));
+      notifyChallengeAchievements(result.achievements);
+      await Promise.all([fetchGoals(selectedDate, true), refreshSummary()]);
+      if (result.achievements.length === 0) {
+        toast.success('목표가 완료됐어요', {
+          description: '이번 기간 전체에 완료 상태가 반영됐어요.',
+        });
+      }
     } catch (error) {
       setGoalsForDate(selectedDate, snapshot);
       toast.error(error instanceof Error ? error.message : '목표를 완료하지 못했습니다.');

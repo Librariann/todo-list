@@ -1,6 +1,7 @@
 import { apiFetch } from './apiClient';
 import { Todo, TodoStatus } from '../types/todo';
 import { toast } from 'sonner';
+import type { ChallengeAchievement } from '../types/common';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -60,7 +61,10 @@ export async function createTodo(name: string, targetDate: string): Promise<Todo
   return mapApiTodo(data.data as TodoApiResponse);
 }
 
-export async function updateTodoStatus(id: string, status: TodoStatus): Promise<void> {
+export async function updateTodoStatus(
+  id: string,
+  status: TodoStatus
+): Promise<{ achievements: ChallengeAchievement[] }> {
   const apiStatus = STATUS_TO_API[status];
   const res = await apiFetch(`${API_URL}/api/todos/${id}/status/${apiStatus}`, {
     method: 'PATCH',
@@ -75,6 +79,11 @@ export async function updateTodoStatus(id: string, status: TodoStatus): Promise<
       errorBody?.message ?? '할 일 상태를 업데이트 하지 못했습니다. 관리자에게 문의해주세요'
     );
   }
+
+  const body = await res.json();
+  return {
+    achievements: body.data?.achievements ?? [],
+  };
 }
 
 export async function deleteTodo(id: string): Promise<void> {

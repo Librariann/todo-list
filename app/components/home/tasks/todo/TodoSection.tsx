@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import CreateTodoModal, { type CreateTodoInput } from './CreateTodoModal';
 import ConfirmModal from '@/app/components/ConfirmModal';
 import { useTodosStore } from '@/app/store/todosStore';
+import { getAwardedPoints, notifyChallengeAchievements } from '@/app/lib/challengeNotifications';
 
 const EMPTY_TODOS: Todo[] = [];
 
@@ -26,6 +27,7 @@ export default function TodoSection() {
   const fetchTodos = useTodosStore((state) => state.fetchTodos);
   const setTodosForDate = useTodosStore((state) => state.setTodos);
   const refreshSummary = useUserSummaryStore((summary) => summary.refreshSummary);
+  const adjustPoints = useUserSummaryStore((summary) => summary.adjustPoints);
   const dateLabel = formatDate(selectedDate);
   const canCreate = selectedDate >= getTodayDateString();
   const isToday = selectedDate === getTodayDateString();
@@ -40,7 +42,7 @@ export default function TodoSection() {
 
   const handleCreateTodo = async (input: CreateTodoInput) => {
     const created = await createTodo(input.name, selectedDate);
-    setTodosForDate(selectedDate, (previousTodos) => [...previousTodos, created]);
+    setTodosForDate(selectedDate, (previousTodos) => [created, ...previousTodos]);
     toast.success('할 일을 추가했어요.');
   };
 
@@ -86,7 +88,9 @@ export default function TodoSection() {
     setTodosForDate(selectedDate, optimistic);
 
     try {
-      await updateTodoStatus(todoId, newStatus);
+      const result = await updateTodoStatus(todoId, newStatus);
+      adjustPoints(getAwardedPoints(result.achievements));
+      notifyChallengeAchievements(result.achievements);
     } catch {
       setTodosForDate(selectedDate, snapshot);
       return;

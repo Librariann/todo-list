@@ -1,6 +1,7 @@
 import { apiFetch } from './apiClient';
 import { getDatesInRange, getTodayDateString } from './dateUtils';
 import { GoalFrequency, type Goal, type GoalPeriod } from '../types/todo';
+import type { ChallengeAchievement } from '../types/common';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -34,6 +35,12 @@ export interface GoalProcessResponse {
   daysRemaining: number;
 }
 
+export interface GoalAchievementResult {
+  data: GoalProcessResponse;
+  achieved: boolean;
+  achievements: ChallengeAchievement[];
+}
+
 interface GoalDateResponse extends GoalResponse {
   streak: number;
   period: GoalPeriod;
@@ -61,9 +68,7 @@ function mapGoalByDate(goal: GoalDateResponse): Goal {
 }
 
 async function readErrorMessage(response: Response, fallback: string): Promise<string> {
-  const body = (await response.json().catch(() => null)) as
-    | { message?: string | string[] }
-    | null;
+  const body = (await response.json().catch(() => null)) as { message?: string | string[] } | null;
   const message = body?.message;
   if (Array.isArray(message)) return message[0] ?? fallback;
   return message ?? fallback;
@@ -79,7 +84,7 @@ export async function fetchGoalsByDate(date: string, signal?: AbortSignal): Prom
   return (body.data ?? []).map(mapGoalByDate);
 }
 
-export async function achieveGoal(goalId: string): Promise<GoalProcessResponse> {
+export async function achieveGoal(goalId: string): Promise<GoalAchievementResult> {
   const response = await apiFetch(`${API_URL}/api/goals/${goalId}/achieve`, {
     method: 'POST',
   });
@@ -88,7 +93,11 @@ export async function achieveGoal(goalId: string): Promise<GoalProcessResponse> 
   }
 
   const body = await response.json();
-  return body.data as GoalProcessResponse;
+  const result = body.data as GoalAchievementResult;
+  return {
+    ...result,
+    achievements: result.achievements ?? [],
+  };
 }
 
 export async function deleteGoal(goalId: string): Promise<void> {

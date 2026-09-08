@@ -43,4 +43,5 @@ next-env.d.ts
 # agent
 *.playwright-mcp
 
-.impeccable.md  
+.impeccable.md
+docs/*

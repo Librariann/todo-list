@@ -1,6 +1,7 @@
 import { apiFetch } from './apiClient';
 import { Habit, HabitType } from '../types/todo';
 import { getTodayDateString } from './dateUtils';
+import type { ChallengeAchievement } from '../types/common';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -32,6 +33,11 @@ export interface UpdateHabitPayload {
   dailyTarget?: number;
   description?: string;
   unit?: string;
+}
+
+export interface HabitIncrementResult {
+  habit: Habit;
+  achievements: ChallengeAchievement[];
 }
 
 // ─── 매퍼 ────────────────────────────────────────────────────────────────────
@@ -75,13 +81,20 @@ export async function createHabit(payload: CreateHabitPayload): Promise<Habit> {
 }
 
 /** 카운터 +1 */
-export async function incrementHabit(habitId: string): Promise<Habit> {
+export async function incrementHabit(habitId: string): Promise<HabitIncrementResult> {
   const res = await apiFetch(`${API_URL}/api/habits/${habitId}/increment`, {
     method: 'POST',
   });
   if (!res.ok) throw new Error('카운터 증가 실패');
   const json = await res.json();
-  return mapApiHabit(json.data as HabitsApiResponse);
+  const data = json.data as {
+    habit: HabitsApiResponse;
+    achievements?: ChallengeAchievement[];
+  };
+  return {
+    habit: mapApiHabit(data.habit),
+    achievements: data.achievements ?? [],
+  };
 }
 
 /** 카운터 -1 */

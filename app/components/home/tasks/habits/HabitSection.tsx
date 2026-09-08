@@ -9,6 +9,7 @@ import { updateHabitProgress } from '@/app/lib/habitUtils';
 import CreateHabitsModal, { type CreateHabitInput } from './CreateHabitsModal';
 import { useHabitsStore } from '@/app/store/habitsStore';
 import { useUserSummaryStore } from '@/app/store/userSummaryStore';
+import { getAwardedPoints, notifyChallengeAchievements } from '@/app/lib/challengeNotifications';
 
 export default function HabitSection() {
   const isAuthenticated = useAuthStore((auth) => auth.isAuthenticated);
@@ -17,6 +18,7 @@ export default function HabitSection() {
   const fetchHabits = useHabitsStore((state) => state.fetchHabits);
   const setHabits = useHabitsStore((state) => state.setHabits);
   const refreshSummary = useUserSummaryStore((summary) => summary.refreshSummary);
+  const adjustPoints = useUserSummaryStore((summary) => summary.adjustPoints);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   useEffect(() => {
@@ -31,8 +33,10 @@ export default function HabitSection() {
     // 낙관적 업데이트
     setHabits((prev) => prev.map((h) => (h.id === id ? updateHabitProgress(h, 1) : h)));
     try {
-      const updated = await incrementHabit(id);
-      setHabits((prev) => prev.map((h) => (h.id === id ? updated : h)));
+      const result = await incrementHabit(id);
+      setHabits((prev) => prev.map((h) => (h.id === id ? result.habit : h)));
+      adjustPoints(getAwardedPoints(result.achievements));
+      notifyChallengeAchievements(result.achievements);
       await refreshSummary();
     } catch {
       setHabits((prev) => prev.map((h) => (h.id === id ? updateHabitProgress(h, -1) : h)));
@@ -55,7 +59,7 @@ export default function HabitSection() {
       name: input.name,
       dailyTarget: input.dailyTarget,
     });
-    setHabits((previousHabits) => [...previousHabits, created]);
+    setHabits((previousHabits) => [created, ...previousHabits]);
   };
 
   return (

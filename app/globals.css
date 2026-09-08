@@ -517,6 +517,24 @@ body {
   .page-reveal {
     animation: pageReveal 460ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
+
+  .challenge-achievement-toast {
+    padding: 0 !important;
+  }
+
+  .challenge-achievement-banner {
+    border-radius: 1.35rem;
+  }
+
+  .challenge-achievement-mark {
+    animation: achievementMarkReveal 560ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .challenge-achievement-timer {
+    animation-name: achievementTimer;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+  }
 }
 
 @keyframes pageReveal {
@@ -527,6 +545,30 @@ body {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes achievementMarkReveal {
+  0% {
+    opacity: 0;
+    transform: scale(0.72) rotate(-10deg);
+  }
+  58% {
+    opacity: 1;
+    transform: scale(1.06) rotate(2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+@keyframes achievementTimer {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
   }
 }
 
