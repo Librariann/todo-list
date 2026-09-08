@@ -2,7 +2,7 @@
 
 import GoalCard from '@/app/components/GoalCard';
 import type { Goal, GoalWithDate } from '@/app/types/todo';
-import { achieveGoal, createGoal, deleteGoal } from '@/app/lib/goalsApi';
+import { achieveGoal, createGoal, deleteGoal, updateGoalName } from '@/app/lib/goalsApi';
 import { useCalendarStore } from '@/app/store/calendarStore';
 import { useEffect, useMemo, useState } from 'react';
 import { TaskEmptyState, TaskLoadingState, TaskSectionHeader } from '../TaskSectionLayout';
@@ -27,6 +27,7 @@ export default function GoalSection() {
   const adjustPoints = useUserSummaryStore((summary) => summary.adjustPoints);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<GoalWithDate | null>(null);
+  const [editTarget, setEditTarget] = useState<GoalWithDate | null>(null);
   const dateLabel = formatDate(selectedDate);
   const canCreate = selectedDate >= getTodayDateString();
   const isAuthenticated = useAuthStore((auth) => auth.isAuthenticated);
@@ -121,7 +122,14 @@ export default function GoalSection() {
     }
   };
 
-  const handleGoalCreated = async (input: CreateGoalInput) => {
+  const handleGoalSubmit = async (input: CreateGoalInput) => {
+    if (editTarget) {
+      await updateGoalName(editTarget.id, input.name);
+      await fetchGoals(selectedDate, true);
+      toast.success('목표 이름을 수정했어요.');
+      return;
+    }
+
     await createGoal(input.name, input.recurrenceType, selectedDate);
     await fetchGoals(selectedDate, true);
     toast.success('목표를 추가했어요.');
@@ -156,6 +164,7 @@ export default function GoalSection() {
                 goal={goal}
                 onToggle={handleGoalToggle}
                 onDelete={() => setDeleteTarget(goal)}
+                onEdit={setEditTarget}
               />
             ))
           )}
@@ -163,10 +172,15 @@ export default function GoalSection() {
       </div>
 
       <CreateGoalModal
-        open={isCreateOpen}
+        open={isCreateOpen || editTarget !== null}
         selectedDate={selectedDate}
-        onOpenChange={setIsCreateOpen}
-        onSubmit={handleGoalCreated}
+        goal={editTarget}
+        onOpenChange={(open) => {
+          if (open) return;
+          setIsCreateOpen(false);
+          setEditTarget(null);
+        }}
+        onSubmit={handleGoalSubmit}
       />
 
       <ConfirmModal

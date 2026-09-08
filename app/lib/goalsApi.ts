@@ -109,6 +109,17 @@ export async function deleteGoal(goalId: string): Promise<void> {
   }
 }
 
+export async function updateGoalName(goalId: string, name: string): Promise<void> {
+  const response = await apiFetch(`${API_URL}/api/goals/${goalId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response, '목표를 수정하지 못했습니다.'));
+  }
+}
+
 export async function createGoal(
   name: string,
   recurrenceType: GoalResponse['recurrenceType'] = 'DAILY',

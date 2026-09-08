@@ -3,15 +3,16 @@
 import { GoalFrequency, type GoalWithDate } from '../types/todo';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, Trash2 } from 'lucide-react';
+import { Check, Pencil, Trash2 } from 'lucide-react';
 
 interface GoalCardProps {
   goal: GoalWithDate;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
+  onEdit?: (goal: GoalWithDate) => void;
 }
 
-export default function GoalCard({ goal, onToggle, onDelete }: GoalCardProps) {
+export default function GoalCard({ goal, onToggle, onDelete, onEdit }: GoalCardProps) {
   const [, startMonth, startDay] = goal.startDate.split('-');
   const createdDateLabel = `${Number(startMonth)}월 ${Number(startDay)}일 생성`;
 
@@ -132,6 +133,19 @@ export default function GoalCard({ goal, onToggle, onDelete }: GoalCardProps) {
             {completionLabel}
           </p>
         </div>
+
+        {onEdit && (
+          <Button
+            type="button"
+            onClick={() => onEdit(goal)}
+            variant="ghost"
+            size="sm"
+            className="h-11 w-11 flex-shrink-0 p-0 text-muted-foreground hover:text-foreground"
+            aria-label={`${goal.title} 이름 수정`}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+        )}
 
         <Button
           type="button"

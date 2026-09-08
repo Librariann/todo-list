@@ -12,19 +12,22 @@ const providers = [
     key: 'google',
     label: 'Google로 시작하기',
     mark: 'G',
-    className: 'bg-card text-foreground',
+    className:
+      'border-border bg-[#f8f8f3] text-[#20231f] hover:border-[#cfd5cc] hover:bg-[#e9ebe3] dark:border-white/10 dark:bg-[#273029] dark:text-[#f1f5f1] dark:hover:border-white/15 dark:hover:bg-[#1f2721]',
   },
   {
     key: 'kakao',
     label: '카카오로 시작하기',
     mark: 'K',
-    className: 'bg-[#FEE500] text-[#251d00]',
+    className:
+      'border-transparent bg-[#FEE500] text-[#251d00] hover:border-[#c8b500] hover:bg-[#e5ce00] dark:bg-[#FEE500] dark:text-[#251d00] dark:hover:border-[#b9a700] dark:hover:bg-[#dfca00]',
   },
   {
     key: 'naver',
     label: '네이버로 시작하기',
     mark: 'N',
-    className: 'bg-[#03C75A] text-white',
+    className:
+      'border-transparent bg-[#03C75A] text-white hover:border-[#018f41] hover:bg-[#02ad4e] dark:bg-[#03b653] dark:hover:border-[#017f3a] dark:hover:bg-[#029d48]',
   },
 ] as const;
 
@@ -33,11 +36,7 @@ type OAuthProvider = (typeof providers)[number]['key'];
 function toBase64Url(bytes: Uint8Array): string {
   const binary = Array.from(bytes, (byte) => String.fromCharCode(byte)).join('');
 
-  return window
-    .btoa(binary)
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
+  return window.btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
 function createCodeVerifier(): string {
@@ -127,7 +126,10 @@ export default function LoginPage() {
           <ul className="relative z-10 mt-16 grid gap-3 text-sm sm:grid-cols-3 lg:grid-cols-1">
             {['오늘 필요한 것만 한눈에', '완료할 때마다 기분 좋게', '꾸준함은 가볍게 확인'].map(
               (item) => (
-                <li key={item} className="flex w-fit items-center rounded-full bg-card/80 px-4 py-2.5 font-medium shadow-sm">
+                <li
+                  key={item}
+                  className="flex w-fit items-center rounded-full bg-card/80 px-4 py-2.5 font-medium shadow-sm"
+                >
                   {item}
                 </li>
               )
@@ -149,7 +151,7 @@ export default function LoginPage() {
                 type="button"
                 onClick={() => void handleOAuthLogin(provider.key)}
                 disabled={pendingProvider !== null}
-                className={`group flex min-h-14 w-full items-center gap-4 rounded-2xl border border-border px-5 text-left text-sm font-semibold transition-colors hover:border-primary/40 hover:bg-secondary/30 active:translate-y-px disabled:opacity-60 ${provider.className}`}
+                className={`group flex min-h-14 w-full items-center gap-4 rounded-2xl border px-5 text-left text-sm font-semibold transition-colors active:translate-y-px disabled:opacity-60 ${provider.className}`}
               >
                 <span className="flex h-8 w-8 items-center justify-center rounded-full border border-current/20 text-sm font-bold">
                   {provider.mark}
