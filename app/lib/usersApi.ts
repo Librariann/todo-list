@@ -70,6 +70,14 @@ export async function updateMyProfile(input: UpdateUserProfileInput): Promise<Us
   return body.data as UserProfile;
 }
 
+export async function deleteMyAccount(): Promise<void> {
+  const response = await apiFetch(`${API_URL}/api/users/me`, { method: 'DELETE' });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response, '계정을 삭제하지 못했습니다.'));
+  }
+}
+
 export async function fetchUserSummary(): Promise<UserSummaryResponse> {
   const response = await apiFetch(`${API_URL}/api/user/summary/`);
   if (!response.ok) {

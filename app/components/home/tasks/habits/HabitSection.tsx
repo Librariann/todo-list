@@ -4,7 +4,8 @@ import HabitCard from '@/app/components/HabitCard';
 import { TaskEmptyState, TaskLoadingState, TaskSectionHeader } from '../TaskSectionLayout';
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/app/store/authStore';
-import { createHabit, decrementHabit, incrementHabit } from '@/app/lib/habitsApi';
+import { createHabit, decrementHabit, incrementHabit, updateHabit } from '@/app/lib/habitsApi';
+import type { Habit } from '@/app/types/todo';
 import { updateHabitProgress } from '@/app/lib/habitUtils';
 import CreateHabitsModal, { type CreateHabitInput } from './CreateHabitsModal';
 import { useHabitsStore } from '@/app/store/habitsStore';
@@ -20,6 +21,7 @@ export default function HabitSection() {
   const refreshSummary = useUserSummaryStore((summary) => summary.refreshSummary);
   const adjustPoints = useUserSummaryStore((summary) => summary.adjustPoints);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<Habit | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -54,7 +56,18 @@ export default function HabitSection() {
     }
   };
 
-  const handleCreateHabit = async (input: CreateHabitInput) => {
+  const handleSubmitHabit = async (input: CreateHabitInput) => {
+    if (editTarget) {
+      const updated = await updateHabit(editTarget.id, {
+        name: input.name,
+        dailyTarget: input.dailyTarget,
+      });
+      setHabits((previousHabits) =>
+        previousHabits.map((habit) => (habit.id === updated.id ? updated : habit))
+      );
+      return;
+    }
+
     const created = await createHabit({
       name: input.name,
       dailyTarget: input.dailyTarget,
@@ -86,6 +99,7 @@ export default function HabitSection() {
                 habit={habit}
                 onPositive={handleHabitPositive}
                 onNegative={handleHabitNegative}
+                onEdit={setEditTarget}
               />
             ))
           )}
@@ -93,9 +107,14 @@ export default function HabitSection() {
       </div>
 
       <CreateHabitsModal
-        open={isCreateOpen}
-        onOpenChange={setIsCreateOpen}
-        onSubmit={handleCreateHabit}
+        open={isCreateOpen || editTarget !== null}
+        habit={editTarget}
+        onOpenChange={(open) => {
+          if (open) return;
+          setIsCreateOpen(false);
+          setEditTarget(null);
+        }}
+        onSubmit={handleSubmitHabit}
       />
     </>
   );

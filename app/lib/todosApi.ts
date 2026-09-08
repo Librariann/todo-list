@@ -61,6 +61,22 @@ export async function createTodo(name: string, targetDate: string): Promise<Todo
   return mapApiTodo(data.data as TodoApiResponse);
 }
 
+export async function updateTodo(id: string, name: string): Promise<Todo> {
+  const res = await apiFetch(`${API_URL}/api/todos/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+
+  if (!res.ok) {
+    const errorBody = (await res.json().catch(() => null)) as { message?: string } | null;
+    throw new Error(errorBody?.message ?? '할 일을 수정하지 못했습니다.');
+  }
+
+  const data = await res.json();
+  return mapApiTodo(data.data as TodoApiResponse);
+}
+
 export async function updateTodoStatus(
   id: string,
   status: TodoStatus

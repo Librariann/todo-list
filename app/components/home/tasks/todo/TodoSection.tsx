@@ -5,7 +5,7 @@ import { Todo, TodoStatus } from '@/app/types/todo';
 import { TaskEmptyState, TaskLoadingState, TaskSectionHeader } from '../TaskSectionLayout';
 import { useEffect, useState } from 'react';
 import { formatDate, getTodayDateString } from '@/app/lib/dateUtils';
-import { createTodo, deleteTodo, updateTodoStatus } from '@/app/lib/todosApi';
+import { createTodo, deleteTodo, updateTodo, updateTodoStatus } from '@/app/lib/todosApi';
 import { useCalendarStore } from '@/app/store/calendarStore';
 import { useUserSummaryStore } from '@/app/store/userSummaryStore';
 import { useAuthStore } from '@/app/store/authStore';
@@ -21,6 +21,7 @@ export default function TodoSection() {
   const isAuthenticated = useAuthStore((auth) => auth.isAuthenticated);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Todo | null>(null);
+  const [editTarget, setEditTarget] = useState<Todo | null>(null);
   const selectedDate = useCalendarStore((calendar) => calendar.selectedDate);
   const todos = useTodosStore((state) => state.todosByDate[selectedDate] ?? EMPTY_TODOS);
   const loading = useTodosStore((state) => state.loadingByDate[selectedDate] ?? false);
@@ -40,7 +41,16 @@ export default function TodoSection() {
     void fetchTodos(selectedDate);
   }, [fetchTodos, isAuthenticated, selectedDate]);
 
-  const handleCreateTodo = async (input: CreateTodoInput) => {
+  const handleSubmitTodo = async (input: CreateTodoInput) => {
+    if (editTarget) {
+      const updated = await updateTodo(editTarget.id, input.name);
+      setTodosForDate(selectedDate, (previousTodos) =>
+        previousTodos.map((todo) => (todo.id === updated.id ? updated : todo))
+      );
+      toast.success('할 일을 수정했어요.');
+      return;
+    }
+
     const created = await createTodo(input.name, selectedDate);
     setTodosForDate(selectedDate, (previousTodos) => [created, ...previousTodos]);
     toast.success('할 일을 추가했어요.');
@@ -134,6 +144,7 @@ export default function TodoSection() {
                 featured={index === 0}
                 onStatusChange={handleTodoStatusChange}
                 onDelete={() => setDeleteTarget(todo)}
+                onEdit={setEditTarget}
               />
             ))
           )}
@@ -141,10 +152,15 @@ export default function TodoSection() {
       </div>
 
       <CreateTodoModal
-        open={isCreateOpen}
+        open={isCreateOpen || editTarget !== null}
         selectedDate={selectedDate}
-        onOpenChange={setIsCreateOpen}
-        onSubmit={handleCreateTodo}
+        todo={editTarget}
+        onOpenChange={(open) => {
+          if (open) return;
+          setIsCreateOpen(false);
+          setEditTarget(null);
+        }}
+        onSubmit={handleSubmitTodo}
       />
 
       <ConfirmModal

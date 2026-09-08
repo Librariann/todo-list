@@ -14,6 +14,8 @@ interface TaskModalLayoutProps {
   title: string;
   children: ReactNode;
   submitting: boolean;
+  submitLabel?: string;
+  submittingLabel?: string;
   onOpenChange: (open: boolean) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }
@@ -23,6 +25,8 @@ export default function TaskModalLayout({
   title,
   children,
   submitting,
+  submitLabel = '추가하기',
+  submittingLabel = '등록 중...',
   onOpenChange,
   onSubmit,
 }: TaskModalLayoutProps) {
@@ -53,7 +57,7 @@ export default function TaskModalLayout({
               취소
             </Button>
             <Button type="submit" className="flex-1" disabled={submitting}>
-              {submitting ? '등록 중...' : '추가하기'}
+              {submitting ? submittingLabel : submitLabel}
             </Button>
           </div>
         </form>

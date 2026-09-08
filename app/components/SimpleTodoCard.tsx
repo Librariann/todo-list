@@ -2,13 +2,14 @@
 
 import { Todo, TodoStatus } from '../types/todo';
 import { Button } from '@/components/ui/button';
-import { Check, Trash2 } from 'lucide-react';
+import { Check, Pencil, Trash2 } from 'lucide-react';
 import { getTodayDateString } from '../lib/dateUtils';
 
 interface SimpleTodoCardProps {
   todo: Todo;
   onStatusChange: (id: string, status: TodoStatus) => void;
   onDelete?: (id: string) => void;
+  onEdit?: (todo: Todo) => void;
   featured?: boolean;
 }
 
@@ -16,6 +17,7 @@ export default function SimpleTodoCard({
   todo,
   onStatusChange,
   onDelete,
+  onEdit,
   featured = false,
 }: SimpleTodoCardProps) {
   const isDone = todo.status === TodoStatus.DONE;
@@ -107,6 +109,17 @@ export default function SimpleTodoCard({
               {todo.status === TodoStatus.IN_PROGRESS ? '진행 중' : '시작'}
           </button>
         ) : null}
+        {onEdit && !isPastDate && (
+          <Button
+            onClick={() => onEdit(todo)}
+            variant="ghost"
+            size="sm"
+            className="h-11 w-11 flex-shrink-0 p-0 text-muted-foreground hover:text-foreground"
+            aria-label={`${todo.title} 수정`}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+        )}
         {onDelete && (
           <Button
             onClick={() => onDelete(todo.id)}

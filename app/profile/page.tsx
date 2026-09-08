@@ -6,13 +6,17 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import ThemeToggleStandalone from '@/app/components/ThemeToggleStandalone';
+import ConfirmModal from '@/app/components/ConfirmModal';
+import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/app/store/authStore';
 import {
+  deleteMyAccount,
   fetchMyProfile,
   updateMyProfile,
   type UpdateUserProfileInput,
   type UserProfile,
 } from '@/app/lib/usersApi';
+import { postNativeAuthEvent } from '@/app/lib/nativeBridge';
 import ProfileForm from './ProfileForm';
 
 const joinedDateFormatter = new Intl.DateTimeFormat('ko-KR', {
@@ -24,11 +28,12 @@ const joinedDateFormatter = new Intl.DateTimeFormat('ko-KR', {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { isAuthenticated, setUser } = useAuthStore();
+  const { isAuthenticated, setUser, clearAuth } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -67,6 +72,14 @@ export default function ProfilePage() {
       role: updatedProfile.role,
     });
     toast.success('내 정보를 저장했어요.');
+  };
+
+  const handleDeleteAccount = async () => {
+    await deleteMyAccount();
+    clearAuth();
+    if (!postNativeAuthEvent('LOGOUT')) {
+      router.replace('/login');
+    }
   };
 
   if (!mounted || isLoading) {
@@ -148,9 +161,36 @@ export default function ProfilePage() {
 
           <section className="bg-[#fbf8ef] px-6 py-10 dark:bg-card sm:px-10 sm:py-14 lg:px-14">
             <ProfileForm profile={profile} onSubmit={handleUpdate} />
+
+            <div className="mt-12 border-t border-stone-200/80 pt-8 dark:border-white/10">
+              <h3 className="text-sm font-semibold text-foreground">회원 탈퇴</h3>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                계정과 함께 할 일, 습관, 목표, 포인트, 쿠폰이 모두 영구 삭제돼요. 삭제한 뒤에는
+                되돌릴 수 없어요.
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-4 h-11 rounded-xl border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                onClick={() => setIsDeleteOpen(true)}
+              >
+                계정 삭제하기
+              </Button>
+            </div>
           </section>
         </main>
       </div>
+
+      <ConfirmModal
+        open={isDeleteOpen}
+        title="정말 계정을 삭제할까요?"
+        description="계정과 지금까지 기록한 모든 데이터가 영구 삭제돼요. 같은 계정으로 다시 가입해도 이전 기록은 복구되지 않아요."
+        confirmLabel="계정 삭제하기"
+        pendingLabel="삭제하는 중..."
+        warning="삭제한 계정과 기록은 다시 되돌릴 수 없어요."
+        onOpenChange={setIsDeleteOpen}
+        onConfirm={handleDeleteAccount}
+      />
     </div>
   );
 }

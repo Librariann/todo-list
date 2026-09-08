@@ -3,7 +3,7 @@
 import { Habit } from '../types/todo';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Minus, Plus } from 'lucide-react';
+import { Minus, Pencil, Plus } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import {
   getTodayProgress,
@@ -20,9 +20,10 @@ interface HabitCardProps {
   habit: Habit;
   onPositive: (id: string) => void;
   onNegative: (id: string) => void;
+  onEdit?: (habit: Habit) => void;
 }
 
-export default function HabitCard({ habit, onPositive, onNegative }: HabitCardProps) {
+export default function HabitCard({ habit, onPositive, onNegative, onEdit }: HabitCardProps) {
   const dailyTarget = habit.dailyTarget || 5;
   const todayProgress = getTodayProgress(habit);
   const progressPercentage = getProgressPercentage(habit);
@@ -52,11 +53,24 @@ export default function HabitCard({ habit, onPositive, onNegative }: HabitCardPr
               </div>
             </div>
           </div>
-          <div className="text-right">
-            <div className={`text-lg font-bold ${getProgressColor(progressPercentage)}`}>
-              {todayProgress}/{dailyTarget}
+          <div className="flex items-center gap-1">
+            <div className="text-right">
+              <div className={`text-lg font-bold ${getProgressColor(progressPercentage)}`}>
+                {todayProgress}/{dailyTarget}
+              </div>
+              <div className="text-xs text-muted-foreground">{Math.round(progressPercentage)}%</div>
             </div>
-            <div className="text-xs text-muted-foreground">{Math.round(progressPercentage)}%</div>
+            {onEdit && (
+              <Button
+                onClick={() => onEdit(habit)}
+                variant="ghost"
+                size="sm"
+                className="h-11 w-11 flex-shrink-0 p-0 text-muted-foreground hover:text-foreground"
+                aria-label={`${habit.title} 수정`}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
 

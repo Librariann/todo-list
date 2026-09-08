@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import TaskModalLayout from '../TaskModalLayout';
+import type { Habit } from '@/app/types/todo';
 
 export interface CreateHabitInput {
   name: string;
@@ -12,26 +13,29 @@ export interface CreateHabitInput {
 
 interface CreateHabitsModalProps {
   open: boolean;
+  habit?: Habit | null;
   onOpenChange: (open: boolean) => void;
   onSubmit: (input: CreateHabitInput) => Promise<void>;
 }
 
 export default function CreateHabitsModal({
   open,
+  habit = null,
   onOpenChange,
   onSubmit,
 }: CreateHabitsModalProps) {
+  const isEditing = habit !== null;
   const [name, setName] = useState('');
   const [dailyTarget, setDailyTarget] = useState(5);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (open) return;
-    setName('');
-    setDailyTarget(5);
+    if (!open) return;
+    setName(habit?.title ?? '');
+    setDailyTarget(habit?.dailyTarget ?? 5);
     setError(null);
-  }, [open]);
+  }, [open, habit]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -47,7 +51,13 @@ export default function CreateHabitsModal({
       await onSubmit({ name: trimmedName, dailyTarget });
       onOpenChange(false);
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : '습관을 등록하지 못했습니다.');
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : isEditing
+            ? '습관을 수정하지 못했습니다.'
+            : '습관을 등록하지 못했습니다.'
+      );
     } finally {
       setSubmitting(false);
     }
@@ -56,8 +66,10 @@ export default function CreateHabitsModal({
   return (
     <TaskModalLayout
       open={open}
-      title="새 습관 추가"
+      title={isEditing ? '습관 수정' : '새 습관 추가'}
       submitting={submitting}
+      submitLabel={isEditing ? '저장하기' : '추가하기'}
+      submittingLabel={isEditing ? '저장 중...' : '등록 중...'}
       onOpenChange={onOpenChange}
       onSubmit={handleSubmit}
     >
