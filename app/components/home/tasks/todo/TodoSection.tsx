@@ -22,7 +22,11 @@ import { getAwardedPoints, notifyChallengeAchievements } from '@/app/lib/challen
 
 const EMPTY_TODOS: Todo[] = [];
 
-export default function TodoSection() {
+interface TodoSectionProps {
+  createRequestKey?: number;
+}
+
+export default function TodoSection({ createRequestKey }: TodoSectionProps) {
   const isAuthenticated = useAuthStore((auth) => auth.isAuthenticated);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Todo | null>(null);
@@ -62,6 +66,12 @@ export default function TodoSection() {
 
     void fetchTodos(selectedDate);
   }, [fetchTodos, isAuthenticated, selectedDate]);
+
+  useEffect(() => {
+    if (createRequestKey === undefined || !canCreate) return;
+    setEditTarget(null);
+    setIsCreateOpen(true);
+  }, [canCreate, createRequestKey]);
 
   const handleSubmitTodo = async (input: CreateTodoInput) => {
     if (editTarget) {
