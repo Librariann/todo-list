@@ -4,13 +4,13 @@
 @custom-variant dark (&:is(.dark *));
 
 /* Tailwind v4 다크모드 설정 */
-@variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 @layer components {
   .input-common {
     @apply w-full px-3 py-2 rounded-lg text-sm transition-colors;
     @apply bg-stone-50 border-stone-200 text-foreground placeholder:text-muted-foreground;
-    @apply dark:bg-white/5 dark:border-white/[0.1];
+    @apply dark:bg-white/5 dark:border-white/10;
     @apply focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50;
   }
 }
