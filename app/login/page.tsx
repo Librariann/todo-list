@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 import ThemeToggleStandalone from '../components/ThemeToggleStandalone';
 import { postNativeAuthEvent } from '../lib/nativeBridge';
@@ -9,29 +10,79 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const providers = [
   {
+    key: 'apple',
+    label: 'Apple로 계속하기',
+    className:
+      'border-transparent bg-black text-white hover:border-black hover:bg-[#1f1f1f] dark:border-white/15 dark:bg-black dark:text-white dark:hover:bg-[#171717]',
+  },
+  {
     key: 'google',
     label: 'Google로 시작하기',
-    mark: 'G',
     className:
       'border-border bg-[#f8f8f3] text-[#20231f] hover:border-[#cfd5cc] hover:bg-[#e9ebe3] dark:border-white/10 dark:bg-[#273029] dark:text-[#f1f5f1] dark:hover:border-white/15 dark:hover:bg-[#1f2721]',
   },
   {
     key: 'kakao',
     label: '카카오로 시작하기',
-    mark: 'K',
     className:
       'border-transparent bg-[#FEE500] text-[#251d00] hover:border-[#c8b500] hover:bg-[#e5ce00] dark:bg-[#FEE500] dark:text-[#251d00] dark:hover:border-[#b9a700] dark:hover:bg-[#dfca00]',
   },
   {
     key: 'naver',
     label: '네이버로 시작하기',
-    mark: 'N',
     className:
-      'border-transparent bg-[#03C75A] text-white hover:border-[#018f41] hover:bg-[#02ad4e] dark:bg-[#03b653] dark:hover:border-[#017f3a] dark:hover:bg-[#029d48]',
+      'border-transparent bg-[#03A94D] text-white hover:border-[#02813b] hover:bg-[#029744] dark:bg-[#03A94D] dark:hover:border-[#027736] dark:hover:bg-[#028f41]',
   },
 ] as const;
 
 type OAuthProvider = (typeof providers)[number]['key'];
+
+function OAuthLogo({ provider }: { provider: OAuthProvider }) {
+  if (provider === 'apple') {
+    return (
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center" aria-hidden="true">
+        {/* Apple이 제공하는 공식 Sign in with Apple 로고 리소스 */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="https://appleid.cdn-apple.com/appleid/button/logo?color=white&size=32"
+          alt=""
+          className="h-8 w-8 object-contain"
+        />
+      </span>
+    );
+  }
+
+  if (provider === 'kakao') {
+    return (
+      <span className="relative block h-8 w-8 shrink-0 overflow-hidden" aria-hidden="true">
+        <Image
+          src="/oauth/kakao.png"
+          alt=""
+          width={600}
+          height={90}
+          className="absolute left-0 top-0 h-8 w-auto max-w-none"
+        />
+      </span>
+    );
+  }
+
+  return (
+    <span
+      className={`flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full ${
+        provider === 'google' ? 'border border-[#dadce0] bg-white' : ''
+      }`}
+      aria-hidden="true"
+    >
+      <Image
+        src={`/oauth/${provider}.png`}
+        alt=""
+        width={provider === 'google' ? 200 : 192}
+        height={provider === 'google' ? 204 : 192}
+        className={provider === 'google' ? 'h-5 w-5 object-contain' : 'h-8 w-8 object-contain'}
+      />
+    </span>
+  );
+}
 
 function toBase64Url(bytes: Uint8Array): string {
   const binary = Array.from(bytes, (byte) => String.fromCharCode(byte)).join('');
@@ -153,9 +204,7 @@ export default function LoginPage() {
                 disabled={pendingProvider !== null}
                 className={`group flex min-h-14 w-full items-center gap-4 rounded-2xl border px-5 text-left text-sm font-semibold transition-colors active:translate-y-px disabled:opacity-60 ${provider.className}`}
               >
-                <span className="flex h-8 w-8 items-center justify-center rounded-full border border-current/20 text-sm font-bold">
-                  {provider.mark}
-                </span>
+                <OAuthLogo provider={provider.key} />
                 <span className="flex-1">
                   {pendingProvider === provider.key ? '로그인 페이지 여는 중...' : provider.label}
                 </span>

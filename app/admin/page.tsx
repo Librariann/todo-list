@@ -6,13 +6,15 @@ import Link from 'next/link';
 import { useAuthStore } from '@/app/store/authStore';
 import Header from '@/app/components/Header';
 import ChallengesTab from './tabs/challenges-tab';
+import ChallengeOperationsTab from './tabs/challenge-operations-tab';
 import RewardsTab from './tabs/rewards-tab';
 import UsersTab from './tabs/users-tab';
 
-type AdminTab = 'challenges' | 'rewards' | 'users';
+type AdminTab = 'challenges' | 'challengeOperations' | 'rewards' | 'users';
 
 const tabs: { key: AdminTab; label: string }[] = [
   { key: 'challenges', label: '도전과제' },
+  { key: 'challengeOperations', label: '순환 운영' },
   { key: 'rewards', label: '보상' },
   { key: 'users', label: '사용자' },
 ];
@@ -81,6 +83,7 @@ export default function AdminPage() {
         </div>
 
         {tab === 'challenges' && <ChallengesTab />}
+        {tab === 'challengeOperations' && <ChallengeOperationsTab />}
         {tab === 'rewards' && <RewardsTab />}
         {tab === 'users' && <UsersTab />}
       </main>

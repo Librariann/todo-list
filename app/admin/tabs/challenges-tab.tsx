@@ -12,9 +12,10 @@ import {
   defaultChallengeForm,
 } from './types';
 import ConfirmModal from '@/app/components/ConfirmModal';
-import ChallengeRotationOperations from './challenge-rotation-operations';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+type ChallengeVisibility = 'ACTIVE' | 'INACTIVE';
 
 const workTypeLabel: Record<WorkType, string> = {
   HABITS: '습관',
@@ -115,6 +116,16 @@ function formatAdminDate(value: string): string {
   }).format(new Date(value));
 }
 
+async function responseError(response: Response, fallback: string): Promise<Error> {
+  try {
+    const body = (await response.json()) as { message?: string | string[] };
+    const message = Array.isArray(body.message) ? body.message[0] : body.message;
+    return new Error(message || fallback);
+  } catch {
+    return new Error(fallback);
+  }
+}
+
 export default function ChallengesTab() {
   const [list, setList] = useState<Challenge[]>([]);
   const [loading, setLoading] = useState(true);
@@ -125,6 +136,8 @@ export default function ChallengesTab() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Challenge | null>(null);
   const [activeRecurrence, setActiveRecurrence] = useState<RecurrenceType>('DAILY');
+  const [visibility, setVisibility] = useState<ChallengeVisibility>('ACTIVE');
+  const [formFeedback, setFormFeedback] = useState<string | null>(null);
   const [rotationCounts, setRotationCounts] =
     useState<Record<RecurrenceType, number>>(defaultRotationCounts);
   const [savedRotationCounts, setSavedRotationCounts] =
@@ -139,9 +152,13 @@ export default function ChallengesTab() {
     message: string;
   } | null>(null);
 
-  const filteredList = useMemo(
+  const periodList = useMemo(
     () => list.filter((challenge) => challenge.recurrenceType === activeRecurrence),
     [activeRecurrence, list]
+  );
+  const filteredList = useMemo(
+    () => periodList.filter((challenge) => challenge.isActive === (visibility === 'ACTIVE')),
+    [periodList, visibility]
   );
 
   const fetchList = useCallback(async () => {
@@ -189,6 +206,7 @@ export default function ChallengesTab() {
   function openCreate() {
     setEditId(null);
     setForm({ ...defaultChallengeForm, recurrenceType: activeRecurrence });
+    setFormFeedback(null);
     setShowForm(true);
   }
 
@@ -205,15 +223,18 @@ export default function ChallengesTab() {
       point: c.point,
       isActive: c.isActive,
     });
+    setFormFeedback(null);
     setShowForm(true);
   }
 
   async function handleSave() {
     if (!form.name.trim()) return;
     setSaving(true);
+    setFormFeedback(null);
     try {
+      let response: Response;
       if (editId !== null) {
-        await apiFetch(`${API_URL}/api/challenges/${editId}`, {
+        response = await apiFetch(`${API_URL}/api/challenges/${editId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -229,25 +250,43 @@ export default function ChallengesTab() {
           }),
         });
       } else {
-        await apiFetch(`${API_URL}/api/challenges/register`, {
+        response = await apiFetch(`${API_URL}/api/challenges/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(form),
         });
       }
+      if (!response.ok) throw await responseError(response, '도전과제를 저장하지 못했어요.');
       setActiveRecurrence(form.recurrenceType);
       setShowForm(false);
       await fetchList();
+    } catch (error) {
+      setFormFeedback(error instanceof Error ? error.message : '도전과제를 저장하지 못했어요.');
     } finally {
       setSaving(false);
     }
   }
 
-  async function handleDelete(id: number) {
+  async function handleDeactivate(id: number) {
     setDeletingId(id);
     try {
       const response = await apiFetch(`${API_URL}/api/challenges/${id}`, { method: 'DELETE' });
-      if (!response.ok) throw new Error('도전과제를 삭제하지 못했어요.');
+      if (!response.ok) throw await responseError(response, '도전과제를 사용 중지하지 못했어요.');
+      await fetchList();
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  async function handleRestore(id: number) {
+    setDeletingId(id);
+    try {
+      const response = await apiFetch(`${API_URL}/api/challenges/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: true }),
+      });
+      if (!response.ok) throw await responseError(response, '도전과제를 다시 사용하지 못했어요.');
       await fetchList();
     } finally {
       setDeletingId(null);
@@ -314,8 +353,9 @@ export default function ChallengesTab() {
     }
   }
 
-  const activeCount = filteredList.filter((challenge) => challenge.isActive).length;
-  const selectedCount = filteredList.filter((challenge) => challenge.isSelected).length;
+  const activeCount = periodList.filter((challenge) => challenge.isActive).length;
+  const inactiveCount = periodList.length - activeCount;
+  const selectedCount = periodList.filter((challenge) => challenge.isSelected).length;
 
   return (
     <div className="space-y-4">
@@ -326,11 +366,13 @@ export default function ChallengesTab() {
               도전과제 운영 현황
             </p>
             <h2 className="friendly-heading text-xl font-bold text-foreground">
-              {recurrenceTabs.find(({ value }) => value === activeRecurrence)?.label} 도전과제{' '}
-              {filteredList.length}개
+              {recurrenceTabs.find(({ value }) => value === activeRecurrence)?.label}{' '}
+              {visibility === 'ACTIVE' ? '사용 중' : '사용 중지'} {filteredList.length}개
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              순환 후보 {activeCount}개 중 이번 기간에는 {selectedCount}개가 노출되고 있어요.
+              {visibility === 'ACTIVE'
+                ? `순환 후보 ${activeCount}개 중 이번 기간에는 ${selectedCount}개가 노출되고 있어요.`
+                : '중지된 도전과제는 다음 선발에서 제외되며 언제든 다시 사용할 수 있어요.'}
             </p>
           </div>
           <div className="flex gap-5 text-sm">
@@ -354,7 +396,11 @@ export default function ChallengesTab() {
         >
           {recurrenceTabs.map((tab) => {
             const isSelected = activeRecurrence === tab.value;
-            const count = list.filter((challenge) => challenge.recurrenceType === tab.value).length;
+            const count = list.filter(
+              (challenge) =>
+                challenge.recurrenceType === tab.value &&
+                challenge.isActive === (visibility === 'ACTIVE')
+            ).length;
 
             return (
               <button
@@ -400,7 +446,36 @@ export default function ChallengesTab() {
         </button>
       </div>
 
-      <section className="flex flex-col gap-4 rounded-[1.25rem] bg-[oklch(0.975_0.012_100)] px-4 py-4 dark:bg-white/[0.035] sm:flex-row sm:items-center sm:justify-between sm:px-5">
+      <div
+        className="flex w-fit rounded-xl bg-stone-100 p-1 dark:bg-white/[0.05]"
+        role="tablist"
+        aria-label="도전과제 사용 상태"
+      >
+        {(
+          [
+            { value: 'ACTIVE', label: '사용 중', count: activeCount },
+            { value: 'INACTIVE', label: '사용 중지', count: inactiveCount },
+          ] as const
+        ).map((item) => (
+          <button
+            key={item.value}
+            type="button"
+            role="tab"
+            aria-selected={visibility === item.value}
+            onClick={() => setVisibility(item.value)}
+            className={`min-h-10 rounded-lg px-3 text-sm font-semibold transition-colors ${
+              visibility === item.value
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {item.label} <span className="ml-1 text-xs opacity-70">{item.count}</span>
+          </button>
+        ))}
+      </div>
+
+      {visibility === 'ACTIVE' && (
+        <section className="flex flex-col gap-4 rounded-[1.25rem] bg-[oklch(0.975_0.012_100)] px-4 py-4 dark:bg-white/[0.035] sm:flex-row sm:items-center sm:justify-between sm:px-5">
         <div>
           <p id="rotation-count-title" className="text-sm font-bold text-foreground">
             {recurrenceTabs.find(({ value }) => value === activeRecurrence)?.label} 순환 설정
@@ -463,9 +538,8 @@ export default function ChallengesTab() {
             {savingRotation ? '저장 중' : '적용'}
           </button>
         </div>
-      </section>
-
-      <ChallengeRotationOperations periodType={activeRecurrence} onRerolled={fetchList} />
+        </section>
+      )}
 
       {showForm && (
         <div className="bg-white dark:bg-card rounded-xl border border-stone-200 dark:border-white/[0.07] p-5 shadow-sm">
@@ -554,6 +628,11 @@ export default function ChallengesTab() {
               </label>
             </Field>
           </div>
+          {formFeedback ? (
+            <p role="alert" className="mt-4 text-sm font-medium text-destructive">
+              {formFeedback}
+            </p>
+          ) : null}
           <div className="flex gap-2 mt-5 pt-4 border-t border-stone-100 dark:border-white/[0.05]">
             <button
               onClick={handleSave}
@@ -580,8 +659,9 @@ export default function ChallengesTab() {
         </div>
       ) : filteredList.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground text-sm">
-          등록된 {recurrenceTabs.find(({ value }) => value === activeRecurrence)?.label} 도전과제가
-          없습니다
+          {visibility === 'ACTIVE'
+            ? `사용 중인 ${recurrenceTabs.find(({ value }) => value === activeRecurrence)?.label} 도전과제가 없습니다.`
+            : `사용 중지된 ${recurrenceTabs.find(({ value }) => value === activeRecurrence)?.label} 도전과제가 없습니다.`}
         </div>
       ) : (
         <div className="space-y-3">
@@ -591,7 +671,13 @@ export default function ChallengesTab() {
               className="group overflow-hidden rounded-[1.25rem] border border-stone-200 bg-[oklch(0.99_0.006_100)] transition-colors hover:border-primary/35 dark:border-white/[0.07] dark:bg-card"
             >
               <div className="grid md:grid-cols-[minmax(220px,0.8fr)_minmax(0,2fr)]">
-                <div className="flex flex-col justify-between bg-[oklch(0.965_0.025_145)] px-5 py-5 dark:bg-primary/5">
+                <div
+                  className={`flex flex-col justify-between px-5 py-5 ${
+                    c.isActive
+                      ? 'bg-[oklch(0.965_0.025_145)] dark:bg-primary/5'
+                      : 'bg-stone-100/80 dark:bg-white/[0.035]'
+                  }`}
+                >
                   <div>
                     <div className="mb-3 flex flex-wrap items-center gap-2">
                       <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold text-primary">
@@ -604,7 +690,7 @@ export default function ChallengesTab() {
                             : 'bg-stone-200 text-stone-600 dark:bg-white/10 dark:text-muted-foreground'
                         }`}
                       >
-                        {c.isActive ? '순환 후보' : '순환 제외'}
+                        {c.isActive ? '사용 중' : '사용 중지'}
                       </span>
                       {c.isSelected && (
                         <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-700 dark:bg-amber-400/10 dark:text-amber-300">
@@ -659,13 +745,22 @@ export default function ChallengesTab() {
                     <span className="text-xs text-muted-foreground">도전과제 #{c.id}</span>
                     <div className="flex gap-1.5">
                       <ActionBtn onClick={() => openEdit(c)}>수정</ActionBtn>
-                      <ActionBtn
-                        danger
-                        onClick={() => setDeleteTarget(c)}
-                        disabled={deletingId === c.id}
-                      >
-                        {deletingId === c.id ? '...' : '삭제'}
-                      </ActionBtn>
+                      {c.isActive ? (
+                        <ActionBtn
+                          danger
+                          onClick={() => setDeleteTarget(c)}
+                          disabled={deletingId === c.id}
+                        >
+                          {deletingId === c.id ? '...' : '사용 중지'}
+                        </ActionBtn>
+                      ) : (
+                        <ActionBtn
+                          onClick={() => handleRestore(c.id)}
+                          disabled={deletingId === c.id}
+                        >
+                          {deletingId === c.id ? '...' : '다시 사용'}
+                        </ActionBtn>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -676,18 +771,21 @@ export default function ChallengesTab() {
       )}
       <ConfirmModal
         open={deleteTarget !== null}
-        title="이 도전과제를 삭제할까요?"
+        title="이 도전과제를 사용 중지할까요?"
         description={
           deleteTarget
-            ? `‘${deleteTarget.name}’ 도전과제와 관련 설정을 삭제해요.`
-            : '선택한 도전과제를 삭제해요.'
+            ? `‘${deleteTarget.name}’ 도전과제를 다음 순환 선발에서 제외해요.`
+            : '선택한 도전과제를 다음 순환 선발에서 제외해요.'
         }
+        warning="현재 기간에 이미 노출된 내용과 기존 달성 기록은 그대로 보존돼요."
+        confirmLabel="사용 중지"
+        pendingLabel="중지하는 중..."
         onOpenChange={(open) => {
           if (!open) setDeleteTarget(null);
         }}
         onConfirm={() => {
           if (!deleteTarget) return;
-          return handleDelete(deleteTarget.id);
+          return handleDeactivate(deleteTarget.id);
         }}
       />
     </div>
