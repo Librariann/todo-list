@@ -84,7 +84,6 @@ export default function CreateHabitsModal({
           onChange={(event) => setName(event.target.value)}
           placeholder="매일 이어가고 싶은 행동"
           maxLength={50}
-          autoFocus
         />
       </div>
 
