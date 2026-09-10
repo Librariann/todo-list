@@ -2,7 +2,12 @@
 
 import SimpleTodoCard from '@/app/components/SimpleTodoCard';
 import { Todo, TodoStatus } from '@/app/types/todo';
-import { TaskEmptyState, TaskLoadingState, TaskSectionHeader } from '../TaskSectionLayout';
+import {
+  TaskEmptyState,
+  TaskErrorState,
+  TaskLoadingState,
+  TaskSectionHeader,
+} from '../TaskSectionLayout';
 import { useEffect, useState } from 'react';
 import { formatDate, getTodayDateString } from '@/app/lib/dateUtils';
 import { createTodo, deleteTodo, updateTodo, updateTodoStatus } from '@/app/lib/todosApi';
@@ -25,6 +30,7 @@ export default function TodoSection() {
   const selectedDate = useCalendarStore((calendar) => calendar.selectedDate);
   const todos = useTodosStore((state) => state.todosByDate[selectedDate] ?? EMPTY_TODOS);
   const loading = useTodosStore((state) => state.loadingByDate[selectedDate] ?? false);
+  const loadError = useTodosStore((state) => state.errorsByDate[selectedDate] ?? null);
   const fetchTodos = useTodosStore((state) => state.fetchTodos);
   const setTodosForDate = useTodosStore((state) => state.setTodos);
   const refreshSummary = useUserSummaryStore((summary) => summary.refreshSummary);
@@ -131,22 +137,41 @@ export default function TodoSection() {
         <div className="space-y-3">
           {loading ? (
             <TaskLoadingState label="할 일" />
-          ) : todos.length === 0 ? (
-            <TaskEmptyState
-              title="오늘 페이지가 비어 있어요."
-              description="지금 끝내고 싶은 일을 한 줄로 적어보세요."
+          ) : loadError && todos.length === 0 ? (
+            <TaskErrorState
+              title="할 일을 불러오지 못했어요."
+              description={loadError}
+              onRetry={() => void fetchTodos(selectedDate)}
             />
           ) : (
-            todos.map((todo, index) => (
-              <SimpleTodoCard
-                key={todo.id}
-                todo={todo}
-                featured={index === 0}
-                onStatusChange={handleTodoStatusChange}
-                onDelete={() => setDeleteTarget(todo)}
-                onEdit={setEditTarget}
-              />
-            ))
+            <>
+              {loadError ? (
+                <TaskErrorState
+                  title="최신 할 일을 불러오지 못했어요."
+                  description="화면에는 이전에 불러온 내용을 보여드리고 있어요."
+                  onRetry={() => void fetchTodos(selectedDate)}
+                  compact
+                />
+              ) : null}
+
+              {todos.length === 0 ? (
+                <TaskEmptyState
+                  title="오늘 페이지가 비어 있어요."
+                  description="지금 끝내고 싶은 일을 한 줄로 적어보세요."
+                />
+              ) : (
+                todos.map((todo, index) => (
+                  <SimpleTodoCard
+                    key={todo.id}
+                    todo={todo}
+                    featured={index === 0}
+                    onStatusChange={handleTodoStatusChange}
+                    onDelete={() => setDeleteTarget(todo)}
+                    onEdit={setEditTarget}
+                  />
+                ))
+              )}
+            </>
           )}
         </div>
       </div>

@@ -1,10 +1,19 @@
 'use client';
 
 import { useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { Toaster } from 'sonner';
 import { primeAchievementSound } from '@/app/lib/achievementSound';
+import {
+  postNativeBridgeReady,
+  queueNativeNotification,
+  subscribeToNativeNotificationMessages,
+} from '@/app/lib/nativeBridge';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const router = useRouter();
+
   useEffect(() => {
     const primeAudio = () => primeAchievementSound();
 
@@ -16,6 +25,17 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       window.removeEventListener('keydown', primeAudio, { capture: true });
     };
   }, []);
+
+  useEffect(() => {
+    if (pathname === '/login' || pathname === '/oauth/callback') return;
+
+    const unsubscribe = subscribeToNativeNotificationMessages((destination) => {
+      queueNativeNotification(destination);
+      if (pathname !== '/') router.push('/');
+    });
+    postNativeBridgeReady();
+    return unsubscribe;
+  }, [pathname, router]);
 
   return (
     <>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import ThemeToggleStandalone from '../components/ThemeToggleStandalone';
 import { postNativeAuthEvent } from '../lib/nativeBridge';
@@ -9,12 +10,6 @@ import { postNativeAuthEvent } from '../lib/nativeBridge';
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const providers = [
-  {
-    key: 'apple',
-    label: 'Apple로 계속하기',
-    className:
-      'border-transparent bg-black text-white hover:border-black hover:bg-[#1f1f1f] dark:border-white/15 dark:bg-black dark:text-white dark:hover:bg-[#171717]',
-  },
   {
     key: 'google',
     label: 'Google로 시작하기',
@@ -32,6 +27,12 @@ const providers = [
     label: '네이버로 시작하기',
     className:
       'border-transparent bg-[#03A94D] text-white hover:border-[#02813b] hover:bg-[#029744] dark:bg-[#03A94D] dark:hover:border-[#027736] dark:hover:bg-[#028f41]',
+  },
+  {
+    key: 'apple',
+    label: 'Apple로 시작하기',
+    className:
+      'border-transparent bg-black text-white hover:border-black hover:bg-[#1f1f1f] dark:border-white/15 dark:bg-black dark:text-white dark:hover:bg-[#171717]',
   },
 ] as const;
 
@@ -220,7 +221,15 @@ export default function LoginPage() {
           )}
 
           <p className="mt-8 text-xs leading-5 text-muted-foreground">
-            로그인하면 서비스 이용약관과 개인정보처리방침에 동의한 것으로 간주됩니다.
+            로그인하면{' '}
+            <Link href="/terms" className="underline underline-offset-2 hover:text-foreground">
+              서비스 이용약관
+            </Link>
+            과{' '}
+            <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground">
+              개인정보처리방침
+            </Link>
+            에 동의한 것으로 간주됩니다.
           </p>
         </section>
       </div>

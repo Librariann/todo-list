@@ -8,6 +8,13 @@ interface TaskSectionHeaderProps {
   showAdd?: boolean;
 }
 
+interface TaskErrorStateProps {
+  title: string;
+  description: string;
+  onRetry: () => void;
+  compact?: boolean;
+}
+
 export function TaskSectionHeader({
   title,
   description,
@@ -49,6 +56,38 @@ export function TaskEmptyState({ title, description }: { title: string; descript
     <div className="rounded-lg border border-border bg-card p-8 text-center">
       <p className="font-medium text-foreground">{title}</p>
       <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+export function TaskErrorState({
+  title,
+  description,
+  onRetry,
+  compact = false,
+}: TaskErrorStateProps) {
+  return (
+    <div
+      role="alert"
+      className={`border border-destructive/20 bg-destructive/5 ${
+        compact
+          ? 'flex flex-col gap-3 rounded-xl px-4 py-4 sm:flex-row sm:items-center sm:justify-between'
+          : 'rounded-lg p-8 text-center'
+      }`}
+    >
+      <div className={compact ? 'min-w-0' : undefined}>
+        <p className="font-semibold text-foreground">{title}</p>
+        <p className="mt-1 break-keep text-sm leading-6 text-muted-foreground">{description}</p>
+      </div>
+      <button
+        type="button"
+        onClick={onRetry}
+        className={`inline-flex min-h-11 items-center justify-center rounded-xl border border-destructive/25 bg-card px-4 text-sm font-bold text-destructive transition-colors hover:bg-destructive/10 ${
+          compact ? 'shrink-0' : 'mt-5'
+        }`}
+      >
+        다시 불러오기
+      </button>
     </div>
   );
 }

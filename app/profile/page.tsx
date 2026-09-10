@@ -77,7 +77,7 @@ export default function ProfilePage() {
   const handleDeleteAccount = async () => {
     await deleteMyAccount();
     clearAuth();
-    if (!postNativeAuthEvent('LOGOUT')) {
+    if (!postNativeAuthEvent('ACCOUNT_DELETED')) {
       router.replace('/login');
     }
   };
@@ -99,7 +99,10 @@ export default function ProfilePage() {
         <div className="max-w-md text-center">
           <h1 className="friendly-heading text-3xl font-bold">정보를 불러오지 못했어요</h1>
           <p className="mt-3 text-sm text-muted-foreground">{loadError}</p>
-          <Link href="/" className="mt-6 inline-flex min-h-11 items-center text-sm font-bold text-primary">
+          <Link
+            href="/"
+            className="mt-6 inline-flex min-h-11 items-center text-sm font-bold text-primary"
+          >
             오늘 화면으로 돌아가기
           </Link>
         </div>
@@ -147,7 +150,9 @@ export default function ProfilePage() {
               <dl className="space-y-4 border-t border-white/15 pt-6 text-sm">
                 <div className="flex items-center justify-between gap-4">
                   <dt className="text-[#a9b8ae]">계정 유형</dt>
-                  <dd className="font-semibold">{profile.role === 'ADMIN' ? '관리자' : '일반 사용자'}</dd>
+                  <dd className="font-semibold">
+                    {profile.role === 'ADMIN' ? '관리자' : '일반 사용자'}
+                  </dd>
                 </div>
                 <div className="flex items-center justify-between gap-4">
                   <dt className="text-[#a9b8ae]">함께한 날</dt>

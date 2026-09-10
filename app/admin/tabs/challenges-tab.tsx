@@ -138,6 +138,10 @@ export default function ChallengesTab() {
   const [activeRecurrence, setActiveRecurrence] = useState<RecurrenceType>('DAILY');
   const [visibility, setVisibility] = useState<ChallengeVisibility>('ACTIVE');
   const [formFeedback, setFormFeedback] = useState<string | null>(null);
+  const [actionFeedback, setActionFeedback] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
   const [rotationCounts, setRotationCounts] =
     useState<Record<RecurrenceType, number>>(defaultRotationCounts);
   const [savedRotationCounts, setSavedRotationCounts] =
@@ -280,6 +284,7 @@ export default function ChallengesTab() {
 
   async function handleRestore(id: number) {
     setDeletingId(id);
+    setActionFeedback(null);
     try {
       const response = await apiFetch(`${API_URL}/api/challenges/${id}`, {
         method: 'PATCH',
@@ -288,6 +293,12 @@ export default function ChallengesTab() {
       });
       if (!response.ok) throw await responseError(response, '도전과제를 다시 사용하지 못했어요.');
       await fetchList();
+      setActionFeedback({ type: 'success', message: '도전과제를 다시 사용하도록 변경했어요.' });
+    } catch (error) {
+      setActionFeedback({
+        type: 'error',
+        message: error instanceof Error ? error.message : '도전과제를 다시 사용하지 못했어요.',
+      });
     } finally {
       setDeletingId(null);
     }
@@ -411,6 +422,7 @@ export default function ChallengesTab() {
                 onClick={() => {
                   setActiveRecurrence(tab.value);
                   setRotationFeedback(null);
+                  setActionFeedback(null);
                 }}
                 className={`relative min-h-14 px-3 pb-3 pt-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:px-4 ${
                   isSelected ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
@@ -462,7 +474,10 @@ export default function ChallengesTab() {
             type="button"
             role="tab"
             aria-selected={visibility === item.value}
-            onClick={() => setVisibility(item.value)}
+            onClick={() => {
+              setVisibility(item.value);
+              setActionFeedback(null);
+            }}
             className={`min-h-10 rounded-lg px-3 text-sm font-semibold transition-colors ${
               visibility === item.value
                 ? 'bg-background text-foreground shadow-sm'
@@ -474,70 +489,82 @@ export default function ChallengesTab() {
         ))}
       </div>
 
+      {actionFeedback ? (
+        <p
+          role={actionFeedback.type === 'error' ? 'alert' : 'status'}
+          className={`text-sm font-medium ${
+            actionFeedback.type === 'error' ? 'text-destructive' : 'text-primary'
+          }`}
+        >
+          {actionFeedback.message}
+        </p>
+      ) : null}
+
       {visibility === 'ACTIVE' && (
         <section className="flex flex-col gap-4 rounded-[1.25rem] bg-[oklch(0.975_0.012_100)] px-4 py-4 dark:bg-white/[0.035] sm:flex-row sm:items-center sm:justify-between sm:px-5">
-        <div>
-          <p id="rotation-count-title" className="text-sm font-bold text-foreground">
-            {recurrenceTabs.find(({ value }) => value === activeRecurrence)?.label} 순환 설정
-          </p>
-          <p className="mt-1 text-xs leading-5 text-muted-foreground">
-            변경한 설정은 {nextRotationLabel[activeRecurrence]} 도전과제를 고를 때부터 적용돼요.
-          </p>
-          <p className="mt-1 text-xs leading-5 text-muted-foreground">
-            새 후보가 부족하면 가장 오래전에 나온 도전과제부터 반복 대기를 완화해요.
-          </p>
-          {activeCount < rotationCounts[activeRecurrence] && (
-            <p className="mt-1 text-xs font-medium text-amber-700 dark:text-amber-300">
-              순환 후보가 {activeCount}개라 현재 후보로는 최대 {activeCount}개까지 보여줄 수 있어요.
+          <div>
+            <p id="rotation-count-title" className="text-sm font-bold text-foreground">
+              {recurrenceTabs.find(({ value }) => value === activeRecurrence)?.label} 순환 설정
             </p>
-          )}
-          {rotationFeedback && (
-            <p
-              role="status"
-              className={`mt-1 text-xs font-semibold ${
-                rotationFeedback.type === 'success'
-                  ? 'text-primary'
-                  : 'text-red-600 dark:text-red-400'
-              }`}
-            >
-              {rotationFeedback.message}
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">
+              변경한 설정은 {nextRotationLabel[activeRecurrence]} 도전과제를 고를 때부터 적용돼요.
             </p>
-          )}
-        </div>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">
+              새 후보가 부족하면 가장 오래전에 나온 도전과제부터 반복 대기를 완화해요.
+            </p>
+            {activeCount < rotationCounts[activeRecurrence] && (
+              <p className="mt-1 text-xs font-medium text-amber-700 dark:text-amber-300">
+                순환 후보가 {activeCount}개라 현재 후보로는 최대 {activeCount}개까지 보여줄 수
+                있어요.
+              </p>
+            )}
+            {rotationFeedback && (
+              <p
+                role="status"
+                className={`mt-1 text-xs font-semibold ${
+                  rotationFeedback.type === 'success'
+                    ? 'text-primary'
+                    : 'text-red-600 dark:text-red-400'
+                }`}
+              >
+                {rotationFeedback.message}
+              </p>
+            )}
+          </div>
 
-        <div
-          className="flex flex-wrap items-end justify-end gap-2"
-          aria-labelledby="rotation-count-title"
-        >
-          <SettingStepper
-            label="한 번에 노출"
-            value={rotationCounts[activeRecurrence]}
-            min={1}
-            max={50}
-            suffix="개"
-            onChange={handleRotationCountChange}
-          />
-          <SettingStepper
-            label="반복 대기"
-            value={cooldownPeriods[activeRecurrence]}
-            min={0}
-            max={30}
-            suffix={cooldownUnit[activeRecurrence]}
-            onChange={handleCooldownChange}
-          />
-          <button
-            type="button"
-            onClick={handleRotationCountSave}
-            disabled={
-              savingRotation ||
-              (rotationCounts[activeRecurrence] === savedRotationCounts[activeRecurrence] &&
-                cooldownPeriods[activeRecurrence] === savedCooldownPeriods[activeRecurrence])
-            }
-            className="min-h-11 rounded-xl bg-foreground px-4 text-sm font-bold text-background transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-30"
+          <div
+            className="flex flex-wrap items-end justify-end gap-2"
+            aria-labelledby="rotation-count-title"
           >
-            {savingRotation ? '저장 중' : '적용'}
-          </button>
-        </div>
+            <SettingStepper
+              label="한 번에 노출"
+              value={rotationCounts[activeRecurrence]}
+              min={1}
+              max={50}
+              suffix="개"
+              onChange={handleRotationCountChange}
+            />
+            <SettingStepper
+              label="반복 대기"
+              value={cooldownPeriods[activeRecurrence]}
+              min={0}
+              max={30}
+              suffix={cooldownUnit[activeRecurrence]}
+              onChange={handleCooldownChange}
+            />
+            <button
+              type="button"
+              onClick={handleRotationCountSave}
+              disabled={
+                savingRotation ||
+                (rotationCounts[activeRecurrence] === savedRotationCounts[activeRecurrence] &&
+                  cooldownPeriods[activeRecurrence] === savedCooldownPeriods[activeRecurrence])
+              }
+              className="min-h-11 rounded-xl bg-foreground px-4 text-sm font-bold text-background transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-30"
+            >
+              {savingRotation ? '저장 중' : '적용'}
+            </button>
+          </div>
         </section>
       )}
 

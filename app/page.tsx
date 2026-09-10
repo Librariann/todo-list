@@ -18,6 +18,11 @@ import { useCalendarStore } from './store/calendarStore';
 import { useGoalsStore } from './store/goalsStore';
 import { useHabitsStore } from './store/habitsStore';
 import { useTodosStore } from './store/todosStore';
+import {
+  consumeQueuedNativeNotification,
+  subscribeToQueuedNativeNotification,
+  type NativeNotificationDestination,
+} from './lib/nativeBridge';
 import HabitSection from './components/home/tasks/habits/HabitSection';
 import GoalSection from './components/home/tasks/goal/GoalSection';
 import TodoSection from './components/home/tasks/todo/TodoSection';
@@ -35,12 +40,42 @@ export default function Home() {
   const [mainTab, setMainTab] = useState<MainTabType>('tasks');
   const [taskTab, setTaskTab] = useState<TaskTabType>('habits');
   const selectedDate = useCalendarStore((calendar) => calendar.selectedDate);
+  const setSelectedDate = useCalendarStore((calendar) => calendar.setSelectedDate);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const fetchSummary = useUserSummaryStore((state) => state.fetchSummary);
   const resetSummary = useUserSummaryStore((state) => state.resetSummary);
   const resetHabits = useHabitsStore((state) => state.resetHabits);
   const resetGoals = useGoalsStore((state) => state.resetGoals);
   const resetTodos = useTodosStore((state) => state.resetTodos);
+
+  useEffect(() => {
+    const openNotificationDestination = (destination: NativeNotificationDestination) => {
+      if (destination.date) setSelectedDate(destination.date);
+
+      if (
+        destination.screen === 'habits' ||
+        destination.screen === 'todos' ||
+        destination.screen === 'goals'
+      ) {
+        setMainTab('tasks');
+        setTaskTab(destination.screen);
+      } else {
+        setMainTab(destination.screen);
+      }
+
+      window.requestAnimationFrame(() => {
+        const targetId =
+          destination.screen === 'challenges' || destination.screen === 'rewards'
+            ? 'main-content'
+            : 'task-workspace';
+        document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    };
+
+    const queuedDestination = consumeQueuedNativeNotification();
+    if (queuedDestination) openNotificationDestination(queuedDestination);
+    return subscribeToQueuedNativeNotification(openNotificationDestination);
+  }, [setSelectedDate]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -104,7 +139,7 @@ export default function Home() {
 
                 <div className="px-5 pt-5 pb-10 sm:px-10 sm:pb-12 lg:px-12">
                   {mainTab === 'tasks' ? (
-                    <div>
+                    <div id="task-workspace">
                       <TaskTabs activeTab={taskTab} onChange={setTaskTab} />
 
                       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(17rem,0.7fr)]">
