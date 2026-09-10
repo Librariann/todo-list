@@ -11,7 +11,7 @@ import TaskTabs from './components/home/tasks/TaskTabs';
 import TaskInsights from './components/home/tasks/TaskInsights';
 import LoginPage from './login/page';
 import type { MainTabType, TaskTabType } from './types/navigation';
-import { formatDate } from './lib/dateUtils';
+import { formatDate, getTodayDateString } from './lib/dateUtils';
 import { useTimeGreeting } from './hooks/useTimeGreeting';
 import { useUserSummaryStore } from './store/userSummaryStore';
 import { useCalendarStore } from './store/calendarStore';
@@ -27,6 +27,7 @@ import {
 import HabitSection from './components/home/tasks/habits/HabitSection';
 import GoalSection from './components/home/tasks/goal/GoalSection';
 import TodoSection from './components/home/tasks/todo/TodoSection';
+import GettingStartedGuide from './components/onboarding/GettingStartedGuide';
 
 export default function Home() {
   const isAuthenticated = useAuthStore((auth) => auth.isAuthenticated);
@@ -40,6 +41,10 @@ export default function Home() {
 
   const [mainTab, setMainTab] = useState<MainTabType>('tasks');
   const [taskTab, setTaskTab] = useState<TaskTabType>('habits');
+  const [createRequest, setCreateRequest] = useState<{
+    type: TaskTabType;
+    key: number;
+  } | null>(null);
   const selectedDate = useCalendarStore((calendar) => calendar.selectedDate);
   const setSelectedDate = useCalendarStore((calendar) => calendar.setSelectedDate);
   const fetchSummary = useUserSummaryStore((state) => state.fetchSummary);
@@ -48,6 +53,19 @@ export default function Home() {
   const resetGoals = useGoalsStore((state) => state.resetGoals);
   const resetTodos = useTodosStore((state) => state.resetTodos);
   const resetChallenges = useChallengesStore((state) => state.resetChallenges);
+
+  const handleOnboardingCreate = (type: TaskTabType) => {
+    setMainTab('tasks');
+    setTaskTab(type);
+    setSelectedDate(getTodayDateString());
+    setCreateRequest({ type, key: Date.now() });
+    window.requestAnimationFrame(() => {
+      document.getElementById('task-workspace')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+  };
 
   useEffect(() => {
     const openNotificationDestination = (destination: NativeNotificationDestination) => {
@@ -135,30 +153,52 @@ export default function Home() {
 
             <section className="order-1 min-w-0 bg-[#fbf8ef] text-[#26302a] dark:bg-card dark:text-foreground">
               <div className="overflow-hidden">
-                <HomeHero
-                  mainTab={mainTab}
-                  selectedDateLabel={formatDate(selectedDate)}
-                  greeting={greeting}
-                  username={user?.username}
-                />
+                <div data-tour="home-hero">
+                  <HomeHero
+                    mainTab={mainTab}
+                    selectedDateLabel={formatDate(selectedDate)}
+                    greeting={greeting}
+                    username={user?.username}
+                  />
+                </div>
 
                 <div className="px-4 pt-5 pb-10 sm:px-10 sm:pb-12 lg:px-12">
                   {mainTab === 'tasks' ? (
                     <div id="task-workspace">
-                      <TaskTabs activeTab={taskTab} onChange={setTaskTab} />
+                      <GettingStartedGuide
+                        userId={user?.id}
+                        onCreate={handleOnboardingCreate}
+                      />
+                      <div data-tour="task-tabs">
+                        <TaskTabs activeTab={taskTab} onChange={setTaskTab} />
+                      </div>
 
                       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(17rem,0.7fr)]">
                         <section className="rounded-[1.75rem] bg-[#eef0e7] px-4 py-6 dark:bg-muted sm:px-7 sm:py-7 xl:row-span-2">
                           {taskTab === 'habits' ? (
-                            <HabitSection />
+                            <HabitSection
+                              createRequestKey={
+                                createRequest?.type === 'habits' ? createRequest.key : undefined
+                              }
+                            />
                           ) : taskTab === 'goals' ? (
-                            <GoalSection />
+                            <GoalSection
+                              createRequestKey={
+                                createRequest?.type === 'goals' ? createRequest.key : undefined
+                              }
+                            />
                           ) : (
-                            <TodoSection />
+                            <TodoSection
+                              createRequestKey={
+                                createRequest?.type === 'todos' ? createRequest.key : undefined
+                              }
+                            />
                           )}
                         </section>
 
-                        <TaskInsights activeTab={taskTab} />
+                        <div data-tour="task-insights">
+                          <TaskInsights activeTab={taskTab} />
+                        </div>
                       </div>
                     </div>
                   ) : mainTab === 'challenges' ? (
