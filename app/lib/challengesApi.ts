@@ -63,7 +63,8 @@ export function mapChallenge(challenge: ChallengesApiResponse): Challenge {
 export async function fetchUserChallengeProgress(): Promise<Challenge[]> {
   const res = await apiFetch(`${API_URL}/api/user/challenges/`);
   if (!res.ok) {
-    throw new Error('Failed to fetch user challenge progress');
+    const errorBody = (await res.json().catch(() => null)) as { message?: string } | null;
+    throw new Error(errorBody?.message ?? '도전과제를 불러오지 못했습니다.');
   }
   const data = await res.json();
   const raw = (data.data ?? []) as UserChallengeProgressResponse[];

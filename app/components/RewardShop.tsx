@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Reward } from '../types/todo';
 import { calculateRewardPoint, fetchRewards, redeemReward } from '../lib/rewardsApi';
@@ -22,6 +22,9 @@ export default function RewardShop() {
   const router = useRouter();
   const [selectedReward, setSelectedReward] = useState<Reward | null>(null);
   const [rewards, setRewards] = useState<Reward[]>([]);
+  const [isRedeeming, setIsRedeeming] = useState(false);
+  const [redeemError, setRedeemError] = useState<string | null>(null);
+  const redeemingRef = useRef(false);
   const userPoints = useUserSummaryStore((state) => state.points);
   const adjustPoints = useUserSummaryStore((state) => state.adjustPoints);
   const refreshSummary = useUserSummaryStore((state) => state.refreshSummary);
@@ -34,28 +37,40 @@ export default function RewardShop() {
     getRewardList();
   }, []);
 
-  const closeDialog = () => setSelectedReward(null);
-
-  const handleConfirmClaim = () => {
-    if (!selectedReward) return;
-    handleClaimReward(selectedReward);
-    closeDialog();
+  const openDialog = (reward: Reward) => {
+    if (redeemingRef.current) return;
+    setRedeemError(null);
+    setSelectedReward(reward);
   };
 
-  // 보상 교환
-  const handleClaimReward = async (reward: Reward) => {
+  const closeDialog = () => {
+    if (redeemingRef.current) return;
+    setRedeemError(null);
+    setSelectedReward(null);
+  };
+
+  const handleConfirmClaim = async () => {
+    if (!selectedReward || redeemingRef.current) return;
+
+    const reward = selectedReward;
     const purchasePoint = calculateRewardPoint(reward);
 
     if (userPoints < purchasePoint) {
-      toast.error('포인트가 부족합니다. 포인트를 모아주세요');
+      const message = '포인트가 부족합니다. 포인트를 모아주세요.';
+      setRedeemError(message);
+      toast.error(message);
       return;
     }
 
-    //낙관적 차감
+    redeemingRef.current = true;
+    setIsRedeeming(true);
+    setRedeemError(null);
     adjustPoints(-purchasePoint);
 
     try {
       await redeemReward(reward.id);
+      await refreshSummary();
+      setSelectedReward(null);
       toast.success(`${reward.name}을(를) 획득했습니다!`, {
         description: '내 쿠폰함에서 언제든 다시 확인할 수 있어요.',
         action: {
@@ -63,13 +78,14 @@ export default function RewardShop() {
           onClick: () => router.push('/coupons'),
         },
       });
-
-      //서버 실제 포인트 동기화
-      await refreshSummary();
-    } catch {
-      // 실패 시 롤백
+    } catch (error) {
       adjustPoints(purchasePoint);
-      toast.error('오류가 발생했습니다. 다시 시도해주세요.');
+      const message = error instanceof Error ? error.message : '보상을 교환하지 못했습니다.';
+      setRedeemError(message);
+      toast.error(message);
+    } finally {
+      redeemingRef.current = false;
+      setIsRedeeming(false);
     }
   };
 
@@ -132,8 +148,8 @@ export default function RewardShop() {
                   {/* 구매 버튼 */}
                   <div className="px-4 pb-4">
                     <Button
-                      onClick={() => canAfford && setSelectedReward(reward)}
-                      disabled={!canAfford}
+                      onClick={() => canAfford && openDialog(reward)}
+                      disabled={!canAfford || isRedeeming}
                       className="w-full"
                       variant={canAfford ? 'default' : 'secondary'}
                     >
@@ -161,8 +177,22 @@ export default function RewardShop() {
         </CardContent>
       </section>
 
-      <Dialog open={Boolean(selectedReward)} onOpenChange={(open) => !open && closeDialog()}>
-        <DialogContent className="w-full max-w-sm">
+      <Dialog
+        open={Boolean(selectedReward)}
+        onOpenChange={(open) => {
+          if (!open) closeDialog();
+        }}
+      >
+        <DialogContent
+          className="w-full max-w-sm"
+          showCloseButton={!isRedeeming}
+          onEscapeKeyDown={(event) => {
+            if (isRedeeming) event.preventDefault();
+          }}
+          onPointerDownOutside={(event) => {
+            if (isRedeeming) event.preventDefault();
+          }}
+        >
           <DialogHeader>
             <DialogTitle>보상을 교환할까요?</DialogTitle>
             <DialogDescription>
@@ -193,11 +223,19 @@ export default function RewardShop() {
             </div>
           )}
 
+          {redeemError ? (
+            <p role="alert" className="text-sm font-medium text-destructive">
+              {redeemError}
+            </p>
+          ) : null}
+
           <DialogFooter className="pt-2">
-            <Button variant="outline" onClick={closeDialog}>
+            <Button variant="outline" onClick={closeDialog} disabled={isRedeeming}>
               취소
             </Button>
-            <Button onClick={handleConfirmClaim}>확인</Button>
+            <Button onClick={() => void handleConfirmClaim()} disabled={isRedeeming}>
+              {isRedeeming ? '교환 중...' : '확인'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

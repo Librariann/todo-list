@@ -39,12 +39,7 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header
-        mainTab="tasks"
-        onTabChange={() => {}}
-        isMobileMenuOpen={false}
-        onMobileMenuToggle={() => {}}
-      />
+      <Header mainTab="tasks" onTabChange={() => {}} />
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
         <div className="flex items-center justify-between mb-8">
           <div>

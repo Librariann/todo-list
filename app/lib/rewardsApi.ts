@@ -73,7 +73,10 @@ export async function redeemReward(rewardId: string): Promise<void> {
   const res = await apiFetch(`${API_URL}/api/user/rewards/${rewardId}/redeem`, {
     method: 'POST',
   });
-  if (!res.ok) throw new Error('보상 교환 실패');
+  if (!res.ok) {
+    const errorBody = (await res.json().catch(() => null)) as { message?: string } | null;
+    throw new Error(errorBody?.message ?? '보상을 교환하지 못했습니다.');
+  }
 }
 
 /** 내가 교환한 보상 전체 조회 */

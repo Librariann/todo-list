@@ -18,6 +18,7 @@ import { useCalendarStore } from './store/calendarStore';
 import { useGoalsStore } from './store/goalsStore';
 import { useHabitsStore } from './store/habitsStore';
 import { useTodosStore } from './store/todosStore';
+import { useChallengesStore } from './store/challengesStore';
 import {
   consumeQueuedNativeNotification,
   subscribeToQueuedNativeNotification,
@@ -41,12 +42,12 @@ export default function Home() {
   const [taskTab, setTaskTab] = useState<TaskTabType>('habits');
   const selectedDate = useCalendarStore((calendar) => calendar.selectedDate);
   const setSelectedDate = useCalendarStore((calendar) => calendar.setSelectedDate);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const fetchSummary = useUserSummaryStore((state) => state.fetchSummary);
   const resetSummary = useUserSummaryStore((state) => state.resetSummary);
   const resetHabits = useHabitsStore((state) => state.resetHabits);
   const resetGoals = useGoalsStore((state) => state.resetGoals);
   const resetTodos = useTodosStore((state) => state.resetTodos);
+  const resetChallenges = useChallengesStore((state) => state.resetChallenges);
 
   useEffect(() => {
     const openNotificationDestination = (destination: NativeNotificationDestination) => {
@@ -83,11 +84,20 @@ export default function Home() {
       resetHabits();
       resetGoals();
       resetTodos();
+      resetChallenges();
       return;
     }
 
     void fetchSummary();
-  }, [fetchSummary, isAuthenticated, resetGoals, resetHabits, resetSummary, resetTodos]);
+  }, [
+    fetchSummary,
+    isAuthenticated,
+    resetChallenges,
+    resetGoals,
+    resetHabits,
+    resetSummary,
+    resetTodos,
+  ]);
 
   if (!mounted) {
     return (
@@ -107,12 +117,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#d9e1d5] px-3 pt-3 pb-24 dark:bg-background sm:px-6 sm:pt-6 md:pb-6">
       <div className="mx-auto max-w-[1500px] overflow-hidden rounded-[2rem] bg-card shadow-[0_24px_70px_rgba(38,48,42,0.12)]">
-        <Header
-          mainTab={mainTab}
-          onTabChange={setMainTab}
-          isMobileMenuOpen={isMobileMenuOpen}
-          onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        />
+        <Header mainTab={mainTab} onTabChange={setMainTab} />
 
         <main id="main-content" className="page-reveal">
           <div

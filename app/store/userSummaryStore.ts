@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { toast } from 'sonner';
 import type { UserSummaryResponse } from '@/app/types/common';
 import { fetchUserSummary } from '../lib/usersApi';
 
@@ -32,7 +33,7 @@ function mapSummary(data: UserSummaryResponse): UserSummaryResponse {
   };
 }
 
-export const useUserSummaryStore = create<UserSummaryState>((set) => ({
+export const useUserSummaryStore = create<UserSummaryState>((set, get) => ({
   ...initialSummary,
   isLoading: false,
   error: null,
@@ -69,7 +70,15 @@ export const useUserSummaryStore = create<UserSummaryState>((set) => ({
       });
     } catch {
       if (requestId !== latestSummaryRequestId) return;
-      set({ isLoading: false });
+      const message = '포인트 정보를 새로 확인하지 못했어요.';
+      set({ isLoading: false, error: message });
+      toast.warning(message, {
+        description: '현재 표시된 포인트는 잠시 실제 잔액과 다를 수 있어요.',
+        action: {
+          label: '다시 시도',
+          onClick: () => void get().refreshSummary(),
+        },
+      });
     }
   },
 

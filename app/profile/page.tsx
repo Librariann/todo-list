@@ -17,6 +17,7 @@ import {
   type UserProfile,
 } from '@/app/lib/usersApi';
 import { postNativeAuthEvent } from '@/app/lib/nativeBridge';
+import NotificationSettingsForm from './NotificationSettingsForm';
 import ProfileForm from './ProfileForm';
 
 const joinedDateFormatter = new Intl.DateTimeFormat('ko-KR', {
@@ -166,6 +167,8 @@ export default function ProfilePage() {
 
           <section className="bg-[#fbf8ef] px-6 py-10 dark:bg-card sm:px-10 sm:py-14 lg:px-14">
             <ProfileForm profile={profile} onSubmit={handleUpdate} />
+
+            <NotificationSettingsForm />
 
             <div className="mt-12 border-t border-stone-200/80 pt-8 dark:border-white/10">
               <h3 className="text-sm font-semibold text-foreground">회원 탈퇴</h3>

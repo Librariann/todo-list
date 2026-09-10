@@ -3,7 +3,14 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, Shield, Ticket, UserRound } from 'lucide-react';
+import { ChevronDown, LogOut, Shield, Ticket, UserRound } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import ThemeToggleStandalone from './ThemeToggleStandalone';
 import { useAuthStore } from '../store/authStore';
 import { apiFetch } from '../lib/apiClient';
@@ -13,8 +20,6 @@ import type { MainTabType } from '../types/navigation';
 interface HeaderProps {
   mainTab: MainTabType;
   onTabChange: (tab: MainTabType) => void;
-  isMobileMenuOpen: boolean;
-  onMobileMenuToggle: () => void;
 }
 
 const navigation: Array<{
@@ -80,7 +85,7 @@ export default function Header({ mainTab, onTabChange }: HeaderProps) {
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-sm">
-        <div className="flex min-h-20 items-center justify-between px-5 sm:px-8">
+        <div className="flex min-h-16 items-center justify-between px-4 sm:min-h-20 sm:px-8">
           <Link href="/" className="group flex items-center gap-2" aria-label="GrowDo 홈">
             <span className="friendly-heading text-2xl font-bold tracking-[-0.06em] text-foreground">
               GrowDo
@@ -110,7 +115,7 @@ export default function Header({ mainTab, onTabChange }: HeaderProps) {
             </nav>
           )}
 
-          <div className="flex items-center gap-2">
+          <div className="hidden items-center gap-2 md:flex">
             {isAuthenticated && user?.role === 'ADMIN' && (
               <Link
                 href={isAdminPage ? '/' : '/admin'}
@@ -154,6 +159,53 @@ export default function Header({ mainTab, onTabChange }: HeaderProps) {
                 <LogOut className="h-4 w-4" />
               </button>
             )}
+          </div>
+
+          <div className="flex items-center gap-1 md:hidden">
+            <ThemeToggleStandalone />
+            {isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="inline-flex h-11 items-center gap-1 rounded-full bg-muted px-3 text-foreground transition-colors hover:bg-secondary"
+                    aria-label={`${user?.username || '사용자'}님 메뉴 열기`}
+                  >
+                    <UserRound className="h-5 w-5" />
+                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" sideOffset={8} className="w-52 rounded-xl p-1.5">
+                  <DropdownMenuItem asChild className="min-h-11 rounded-lg px-3 font-medium">
+                    <Link href="/profile">
+                      <UserRound />내 정보
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="min-h-11 rounded-lg px-3 font-medium">
+                    <Link href="/coupons">
+                      <Ticket />내 쿠폰함
+                    </Link>
+                  </DropdownMenuItem>
+                  {user?.role === 'ADMIN' ? (
+                    <DropdownMenuItem asChild className="min-h-11 rounded-lg px-3 font-medium">
+                      <Link href={isAdminPage ? '/' : '/admin'}>
+                        <Shield />
+                        {isAdminPage ? 'GrowDo 홈으로' : '관리자 페이지'}
+                      </Link>
+                    </DropdownMenuItem>
+                  ) : null}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    variant="destructive"
+                    className="min-h-11 rounded-lg px-3 font-medium"
+                    onSelect={() => void handleLogout()}
+                  >
+                    <LogOut />
+                    로그아웃
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : null}
           </div>
         </div>
       </header>

@@ -36,8 +36,24 @@ export default function TodoSection() {
   const refreshSummary = useUserSummaryStore((summary) => summary.refreshSummary);
   const adjustPoints = useUserSummaryStore((summary) => summary.adjustPoints);
   const dateLabel = formatDate(selectedDate);
-  const canCreate = selectedDate >= getTodayDateString();
-  const isToday = selectedDate === getTodayDateString();
+  const today = getTodayDateString();
+  const isPastDate = selectedDate < today;
+  const isToday = selectedDate === today;
+  const canCreate = !isPastDate;
+  const emptyState = isPastDate
+    ? {
+        title: '이날 등록한 할 일이 없어요.',
+        description: '남겨둔 할 일이 없어 확인할 기록이 없어요.',
+      }
+    : isToday
+      ? {
+          title: '오늘 할 일이 아직 없어요.',
+          description: '지금 끝내고 싶은 일을 한 줄로 적어보세요.',
+        }
+      : {
+          title: '이날 할 일이 아직 없어요.',
+          description: '미리 해둘 일을 적어두고 편하게 준비해보세요.',
+        };
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -83,7 +99,6 @@ export default function TodoSection() {
     const snapshot = [...todos];
     const target = snapshot.find((snapshot) => snapshot.id === todoId);
 
-    const today = getTodayDateString();
     if (!target || target.date < today || (target.date > today && newStatus === TodoStatus.DONE)) {
       return;
     }
@@ -155,10 +170,7 @@ export default function TodoSection() {
               ) : null}
 
               {todos.length === 0 ? (
-                <TaskEmptyState
-                  title="오늘 페이지가 비어 있어요."
-                  description="지금 끝내고 싶은 일을 한 줄로 적어보세요."
-                />
+                <TaskEmptyState title={emptyState.title} description={emptyState.description} />
               ) : (
                 todos.map((todo, index) => (
                   <SimpleTodoCard
