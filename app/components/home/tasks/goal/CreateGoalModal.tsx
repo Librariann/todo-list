@@ -96,7 +96,6 @@ export default function CreateGoalModal({
           onChange={(event) => setName(event.target.value)}
           placeholder="꾸준히 달성하고 싶은 목표"
           maxLength={50}
-          autoFocus
         />
       </div>
 
