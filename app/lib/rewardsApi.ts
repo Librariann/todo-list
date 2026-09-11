@@ -69,9 +69,12 @@ export async function fetchRewards(): Promise<Reward[]> {
 }
 
 /** 보상 교환 (포인트 차감) */
-export async function redeemReward(rewardId: string): Promise<void> {
+export async function redeemReward(rewardId: string, idempotencyKey: string): Promise<void> {
   const res = await apiFetch(`${API_URL}/api/user/rewards/${rewardId}/redeem`, {
     method: 'POST',
+    headers: {
+      'Idempotency-Key': idempotencyKey,
+    },
   });
   if (!res.ok) {
     const errorBody = (await res.json().catch(() => null)) as { message?: string } | null;
