@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { ChevronDown, LogOut, Shield, Ticket, UserRound } from 'lucide-react';
+import { BookOpen, ChevronDown, LifeBuoy, LogOut, Shield, Ticket, UserRound } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -122,6 +122,7 @@ export default function Header({ mainTab, onTabChange }: HeaderProps) {
               <button
                 type="button"
                 onClick={() => onTabChange('rewards')}
+                data-tour="header-points"
                 className="inline-flex min-h-11 items-center gap-2 rounded-full border border-primary/20 bg-secondary px-4 text-sm font-bold text-primary tabular-nums transition-colors hover:bg-primary/15"
                 aria-label={`보상 탭으로 이동, 보유 포인트 ${points.toLocaleString()} P`}
               >
@@ -149,6 +150,26 @@ export default function Header({ mainTab, onTabChange }: HeaderProps) {
               >
                 <Ticket className="h-4 w-4" />
                 <span className="hidden sm:inline">쿠폰함</span>
+              </Link>
+            ) : null}
+            {isAuthenticated ? (
+              <Link
+                href="/guide"
+                className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-bold text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:px-4"
+                aria-label="GrowDo 사용법으로 이동"
+              >
+                <BookOpen className="h-4 w-4" />
+                <span className="hidden xl:inline">사용법</span>
+              </Link>
+            ) : null}
+            {isAuthenticated ? (
+              <Link
+                href="/support"
+                className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-bold text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:px-4"
+                aria-label="GrowDo 고객지원으로 이동"
+              >
+                <LifeBuoy className="h-4 w-4" />
+                <span className="hidden xl:inline">고객지원</span>
               </Link>
             ) : null}
             {isAuthenticated ? (
@@ -181,6 +202,7 @@ export default function Header({ mainTab, onTabChange }: HeaderProps) {
               <button
                 type="button"
                 onClick={() => onTabChange('rewards')}
+                data-tour="header-points"
                 className="inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-full border border-primary/20 bg-secondary px-2.5 text-xs font-bold text-primary tabular-nums transition-colors hover:bg-primary/15"
                 aria-label={`보상 탭으로 이동, 보유 포인트 ${points.toLocaleString()} P`}
               >
@@ -207,6 +229,16 @@ export default function Header({ mainTab, onTabChange }: HeaderProps) {
                   <DropdownMenuItem asChild className="min-h-11 rounded-lg px-3 font-medium">
                     <Link href="/profile">
                       <UserRound />내 정보
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="min-h-11 rounded-lg px-3 font-medium">
+                    <Link href="/guide">
+                      <BookOpen />사용법
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="min-h-11 rounded-lg px-3 font-medium">
+                    <Link href="/support">
+                      <LifeBuoy />고객지원
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="min-h-11 rounded-lg px-3 font-medium">
