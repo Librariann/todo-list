@@ -45,7 +45,7 @@ export default function HabitCard({
       <div className="min-w-0 space-y-4">
         <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-2 sm:gap-4">
           <div className="min-w-0 pt-0.5">
-            <h3 className="friendly-heading break-words text-base font-bold leading-6 text-foreground [overflow-wrap:anywhere] sm:text-lg">
+            <h3 className="friendly-heading break-words text-lg font-bold leading-7 text-foreground [overflow-wrap:anywhere] sm:text-xl">
               {habit.title}
             </h3>
             <div className="mt-2 flex min-w-0 flex-wrap items-center gap-1.5">
