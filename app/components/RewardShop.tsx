@@ -25,6 +25,7 @@ export default function RewardShop() {
   const [isRedeeming, setIsRedeeming] = useState(false);
   const [redeemError, setRedeemError] = useState<string | null>(null);
   const redeemingRef = useRef(false);
+  const idempotencyKeyRef = useRef<string | null>(null);
   const userPoints = useUserSummaryStore((state) => state.points);
   const adjustPoints = useUserSummaryStore((state) => state.adjustPoints);
   const refreshSummary = useUserSummaryStore((state) => state.refreshSummary);
@@ -39,12 +40,14 @@ export default function RewardShop() {
 
   const openDialog = (reward: Reward) => {
     if (redeemingRef.current) return;
+    idempotencyKeyRef.current = crypto.randomUUID();
     setRedeemError(null);
     setSelectedReward(reward);
   };
 
   const closeDialog = () => {
     if (redeemingRef.current) return;
+    idempotencyKeyRef.current = null;
     setRedeemError(null);
     setSelectedReward(null);
   };
@@ -54,6 +57,8 @@ export default function RewardShop() {
 
     const reward = selectedReward;
     const purchasePoint = calculateRewardPoint(reward);
+    const idempotencyKey = idempotencyKeyRef.current ?? crypto.randomUUID();
+    idempotencyKeyRef.current = idempotencyKey;
 
     if (userPoints < purchasePoint) {
       const message = '포인트가 부족합니다. 포인트를 모아주세요.';
@@ -68,8 +73,9 @@ export default function RewardShop() {
     adjustPoints(-purchasePoint);
 
     try {
-      await redeemReward(reward.id);
+      await redeemReward(reward.id, idempotencyKey);
       await refreshSummary();
+      idempotencyKeyRef.current = null;
       setSelectedReward(null);
       toast.success(`${reward.name}을(를) 획득했습니다!`, {
         description: '내 쿠폰함에서 언제든 다시 확인할 수 있어요.',
