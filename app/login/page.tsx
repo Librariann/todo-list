@@ -235,6 +235,12 @@ export default function LoginPage() {
             </Link>
             에 동의한 것으로 간주됩니다.
           </p>
+          <Link
+            href="/support"
+            className="mt-4 inline-flex min-h-11 items-center text-xs font-semibold text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground"
+          >
+            로그인에 문제가 있나요? 고객지원 보기
+          </Link>
         </section>
       </div>
     </main>
