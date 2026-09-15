@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
@@ -134,9 +135,6 @@ export default function ProfilePage() {
           <aside className="relative overflow-hidden bg-[#28342d] px-7 py-10 text-[#f7f3e9] sm:px-10 sm:py-14 lg:min-h-[680px] lg:px-12">
             <div className="relative z-10 flex h-full flex-col justify-between gap-14">
               <div>
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#e4eddf] friendly-heading text-3xl font-bold text-[#216c40]">
-                  {profile.nickname.slice(0, 1).toUpperCase()}
-                </div>
                 <p className="mt-8 text-xs font-bold tracking-[0.18em] text-[#a9c7b3]">MY PLACE</p>
                 <h2 className="friendly-heading mt-3 text-4xl font-bold leading-tight tracking-[-0.055em]">
                   {profile.nickname}님의
