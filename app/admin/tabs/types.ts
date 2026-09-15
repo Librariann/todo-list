@@ -107,7 +107,7 @@ export interface RewardForm {
 
 export const defaultRewardForm: RewardForm = {
   name: '',
-  type: 'POINT',
+  type: 'COUPON',
   point: 100,
   description: '',
   discount: false,

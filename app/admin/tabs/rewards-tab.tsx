@@ -1,12 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { CalendarClock, ImageIcon, PackageCheck, PackageX } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { CalendarClock, ImageIcon, PackageCheck, PackageX, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiFetch } from '@/app/lib/apiClient';
 import { ActionBtn, Field } from './components';
 import { Reward, RewardForm, RewardType, defaultRewardForm } from './types';
 import ConfirmModal from '@/app/components/ConfirmModal';
+import { uploadRewardImage } from '@/app/lib/rewardImageUpload';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -26,12 +27,14 @@ function rewardPayload(form: RewardForm) {
 }
 
 export default function RewardsTab() {
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const [list, setList] = useState<Reward[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [form, setForm] = useState<RewardForm>(defaultRewardForm);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Reward | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
@@ -54,12 +57,28 @@ export default function RewardsTab() {
   }, [fetchList]);
 
   function openCreate() {
+    if (uploadingImage || saving) return;
     setEditId(null);
     setForm(defaultRewardForm);
     setShowForm(true);
   }
 
+  async function handleImageUpload(file: File) {
+    setUploadingImage(true);
+    try {
+      const imageUrl = await uploadRewardImage(file);
+      setForm((current) => ({ ...current, imageUrl }));
+      toast.success('이미지를 업로드했어요. 보상을 저장하면 적용돼요.');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : '이미지를 업로드하지 못했어요.');
+    } finally {
+      setUploadingImage(false);
+      if (imageInputRef.current) imageInputRef.current.value = '';
+    }
+  }
+
   function openEdit(r: Reward) {
+    if (uploadingImage || saving) return;
     setEditId(r.id);
     setForm({
       name: r.name,
@@ -78,7 +97,7 @@ export default function RewardsTab() {
   }
 
   async function handleSave() {
-    if (!form.name.trim()) return;
+    if (!form.name.trim() || uploadingImage) return;
     setSaving(true);
     try {
       let response: Response;
@@ -152,7 +171,8 @@ export default function RewardsTab() {
         <p className="text-sm text-muted-foreground">{list.length}개의 보상</p>
         <button
           onClick={openCreate}
-          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
+          disabled={uploadingImage || saving}
+          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
         >
           + 새 보상
         </button>
@@ -199,17 +219,53 @@ export default function RewardsTab() {
                 placeholder="보상 설명"
               />
             </Field>
-            <Field label="상품 이미지 URL" span2>
-              <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_6rem]">
-                <input
-                  className="input-common"
-                  value={form.imageUrl}
-                  onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))}
-                  placeholder="공급사가 사용을 허용한 이미지 주소"
-                />
+            <Field label="상품 이미지" span2>
+              <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_6rem] sm:items-start">
+                <div className="space-y-2">
+                  <input
+                    ref={imageInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      if (file) void handleImageUpload(file);
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => imageInputRef.current?.click()}
+                    disabled={uploadingImage || saving}
+                    className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-primary/25 bg-primary/10 px-4 text-sm font-semibold text-primary transition-colors hover:bg-primary/15 disabled:cursor-wait disabled:opacity-50"
+                  >
+                    <Upload className="h-4 w-4" aria-hidden="true" />
+                    {uploadingImage ? '이미지 업로드 중...' : '이미지 업로드'}
+                  </button>
+                  <p className="text-xs leading-5 text-muted-foreground">
+                    JPG, PNG, WebP · 최대 10MB. 상품을 보여줄 이미지로 사용해요.
+                  </p>
+                  <input
+                    className="input-common"
+                    aria-label="상품 이미지 URL 직접 입력"
+                    value={form.imageUrl}
+                    onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))}
+                    placeholder="또는 이미지 URL 직접 입력"
+                  />
+                  <p className="text-xs text-muted-foreground" aria-live="polite">
+                    {uploadingImage
+                      ? '이미지를 서버에 올리고 있어요.'
+                      : form.imageUrl
+                        ? '이미지 주소가 준비됐어요. 보상을 저장하면 반영돼요.'
+                        : '이미지를 올린 뒤 보상을 저장해 주세요.'}
+                  </p>
+                </div>
                 <div
                   className="flex h-20 items-center justify-center overflow-hidden rounded-xl bg-[#e3ece4] bg-cover bg-center text-[#63806d]"
                   style={form.imageUrl ? { backgroundImage: `url(${form.imageUrl})` } : undefined}
+                  role="img"
+                  aria-label={
+                    form.imageUrl ? '보상 상품 이미지 미리보기' : '등록된 상품 이미지 없음'
+                  }
                 >
                   {!form.imageUrl ? <ImageIcon className="h-5 w-5" /> : null}
                 </div>
@@ -295,13 +351,14 @@ export default function RewardsTab() {
           <div className="flex gap-2 mt-5 pt-4 border-t border-stone-100 dark:border-white/[0.05]">
             <button
               onClick={handleSave}
-              disabled={saving || !form.name.trim()}
+              disabled={saving || uploadingImage || !form.name.trim()}
               className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-40 transition-opacity"
             >
               {saving ? '저장 중...' : '저장'}
             </button>
             <button
               onClick={() => setShowForm(false)}
+              disabled={uploadingImage || saving}
               className="px-4 py-2 rounded-lg border border-stone-200 dark:border-white/[0.1] text-sm font-medium text-muted-foreground hover:bg-stone-50 dark:hover:bg-white/5 transition-colors"
             >
               취소
@@ -391,7 +448,9 @@ export default function RewardsTab() {
                 >
                   {r.exchangeEnabled ? '교환 끄기' : '교환 켜기'}
                 </ActionBtn>
-                <ActionBtn onClick={() => openEdit(r)}>수정</ActionBtn>
+                <ActionBtn onClick={() => openEdit(r)} disabled={uploadingImage || saving}>
+                  수정
+                </ActionBtn>
                 <ActionBtn danger onClick={() => setDeleteTarget(r)} disabled={deletingId === r.id}>
                   {deletingId === r.id ? '...' : '삭제'}
                 </ActionBtn>

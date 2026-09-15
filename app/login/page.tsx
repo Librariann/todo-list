@@ -159,9 +159,13 @@ export default function LoginPage() {
         <section className="relative flex min-h-[420px] flex-col justify-between overflow-hidden bg-[oklch(0.95_0.065_95)] p-8 text-foreground dark:bg-secondary/70 sm:p-12 lg:min-h-[680px] lg:p-16">
           <div>
             <div className="mb-16 flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-[15px] bg-primary text-primary-foreground">
-                <span className="friendly-heading text-lg font-bold">G</span>
-              </span>
+              <Image
+                src="/growdo-logo.png"
+                alt=""
+                width={44}
+                height={44}
+                className="size-11 rounded-[15px]"
+              />
               <span className="friendly-heading text-2xl font-bold">GrowDo</span>
             </div>
             <p className="mb-5 text-sm font-bold text-primary">매일 쓰는 나의 생산성 공간</p>

@@ -91,7 +91,7 @@ function RewardVisual({ reward }: { reward: Reward }) {
       <div
         role="img"
         aria-label={`${reward.name} 상품 이미지`}
-        className="h-full min-h-52 bg-[#dceee5] bg-cover bg-center sm:min-h-64"
+        className="h-52 bg-[#fffdf7] bg-contain bg-center bg-no-repeat dark:bg-card sm:h-64"
         style={{ backgroundImage: `url("${reward.imageUrl.replaceAll('"', '\\"')}")` }}
       />
     );
