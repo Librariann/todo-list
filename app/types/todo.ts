@@ -57,6 +57,10 @@ export interface Reward {
   value: number;
   discount: boolean;
   discountRate: number;
+  imageUrl: string | null;
+  availableFrom: string | null;
+  exchangeEnabled: boolean;
+  stockQuantity: number;
 }
 
 // 습관 (Habit)

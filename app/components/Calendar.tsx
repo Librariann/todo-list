@@ -103,7 +103,7 @@ export default function Calendar({
 
         <div
           onClick={() => setIsExpanded(!isExpanded)}
-          className="text-center lg:cursor-default flex flex-col items-center gap-1 cursor-pointer rounded-md px-3 py-1 hover:bg-accent transition-colors"
+          className="text-center lg:cursor-default flex flex-col items-center gap-1 cursor-pointer rounded-md px-3 py-1 transition-colors hover:bg-accent dark:hover:bg-secondary"
         >
           <div className="flex items-center gap-2">
             <h3 className="font-bold text-foreground">{formatMonthYear(currentMonth)}</h3>

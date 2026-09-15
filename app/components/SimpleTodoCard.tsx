@@ -39,20 +39,21 @@ export default function SimpleTodoCard({
             : ''
       }`}
     >
-      <div className="flex items-center gap-3">
-        {/* 체크박스 */}
-        <Button
-          onClick={() => {
-            if (todo.status === TodoStatus.DONE) {
-              onStatusChange(todo.id, TodoStatus.TODO);
-            } else {
-              onStatusChange(todo.id, TodoStatus.DONE);
-            }
-          }}
-          disabled={isCompletionLocked}
-          variant="ghost"
-          size="sm"
-          className={`
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex min-w-0 items-start gap-3 sm:flex-1 sm:items-center">
+          {/* 체크박스 */}
+          <Button
+            onClick={() => {
+              if (todo.status === TodoStatus.DONE) {
+                onStatusChange(todo.id, TodoStatus.TODO);
+              } else {
+                onStatusChange(todo.id, TodoStatus.DONE);
+              }
+            }}
+            disabled={isCompletionLocked}
+            variant="ghost"
+            size="sm"
+            className={`
             h-11 w-11 flex-shrink-0 rounded-[14px] border-2 p-0 transition-transform active:scale-95
             ${
               isDone
@@ -61,76 +62,81 @@ export default function SimpleTodoCard({
             }
             disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:border-stone-300
           `}
-          aria-label={
-            isCompletionLocked
-              ? `${todo.title}: ${completionLockReason}`
-              : `${todo.title} 완료 상태 변경`
-          }
-          title={isCompletionLocked ? completionLockReason : undefined}
-        >
-          {isDone ? <Check className="h-4 w-4 text-white" /> : null}
-        </Button>
+            aria-label={
+              isCompletionLocked
+                ? `${todo.title}: ${completionLockReason}`
+                : `${todo.title} 완료 상태 변경`
+            }
+            title={isCompletionLocked ? completionLockReason : undefined}
+          >
+            {isDone ? <Check className="h-4 w-4 text-white" /> : null}
+          </Button>
 
-        {/* 제목 */}
-        <div className="flex-1 min-w-0">
-          <h3 className={`font-medium text-foreground ${isDone ? 'line-through opacity-60' : ''}`}>
-            {todo.title}
-          </h3>
-          {isPastDate && !isDone ? (
-            <p className="mt-1 text-xs font-semibold text-muted-foreground">
-              기한이 지나 완료할 수 없어요
-            </p>
-          ) : isFutureDate && !isDone ? (
-            <p className="mt-1 text-xs font-semibold text-muted-foreground">
-              예정된 날짜에 완료할 수 있어요
-            </p>
-          ) : featured && !isDone ? (
-            <p className="mt-1 text-xs font-semibold text-primary">오늘의 우선순위</p>
-          ) : null}
+          {/* 제목 */}
+          <div className="min-w-0 flex-1">
+            <h3
+              className={`break-words text-base font-medium leading-6 text-foreground ${isDone ? 'line-through opacity-60' : ''}`}
+            >
+              {todo.title}
+            </h3>
+            {isPastDate && !isDone ? (
+              <p className="mt-1 text-xs font-semibold text-muted-foreground">
+                기한이 지나 완료할 수 없어요
+              </p>
+            ) : isFutureDate && !isDone ? (
+              <p className="mt-1 text-xs font-semibold text-muted-foreground">
+                예정된 날짜에 완료할 수 있어요
+              </p>
+            ) : featured && !isDone ? (
+              <p className="mt-1 text-xs font-semibold text-primary">오늘의 우선순위</p>
+            ) : null}
+          </div>
         </div>
 
-        {/* 진행 중 버튼 */}
-        {!isDone ? (
-          <button
+        <div className="flex min-w-0 items-center justify-end gap-1 border-t border-border/60 pt-2 sm:gap-1 sm:border-t-0 sm:pt-0">
+          {/* 진행 중 버튼 */}
+          {!isDone ? (
+            <button
               type="button"
-            onClick={() => {
-              const newStatus =
-                todo.status === TodoStatus.IN_PROGRESS ? TodoStatus.TODO : TodoStatus.IN_PROGRESS;
-              onStatusChange(todo.id, newStatus);
+              onClick={() => {
+                const newStatus =
+                  todo.status === TodoStatus.IN_PROGRESS ? TodoStatus.TODO : TodoStatus.IN_PROGRESS;
+                onStatusChange(todo.id, newStatus);
               }}
               disabled={isPastDate}
-              className={`min-h-11 rounded-xl border px-3 text-xs font-semibold transition-colors ${
-              todo.status === TodoStatus.IN_PROGRESS
-                ? 'border-primary bg-primary text-primary-foreground'
-                : 'border-border text-muted-foreground hover:bg-secondary'
+              className={`min-h-11 rounded-xl border px-4 text-xs font-semibold transition-colors ${
+                todo.status === TodoStatus.IN_PROGRESS
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-border text-muted-foreground hover:bg-secondary'
               } disabled:cursor-not-allowed disabled:opacity-45`}
               title={isPastDate ? '마감된 할 일은 상태를 변경할 수 없어요.' : undefined}
             >
               {todo.status === TodoStatus.IN_PROGRESS ? '진행 중' : '시작'}
-          </button>
-        ) : null}
-        {onEdit && !isPastDate && (
-          <Button
-            onClick={() => onEdit(todo)}
-            variant="ghost"
-            size="sm"
-            className="h-11 w-11 flex-shrink-0 p-0 text-muted-foreground hover:text-foreground"
-            aria-label={`${todo.title} 수정`}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-        )}
-        {onDelete && (
-          <Button
-            onClick={() => onDelete(todo.id)}
-            variant="ghost"
-            size="sm"
-            className="h-11 w-11 flex-shrink-0 p-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
-            aria-label={`${todo.title} 삭제`}
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
-        )}
+            </button>
+          ) : null}
+          {onEdit && !isPastDate && (
+            <Button
+              onClick={() => onEdit(todo)}
+              variant="ghost"
+              size="sm"
+              className="h-11 w-11 flex-shrink-0 p-0 text-muted-foreground hover:text-foreground"
+              aria-label={`${todo.title} 수정`}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+          )}
+          {onDelete && (
+            <Button
+              onClick={() => onDelete(todo.id)}
+              variant="ghost"
+              size="sm"
+              className="h-11 w-11 flex-shrink-0 p-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              aria-label={`${todo.title} 삭제`}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
       </div>
     </article>
   );

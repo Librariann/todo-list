@@ -21,7 +21,10 @@ export default function GoalCard({ goal, onToggle, onDelete, onEdit }: GoalCardP
     return `${Number(month)}월 ${Number(day)}일`;
   };
 
-  const periodLabel = `${formatPeriodDate(goal.period.start)}~${formatPeriodDate(goal.period.end)}`;
+  const periodLabel =
+    goal.frequency === GoalFrequency.DAILY
+      ? formatPeriodDate(goal.period.start)
+      : `${formatPeriodDate(goal.period.start)}~${formatPeriodDate(goal.period.end)}`;
 
   const completionLabel = (() => {
     if (goal.period.status === 'ACHIEVED') {

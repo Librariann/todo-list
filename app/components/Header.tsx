@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import ThemeToggleStandalone from './ThemeToggleStandalone';
 import { useAuthStore } from '../store/authStore';
+import { useUserSummaryStore } from '../store/userSummaryStore';
 import { apiFetch } from '../lib/apiClient';
 import { postNativeAuthEvent } from '../lib/nativeBridge';
 import type { MainTabType } from '../types/navigation';
@@ -36,6 +37,7 @@ export default function Header({ mainTab, onTabChange }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, isAuthenticated, clearAuth, accessToken, setUser } = useAuthStore();
+  const points = useUserSummaryStore((summary) => summary.points);
   const isAdminPage = pathname === '/admin';
 
   useEffect(() => {
@@ -116,6 +118,19 @@ export default function Header({ mainTab, onTabChange }: HeaderProps) {
           )}
 
           <div className="hidden items-center gap-2 md:flex">
+            {isAuthenticated && !isAdminPage ? (
+              <button
+                type="button"
+                onClick={() => onTabChange('rewards')}
+                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-primary/20 bg-secondary px-4 text-sm font-bold text-primary tabular-nums transition-colors hover:bg-primary/15"
+                aria-label={`보상 탭으로 이동, 보유 포인트 ${points.toLocaleString()} P`}
+              >
+                <span className="flex size-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                  P
+                </span>
+                {points.toLocaleString()} P
+              </button>
+            ) : null}
             {isAuthenticated && user?.role === 'ADMIN' && (
               <Link
                 href={isAdminPage ? '/' : '/admin'}
@@ -162,6 +177,19 @@ export default function Header({ mainTab, onTabChange }: HeaderProps) {
           </div>
 
           <div className="flex items-center gap-1 md:hidden">
+            {isAuthenticated && !isAdminPage ? (
+              <button
+                type="button"
+                onClick={() => onTabChange('rewards')}
+                className="inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-full border border-primary/20 bg-secondary px-2.5 text-xs font-bold text-primary tabular-nums transition-colors hover:bg-primary/15"
+                aria-label={`보상 탭으로 이동, 보유 포인트 ${points.toLocaleString()} P`}
+              >
+                <span className="flex size-5 items-center justify-center rounded-full bg-primary text-[0.65rem] font-bold text-primary-foreground">
+                  P
+                </span>
+                {points.toLocaleString()} P
+              </button>
+            ) : null}
             <ThemeToggleStandalone />
             {isAuthenticated ? (
               <DropdownMenu>

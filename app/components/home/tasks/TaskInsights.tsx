@@ -5,7 +5,6 @@ import { useCalendarStore } from '@/app/store/calendarStore';
 import { useGoalsStore } from '@/app/store/goalsStore';
 import { useHabitsStore } from '@/app/store/habitsStore';
 import { useTodosStore } from '@/app/store/todosStore';
-import { useUserSummaryStore } from '@/app/store/userSummaryStore';
 import type { TaskTabType } from '@/app/types/navigation';
 
 interface TaskInsightsProps {
@@ -18,7 +17,6 @@ export default function TaskInsights({ activeTab }: TaskInsightsProps) {
   const habits = useHabitsStore((state) => state.habits);
   const goalsByDate = useGoalsStore((state) => state.goalsByDate);
   const todosByDate = useTodosStore((state) => state.todosByDate);
-  const userPoints = useUserSummaryStore((summary) => summary.points);
   const selectedDate = useCalendarStore((calendar) => calendar.selectedDate);
   const currentMonth = useCalendarStore((calendar) => calendar.currentMonth);
   const setSelectedDate = useCalendarStore((calendar) => calendar.setSelectedDate);
@@ -36,7 +34,21 @@ export default function TaskInsights({ activeTab }: TaskInsightsProps) {
   };
 
   return (
-    <aside className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+    <aside className={`grid gap-4 ${showsCalendar ? 'sm:grid-cols-2 xl:grid-cols-1' : ''}`}>
+      {showsCalendar ? (
+        <section className="rounded-[1.75rem] bg-[#cfe6ed] p-6 text-[#294850] dark:bg-[oklch(0.4_0.055_225)] dark:text-foreground">
+          <p className="text-xs font-bold text-[#3f6873] dark:text-foreground/70">날짜별 기록</p>
+          <div className="mt-5 rounded-2xl bg-[#fbf8ef]/80 p-2 text-[#26302a] dark:bg-card dark:text-foreground">
+            <Calendar
+              selectedDate={selectedDate}
+              onDateSelect={handleDateSelect}
+              currentMonth={currentMonth}
+              onMonthChange={onMonthChange}
+            />
+          </div>
+        </section>
+      ) : null}
+
       <section className="rounded-[1.75rem] bg-[#f4d89e] p-6 text-[#3f3625] dark:bg-[oklch(0.45_0.08_75)] dark:text-foreground">
         <p className="text-xs font-bold text-[#765f31] dark:text-foreground/70">오늘 한눈에</p>
         <p className="friendly-heading mt-8 text-4xl font-bold tracking-[-0.06em]">
@@ -47,31 +59,6 @@ export default function TaskInsights({ activeTab }: TaskInsightsProps) {
             ? `오늘의 ${totalToday || completedToday}개 중 여기까지 잘 왔어요.`
             : '첫 번째 일을 끝내면 오늘의 흐름이 시작돼요.'}
         </p>
-      </section>
-
-      <section className="rounded-[1.75rem] bg-[#cfe6ed] p-6 text-[#294850] dark:bg-[oklch(0.4_0.055_225)] dark:text-foreground">
-        <div className="flex items-center justify-between gap-4">
-          <p className="text-xs font-bold text-[#3f6873] dark:text-foreground/70">
-            {showsCalendar ? '날짜별 기록' : '내 포인트'}
-          </p>
-          <span className="text-xs font-semibold">{userPoints.toLocaleString()} P</span>
-        </div>
-        {showsCalendar ? (
-          <div className="mt-5 rounded-2xl bg-[#fbf8ef]/80 p-2 text-[#26302a] dark:bg-card dark:text-foreground">
-            <Calendar
-              selectedDate={selectedDate}
-              onDateSelect={handleDateSelect}
-              currentMonth={currentMonth}
-              onMonthChange={onMonthChange}
-            />
-          </div>
-        ) : (
-          <div className="mt-8">
-            <p className="mt-2 text-sm leading-6 text-[#4f6c73] dark:text-foreground/75">
-              완료할 때마다 내일 다시 돌아올 이유가 쌓여요.
-            </p>
-          </div>
-        )}
       </section>
     </aside>
   );

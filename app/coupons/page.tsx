@@ -56,8 +56,7 @@ export default function CouponsPage() {
     fetchOwnedRewards()
       .then((items) => {
         if (!active) return;
-        console.log(items);
-        setCoupons(items.filter((item) => item.type === 'POINT'));
+        setCoupons(items.filter((item) => item.type === 'COUPON'));
       })
       .catch((error) => {
         if (!active) return;
@@ -260,17 +259,26 @@ export default function CouponsPage() {
                       >
                         <span className="flex min-w-0 items-center gap-4 px-5 py-5 sm:px-6">
                           <span
-                            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${
+                            role={coupon.imageUrl ? 'img' : undefined}
+                            aria-label={coupon.imageUrl ? `${coupon.name} 상품 이미지` : undefined}
+                            className={`flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden bg-cover bg-center ${
                               coupon.isUsed
-                                ? 'bg-stone-200 text-stone-500 dark:bg-background'
-                                : 'bg-[#e4eddf] text-[#216c40] dark:bg-secondary dark:text-primary'
+                                ? 'rounded-2xl bg-stone-200 text-stone-500 grayscale dark:bg-background'
+                                : 'rounded-2xl bg-[#e4eddf] text-[#216c40] dark:bg-secondary dark:text-primary'
                             }`}
+                            style={
+                              coupon.imageUrl
+                                ? {
+                                    backgroundImage: `url("${coupon.imageUrl.replaceAll('"', '\\"')}")`,
+                                  }
+                                : undefined
+                            }
                           >
-                            {coupon.isUsed ? (
+                            {!coupon.imageUrl && coupon.isUsed ? (
                               <CircleCheck className="h-5 w-5" />
-                            ) : (
+                            ) : !coupon.imageUrl ? (
                               <Store className="h-5 w-5" />
-                            )}
+                            ) : null}
                           </span>
                           <span className="min-w-0">
                             <span className="block truncate font-bold text-foreground">

@@ -1,12 +1,29 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { CalendarClock, ImageIcon, PackageCheck, PackageX } from 'lucide-react';
+import { toast } from 'sonner';
 import { apiFetch } from '@/app/lib/apiClient';
 import { ActionBtn, Field } from './components';
 import { Reward, RewardForm, RewardType, defaultRewardForm } from './types';
 import ConfirmModal from '@/app/components/ConfirmModal';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+function toLocalDateTime(value: string | null): string {
+  if (!value) return '';
+  const date = new Date(value);
+  const offset = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+}
+
+function rewardPayload(form: RewardForm) {
+  return {
+    ...form,
+    imageUrl: form.imageUrl.trim() || null,
+    availableFrom: form.availableFrom ? new Date(form.availableFrom).toISOString() : null,
+  };
+}
 
 export default function RewardsTab() {
   const [list, setList] = useState<Reward[]>([]);
@@ -17,6 +34,7 @@ export default function RewardsTab() {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Reward | null>(null);
+  const [togglingId, setTogglingId] = useState<number | null>(null);
 
   const fetchList = useCallback(async () => {
     setLoading(true);
@@ -51,6 +69,10 @@ export default function RewardsTab() {
       discount: r.discount,
       discountRate: r.discountRate,
       isActive: r.isActive,
+      imageUrl: r.imageUrl ?? '',
+      availableFrom: toLocalDateTime(r.availableFrom),
+      exchangeEnabled: r.exchangeEnabled,
+      stockQuantity: r.stockQuantity,
     });
     setShowForm(true);
   }
@@ -59,30 +81,57 @@ export default function RewardsTab() {
     if (!form.name.trim()) return;
     setSaving(true);
     try {
+      let response: Response;
       if (editId !== null) {
-        await apiFetch(`${API_URL}/api/rewards/${editId}`, {
+        response = await apiFetch(`${API_URL}/api/rewards/${editId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: form.name,
-            type: form.type,
-            point: form.point,
-            description: form.description,
-            discount: form.discount,
-            discountRate: form.discountRate,
-          }),
+          body: JSON.stringify(rewardPayload(form)),
         });
       } else {
-        await apiFetch(`${API_URL}/api/rewards/register`, {
+        response = await apiFetch(`${API_URL}/api/rewards/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(form),
+          body: JSON.stringify(rewardPayload(form)),
         });
+      }
+      if (!response.ok) {
+        const body = (await response.json().catch(() => null)) as { message?: string } | null;
+        throw new Error(body?.message ?? '보상을 저장하지 못했어요.');
       }
       setShowForm(false);
       await fetchList();
+      toast.success(editId !== null ? '보상을 수정했어요.' : '새 보상을 등록했어요.');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : '보상을 저장하지 못했어요.');
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleExchangeToggle(reward: Reward) {
+    setTogglingId(reward.id);
+    const nextValue = !reward.exchangeEnabled;
+    setList((items) =>
+      items.map((item) => (item.id === reward.id ? { ...item, exchangeEnabled: nextValue } : item))
+    );
+    try {
+      const response = await apiFetch(`${API_URL}/api/rewards/${reward.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ exchangeEnabled: nextValue }),
+      });
+      if (!response.ok) throw new Error('교환 상태를 변경하지 못했어요.');
+      toast.success(nextValue ? '교환을 열었어요.' : '교환을 잠시 닫았어요.');
+    } catch (error) {
+      setList((items) =>
+        items.map((item) =>
+          item.id === reward.id ? { ...item, exchangeEnabled: reward.exchangeEnabled } : item
+        )
+      );
+      toast.error(error instanceof Error ? error.message : '교환 상태를 변경하지 못했어요.');
+    } finally {
+      setTogglingId(null);
     }
   }
 
@@ -149,6 +198,64 @@ export default function RewardsTab() {
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                 placeholder="보상 설명"
               />
+            </Field>
+            <Field label="상품 이미지 URL" span2>
+              <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_6rem]">
+                <input
+                  className="input-common"
+                  value={form.imageUrl}
+                  onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))}
+                  placeholder="공급사가 사용을 허용한 이미지 주소"
+                />
+                <div
+                  className="flex h-20 items-center justify-center overflow-hidden rounded-xl bg-[#e3ece4] bg-cover bg-center text-[#63806d]"
+                  style={form.imageUrl ? { backgroundImage: `url(${form.imageUrl})` } : undefined}
+                >
+                  {!form.imageUrl ? <ImageIcon className="h-5 w-5" /> : null}
+                </div>
+              </div>
+            </Field>
+            <Field label="교환 시작일">
+              <input
+                className="input-common"
+                type="datetime-local"
+                value={form.availableFrom}
+                onChange={(e) => setForm((f) => ({ ...f, availableFrom: e.target.value }))}
+              />
+            </Field>
+            <Field label={form.type === 'COUPON' ? '준비된 쿠폰 재고' : '재고 관리 안 함'}>
+              <input
+                className="input-common"
+                type="number"
+                min={0}
+                disabled={form.type !== 'COUPON'}
+                value={form.stockQuantity}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, stockQuantity: Math.max(0, +e.target.value) }))
+                }
+              />
+            </Field>
+            <Field label="교환 운영">
+              <button
+                type="button"
+                role="switch"
+                aria-checked={form.exchangeEnabled}
+                onClick={() => setForm((f) => ({ ...f, exchangeEnabled: !f.exchangeEnabled }))}
+                className={`mt-1 flex w-full items-center justify-between rounded-xl border px-3 py-2 text-sm font-semibold transition-colors ${
+                  form.exchangeEnabled
+                    ? 'border-primary/25 bg-primary/10 text-primary'
+                    : 'border-stone-200 bg-stone-50 text-muted-foreground dark:border-border dark:bg-muted'
+                }`}
+              >
+                <span>{form.exchangeEnabled ? '교환 열림' : '교환 닫힘'}</span>
+                <span
+                  className={`relative h-5 w-9 rounded-full transition-colors ${form.exchangeEnabled ? 'bg-primary' : 'bg-stone-300 dark:bg-stone-600'}`}
+                >
+                  <span
+                    className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${form.exchangeEnabled ? 'translate-x-[18px]' : 'translate-x-0.5'}`}
+                  />
+                </span>
+              </button>
             </Field>
             <Field label="할인 적용">
               <label className="flex items-center gap-2 mt-2 cursor-pointer">
@@ -218,8 +325,14 @@ export default function RewardsTab() {
           {list.map((r) => (
             <div
               key={r.id}
-              className="flex items-center gap-3 bg-white dark:bg-card border border-stone-200 dark:border-white/[0.07] rounded-xl px-4 py-3 hover:shadow-sm transition-shadow"
+              className="grid gap-3 rounded-2xl border border-stone-200 bg-white px-4 py-4 transition-colors hover:border-primary/25 dark:border-white/[0.07] dark:bg-card sm:grid-cols-[4rem_minmax(0,1fr)_auto] sm:items-center"
             >
+              <div
+                className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl bg-[#e3ece4] bg-cover bg-center text-[#54735f]"
+                style={r.imageUrl ? { backgroundImage: `url(${r.imageUrl})` } : undefined}
+              >
+                {!r.imageUrl ? <PackageCheck className="h-5 w-5" /> : null}
+              </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-medium text-foreground text-sm">{r.name}</span>
@@ -231,8 +344,17 @@ export default function RewardsTab() {
                   >
                     {r.isActive ? '활성' : '비활성'}
                   </span>
+                  <span
+                    className={`rounded-md px-1.5 py-0.5 text-[10px] font-semibold ${
+                      r.exchangeEnabled
+                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300'
+                        : 'bg-stone-100 text-muted-foreground dark:bg-white/5'
+                    }`}
+                  >
+                    {r.exchangeEnabled ? '교환 ON' : '교환 OFF'}
+                  </span>
                 </div>
-                <div className="flex items-center gap-3 mt-0.5">
+                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
                   <span className="text-xs font-semibold text-primary">
                     {r.point.toLocaleString()}pt
                   </span>
@@ -244,9 +366,31 @@ export default function RewardsTab() {
                       {r.description}
                     </span>
                   )}
+                  {r.type === 'COUPON' ? (
+                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                      {r.stockQuantity > 0 ? (
+                        <PackageCheck className="h-3.5 w-3.5" />
+                      ) : (
+                        <PackageX className="h-3.5 w-3.5" />
+                      )}
+                      재고 {r.stockQuantity}개
+                    </span>
+                  ) : null}
+                  {r.availableFrom ? (
+                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                      <CalendarClock className="h-3.5 w-3.5" />
+                      {new Date(r.availableFrom).toLocaleDateString('ko-KR')} 오픈
+                    </span>
+                  ) : null}
                 </div>
               </div>
-              <div className="flex gap-1.5 shrink-0">
+              <div className="flex shrink-0 flex-wrap gap-1.5 sm:justify-end">
+                <ActionBtn
+                  onClick={() => void handleExchangeToggle(r)}
+                  disabled={togglingId === r.id}
+                >
+                  {r.exchangeEnabled ? '교환 끄기' : '교환 켜기'}
+                </ActionBtn>
                 <ActionBtn onClick={() => openEdit(r)}>수정</ActionBtn>
                 <ActionBtn danger onClick={() => setDeleteTarget(r)} disabled={deletingId === r.id}>
                   {deletingId === r.id ? '...' : '삭제'}

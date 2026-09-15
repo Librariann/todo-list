@@ -115,7 +115,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#d9e1d5] px-3 pt-3 pb-24 dark:bg-background sm:px-6 sm:pt-6 md:pb-6">
+    <div className="min-h-screen bg-[#d9e1d5] px-2 pt-2 pb-24 dark:bg-background sm:px-6 sm:pt-6 md:pb-6">
       <div className="mx-auto max-w-[1500px] overflow-hidden rounded-[2rem] bg-card shadow-[0_24px_70px_rgba(38,48,42,0.12)]">
         <Header mainTab={mainTab} onTabChange={setMainTab} />
 
@@ -142,13 +142,13 @@ export default function Home() {
                   username={user?.username}
                 />
 
-                <div className="px-5 pt-5 pb-10 sm:px-10 sm:pb-12 lg:px-12">
+                <div className="px-4 pt-5 pb-10 sm:px-10 sm:pb-12 lg:px-12">
                   {mainTab === 'tasks' ? (
                     <div id="task-workspace">
                       <TaskTabs activeTab={taskTab} onChange={setTaskTab} />
 
                       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(17rem,0.7fr)]">
-                        <section className="rounded-[1.75rem] bg-[#eef0e7] px-5 py-6 dark:bg-muted sm:px-7 sm:py-7 xl:row-span-2">
+                        <section className="rounded-[1.75rem] bg-[#eef0e7] px-4 py-6 dark:bg-muted sm:px-7 sm:py-7 xl:row-span-2">
                           {taskTab === 'habits' ? (
                             <HabitSection />
                           ) : taskTab === 'goals' ? (

@@ -85,6 +85,10 @@ export interface Reward {
   discount: boolean;
   discountRate: number;
   isActive: boolean;
+  imageUrl: string | null;
+  availableFrom: string | null;
+  exchangeEnabled: boolean;
+  stockQuantity: number;
 }
 
 export interface RewardForm {
@@ -95,6 +99,10 @@ export interface RewardForm {
   discount: boolean;
   discountRate: number;
   isActive: boolean;
+  imageUrl: string;
+  availableFrom: string;
+  exchangeEnabled: boolean;
+  stockQuantity: number;
 }
 
 export const defaultRewardForm: RewardForm = {
@@ -105,6 +113,10 @@ export const defaultRewardForm: RewardForm = {
   discount: false,
   discountRate: 0,
   isActive: true,
+  imageUrl: '',
+  availableFrom: '',
+  exchangeEnabled: true,
+  stockQuantity: 0,
 };
 
 export interface AdminUser {

@@ -14,6 +14,10 @@ export interface RewardsApiResponse {
   discount: boolean;
   discountRate: number;
   isActive: boolean;
+  imageUrl: string | null;
+  availableFrom: string | null;
+  exchangeEnabled: boolean;
+  stockQuantity: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -31,6 +35,7 @@ export interface OwnedRewardApiResponse {
   updatedAt: string;
   couponCode?: string | null;
   couponImageUrl?: string | null;
+  imageUrl?: string | null;
   expiresAt?: string | null;
 }
 
@@ -49,10 +54,14 @@ export function mapApiReward(api: RewardsApiResponse): Reward {
     id: api.id.toString(),
     name: api.name,
     description: api.description ?? '',
-    type: api.type === 'POINT' ? RewardType.POINTS : RewardType.CUSTOM,
+    type: api.type === 'POINT' ? RewardType.POINTS : RewardType.COFFEE_COUPON,
     value: api.point,
     discount: api.discount,
     discountRate: api.discountRate,
+    imageUrl: api.imageUrl,
+    availableFrom: api.availableFrom,
+    exchangeEnabled: api.exchangeEnabled ?? true,
+    stockQuantity: api.stockQuantity ?? 0,
   };
 }
 

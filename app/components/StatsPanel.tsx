@@ -34,7 +34,6 @@ export default function StatsPanel() {
   const todosByDate = useTodosStore((state) => state.todosByDate);
   const todosLoading = useTodosStore((state) => state.loadingByDate[todayString] ?? false);
   const fetchTodos = useTodosStore((state) => state.fetchTodos);
-  const totalPoints = useUserSummaryStore((summary) => summary.points);
   const summaryLoading = useUserSummaryStore((summary) => summary.isLoading);
   const goals = goalsByDate[todayString] ?? [];
   const todos = todosByDate[todayString] ?? [];
@@ -213,13 +212,6 @@ export default function StatsPanel() {
               />
             </div>
           ))}
-        </div>
-      </section>
-
-      <section className="mt-10 flex items-end justify-between border-t border-white/12 pt-8">
-        <div>
-          <p className="text-xs text-[#aeb9b1]">모아둔 포인트</p>
-          <p className="friendly-heading mt-2 text-3xl font-bold tabular-nums">{totalPoints} P</p>
         </div>
       </section>
     </div>
