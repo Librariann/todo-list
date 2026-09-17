@@ -3,7 +3,7 @@
 import { Habit } from '../types/todo';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Minus, Pencil, Plus } from 'lucide-react';
+import { Minus, Pencil, Plus, Trash2 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import {
   getTodayProgress,
@@ -21,9 +21,16 @@ interface HabitCardProps {
   onPositive: (id: string) => void;
   onNegative: (id: string) => void;
   onEdit?: (habit: Habit) => void;
+  onDelete?: (habit: Habit) => void;
 }
 
-export default function HabitCard({ habit, onPositive, onNegative, onEdit }: HabitCardProps) {
+export default function HabitCard({
+  habit,
+  onPositive,
+  onNegative,
+  onEdit,
+  onDelete,
+}: HabitCardProps) {
   const dailyTarget = habit.dailyTarget || 5;
   const todayProgress = getTodayProgress(habit);
   const progressPercentage = getProgressPercentage(habit);
@@ -33,7 +40,9 @@ export default function HabitCard({ habit, onPositive, onNegative, onEdit }: Hab
   const canDecrement = canDecrementProgress(habit);
 
   return (
-    <article className={`companion-entry group relative ${completed ? 'border-primary/25 bg-secondary/55' : ''}`}>
+    <article
+      className={`companion-entry group relative ${completed ? 'border-primary/25 bg-secondary/55' : ''}`}
+    >
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -49,7 +58,9 @@ export default function HabitCard({ habit, onPositive, onNegative, onEdit }: Hab
                     {streakDays}일 연속
                   </Badge>
                 )}
-                {completed && <Badge className="rounded-full bg-primary text-xs text-white">완료</Badge>}
+                {completed && (
+                  <Badge className="rounded-full bg-primary text-xs text-white">완료</Badge>
+                )}
               </div>
             </div>
           </div>
@@ -69,6 +80,18 @@ export default function HabitCard({ habit, onPositive, onNegative, onEdit }: Hab
                 aria-label={`${habit.title} 수정`}
               >
                 <Pencil className="h-4 w-4" />
+              </Button>
+            )}
+            {onDelete && (
+              <Button
+                type="button"
+                onClick={() => onDelete(habit)}
+                variant="ghost"
+                size="sm"
+                className="h-11 w-11 flex-shrink-0 p-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                aria-label={`${habit.title} 삭제`}
+              >
+                <Trash2 className="h-4 w-4" />
               </Button>
             )}
           </div>

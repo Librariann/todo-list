@@ -1,16 +1,24 @@
 'use client';
 
 import HabitCard from '@/app/components/HabitCard';
+import ConfirmModal from '@/app/components/ConfirmModal';
 import { TaskEmptyState, TaskLoadingState, TaskSectionHeader } from '../TaskSectionLayout';
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/app/store/authStore';
-import { createHabit, decrementHabit, incrementHabit, updateHabit } from '@/app/lib/habitsApi';
+import {
+  createHabit,
+  decrementHabit,
+  deleteHabit,
+  incrementHabit,
+  updateHabit,
+} from '@/app/lib/habitsApi';
 import type { Habit } from '@/app/types/todo';
 import { updateHabitProgress } from '@/app/lib/habitUtils';
 import CreateHabitsModal, { type CreateHabitInput } from './CreateHabitsModal';
 import { useHabitsStore } from '@/app/store/habitsStore';
 import { useUserSummaryStore } from '@/app/store/userSummaryStore';
 import { getAwardedPoints, notifyChallengeAchievements } from '@/app/lib/challengeNotifications';
+import { toast } from 'sonner';
 
 interface HabitSectionProps {
   createRequestKey?: number;
@@ -26,6 +34,7 @@ export default function HabitSection({ createRequestKey }: HabitSectionProps) {
   const adjustPoints = useUserSummaryStore((summary) => summary.adjustPoints);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Habit | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Habit | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -85,6 +94,12 @@ export default function HabitSection({ createRequestKey }: HabitSectionProps) {
     setHabits((previousHabits) => [created, ...previousHabits]);
   };
 
+  const handleDeleteHabit = async (habitId: string) => {
+    await deleteHabit(habitId);
+    setHabits((previousHabits) => previousHabits.filter((habit) => habit.id !== habitId));
+    toast.success('습관을 삭제했어요.');
+  };
+
   return (
     <>
       <div>
@@ -110,6 +125,7 @@ export default function HabitSection({ createRequestKey }: HabitSectionProps) {
                 onPositive={handleHabitPositive}
                 onNegative={handleHabitNegative}
                 onEdit={setEditTarget}
+                onDelete={setDeleteTarget}
               />
             ))
           )}
@@ -125,6 +141,24 @@ export default function HabitSection({ createRequestKey }: HabitSectionProps) {
           setEditTarget(null);
         }}
         onSubmit={handleSubmitHabit}
+      />
+
+      <ConfirmModal
+        open={deleteTarget !== null}
+        title="이 습관을 삭제할까요?"
+        description={
+          deleteTarget
+            ? `‘${deleteTarget.title}’ 습관을 활성 목록에서 숨겨요.`
+            : '선택한 습관을 활성 목록에서 숨겨요.'
+        }
+        warning="기존 습관 기록은 보관되지만, 삭제한 습관은 다시 활성화할 수 없어요."
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+        onConfirm={() => {
+          if (!deleteTarget) return;
+          return handleDeleteHabit(deleteTarget.id);
+        }}
       />
     </>
   );
