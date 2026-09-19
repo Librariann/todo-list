@@ -5,6 +5,7 @@ import { useAuthStore } from './store/authStore';
 import StatsPanel from './components/StatsPanel';
 import RewardShop from './components/RewardShop';
 import Header from './components/Header';
+import NoticeBanner from './components/NoticeBanner';
 import HomeHero from './components/home/HomeHero';
 import ChallengesPanel from './components/home/ChallengesPanel';
 import TaskTabs from './components/home/tasks/TaskTabs';
@@ -136,6 +137,7 @@ export default function Home() {
     <div className="min-h-screen bg-[#d9e1d5] px-2 pt-2 pb-24 dark:bg-background sm:px-6 sm:pt-6 md:pb-6">
       <div className="mx-auto max-w-[1500px] overflow-hidden rounded-[2rem] bg-card shadow-[0_24px_70px_rgba(38,48,42,0.12)]">
         <Header mainTab={mainTab} onTabChange={setMainTab} />
+        <NoticeBanner />
 
         <main id="main-content" className="page-reveal">
           <div
