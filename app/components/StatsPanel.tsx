@@ -8,7 +8,7 @@ import { useGoalsStore } from '../store/goalsStore';
 import { useTodosStore } from '../store/todosStore';
 import { getTodayDateString } from '../lib/dateUtils';
 import { calculatePeriodGoalMetrics, calculateTodayFlowMetrics } from '../lib/taskMetrics';
-import { TodoStatus } from '../types/todo';
+import { GoalFrequency, TodoStatus } from '../types/todo';
 
 const dayLabels = ['월', '화', '수', '목', '금', '토', '일'];
 
@@ -43,28 +43,57 @@ export default function StatsPanel() {
     void Promise.all([fetchHabits(), fetchGoals(todayString), fetchTodos(todayString)]);
   }, [fetchGoals, fetchHabits, fetchTodos, todayString]);
 
+  const dailyStreaks = [
+    ...habits.map((habit) => ({
+      count: habit.streak ?? calculateStreak(habit),
+      includesToday: getTodayProgress(habit) >= (habit.dailyTarget || 5),
+    })),
+    ...goals
+      .filter((goal) => goal.frequency === GoalFrequency.DAILY)
+      .map((goal) => ({
+        count: goal.streak,
+        includesToday: goal.completedDates.includes(todayString),
+      })),
+  ];
+  const currentDailyStreak = Math.max(0, ...dailyStreaks.map((streak) => streak.count));
+  const streakIncludesToday = dailyStreaks.some(
+    (streak) => streak.count === currentDailyStreak && streak.includesToday
+  );
+  const streakEnd = new Date(today);
+  if (currentDailyStreak > 0 && !streakIncludesToday) {
+    streakEnd.setDate(streakEnd.getDate() - 1);
+  }
+  const streakStart = new Date(streakEnd);
+  streakStart.setDate(streakEnd.getDate() - Math.max(0, currentDailyStreak - 1));
+  const streakStartString = toDateString(streakStart);
+  const streakEndString = toDateString(streakEnd);
+
+  const hasActivityOnDate = (dateString: string) => {
+    const hasHabit = habits.some((habit) => (habit.dailyProgress?.[dateString] ?? 0) > 0);
+    const hasGoal = Object.values(goalsByDate).some((dateGoals) =>
+      dateGoals.some(
+        (goal) => goal.frequency === GoalFrequency.DAILY && goal.completedDates.includes(dateString)
+      )
+    );
+    const hasTodo = (todosByDate[dateString] ?? []).some((todo) => todo.status === TodoStatus.DONE);
+
+    return hasHabit || hasGoal || hasTodo;
+  };
+
   const week = dayLabels.map((label, index) => {
     const date = new Date(monday);
     date.setDate(monday.getDate() + index);
     const dateString = toDateString(date);
-    const hasHabit = habits.some((habit) => (habit.dailyProgress?.[dateString] ?? 0) > 0);
-    const hasGoal = Object.values(goalsByDate).some((dateGoals) =>
-      dateGoals.some((goal) => goal.completedDates.includes(dateString))
-    );
-    const hasTodo = (todosByDate[dateString] ?? []).some((todo) => todo.status === TodoStatus.DONE);
+    const belongsToCurrentStreak =
+      currentDailyStreak > 0 && dateString >= streakStartString && dateString <= streakEndString;
 
     return {
       label,
-      active: hasHabit || hasGoal || hasTodo,
+      active: hasActivityOnDate(dateString) || belongsToCurrentStreak,
       future: dateString > todayString,
     };
   });
 
-  const longestStreak = Math.max(
-    0,
-    ...habits.map((habit) => habit.streak ?? calculateStreak(habit)),
-    ...goals.map((goal) => goal.streak)
-  );
   const { completed: completedCount, total: totalCount } = calculateTodayFlowMetrics(
     habits,
     goals,
@@ -199,7 +228,7 @@ export default function StatsPanel() {
       <section className="mt-10 border-t border-white/12 pt-8">
         <div className="flex items-center justify-between">
           <p className="text-xs text-[#aeb9b1]">이번 주의 리듬</p>
-          <p className="text-sm font-semibold">{longestStreak}일째</p>
+          <p className="text-sm font-semibold">{currentDailyStreak}일째</p>
         </div>
         <div className="mt-6 grid grid-cols-7 gap-2">
           {week.map((day) => (
