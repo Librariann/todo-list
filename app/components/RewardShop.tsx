@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Clock3, Coffee, PackageOpen, Ticket } from 'lucide-react';
+import { Clock3, Coffee, PackageOpen, PauseCircle, Ticket } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -85,7 +85,7 @@ function availabilityOf(reward: Reward): Availability {
   };
 }
 
-function RewardVisual({ reward }: { reward: Reward }) {
+function RewardVisual({ reward, unavailable }: { reward: Reward; unavailable: boolean }) {
   if (reward.imageUrl) {
     return (
       <div
@@ -105,9 +105,11 @@ function RewardVisual({ reward }: { reward: Reward }) {
         <div className="absolute -top-2 h-4 w-20 rounded-full bg-[#eff5eb]" />
         <Coffee className="h-10 w-10 text-[#e9f0e6]" strokeWidth={1.4} />
       </div>
-      <span className="absolute bottom-5 left-5 text-[10px] font-bold tracking-[0.18em] text-[#66806f]">
-        A SMALL REWARD
-      </span>
+      {!unavailable && (
+        <span className="absolute bottom-5 left-5 text-[10px] font-bold tracking-[0.18em] text-[#66806f]">
+          A SMALL REWARD
+        </span>
+      )}
     </div>
   );
 }
@@ -278,23 +280,44 @@ export default function RewardShop({
               {rewards.map((reward) => {
                 const purchasePoint = calculateRewardPoint(reward);
                 const availability = availabilityOf(reward);
+                const unavailable = !availability.available;
                 const canAfford = userPoints >= purchasePoint;
                 const canExchange = availability.available && canAfford;
 
                 return (
                   <article
                     key={reward.id}
-                    className="group grid overflow-hidden rounded-[1.5rem] border border-[#d5ddd3] bg-[#fffdf7] transition-colors hover:border-[#9fbaa7] dark:border-border dark:bg-card dark:hover:border-primary/45"
+                    className={`group grid overflow-hidden rounded-[1.5rem] border transition-colors ${
+                      unavailable
+                        ? 'border-[#d4d2c9] bg-[#f2f1eb] dark:border-border dark:bg-muted/35'
+                        : 'border-[#d5ddd3] bg-[#fffdf7] hover:border-[#9fbaa7] dark:border-border dark:bg-card dark:hover:border-primary/45'
+                    }`}
                   >
                     <div className="relative min-h-52 overflow-hidden">
-                      <RewardVisual reward={reward} />
+                      <div className={unavailable ? 'opacity-60 grayscale dark:opacity-40' : ''}>
+                        <RewardVisual reward={reward} unavailable={unavailable} />
+                      </div>
+                      {unavailable && (
+                        <>
+                          <div
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(135deg,transparent,transparent_9px,rgba(86,83,69,0.07)_9px,rgba(86,83,69,0.07)_10px)] dark:bg-[repeating-linear-gradient(135deg,transparent,transparent_9px,rgba(237,232,215,0.06)_9px,rgba(237,232,215,0.06)_10px)]"
+                          />
+                          <div className="absolute inset-x-0 bottom-4 flex justify-center px-4">
+                            <span className="inline-flex items-center gap-2 rounded-full border border-[#d4d2c9] bg-[#f6f4ed] px-4 py-2 text-xs font-semibold text-[#59594f] dark:border-[#66695c] dark:bg-[#30362d] dark:text-[#eeeade]">
+                              <PauseCircle aria-hidden="true" className="size-4 shrink-0" />
+                              지금은 교환할 수 없어요
+                            </span>
+                          </div>
+                        </>
+                      )}
                       <Badge
                         className={`absolute left-4 top-4 rounded-full border-0 px-3 py-1 shadow-none ${
                           availability.tone === 'green'
                             ? 'bg-[#275f40] text-[#f2f6ef]'
                             : availability.tone === 'amber'
                               ? 'bg-[#f4dfae] text-[#70521d]'
-                              : 'bg-[#ece9df] text-[#68675f]'
+                              : 'bg-[#e4e1d6] text-[#59594f] dark:bg-[#40463b] dark:text-[#eeeade]'
                         }`}
                       >
                         {availability.label}
@@ -312,20 +335,24 @@ export default function RewardShop({
                           </p>
                         </div>
                         {reward.discount && reward.discountRate > 0 ? (
-                          <span className="shrink-0 text-sm font-bold text-[#d2643d]">
+                          <span
+                            className={`shrink-0 text-sm font-bold ${unavailable ? 'text-muted-foreground' : 'text-[#d2643d]'}`}
+                          >
                             -{reward.discountRate}%
                           </span>
                         ) : null}
                       </div>
 
                       <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
-                        <Clock3 className="h-3.5 w-3.5" />
+                        <Clock3 aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
                         <span>{availability.detail}</span>
                       </div>
 
                       <div className="mt-auto flex items-end justify-between gap-4 pt-5">
                         <div>
-                          <strong className="text-lg font-extrabold text-[#287148] dark:text-primary">
+                          <strong
+                            className={`text-lg font-extrabold ${unavailable ? 'text-muted-foreground' : 'text-[#287148] dark:text-primary'}`}
+                          >
                             {purchasePoint.toLocaleString()} P
                           </strong>
                           {purchasePoint !== reward.value ? (
@@ -338,7 +365,7 @@ export default function RewardShop({
                           type="button"
                           onClick={() => openDialog(reward)}
                           disabled={!canExchange || isRedeeming}
-                          className="min-w-28 rounded-xl"
+                          className={`min-h-11 min-w-28 rounded-xl ${unavailable ? 'border border-[#d4d2c9] bg-[#e5e3d9] text-[#65655a] disabled:opacity-100 dark:border-[#555d4d] dark:bg-[#353d30] dark:text-[#cbcdbf]' : ''}`}
                           variant={canExchange ? 'default' : 'secondary'}
                         >
                           {!availability.available

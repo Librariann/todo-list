@@ -31,6 +31,32 @@ const previewRewards: Reward[] = [
     exchangeEnabled: true,
     stockQuantity: 10,
   },
+  {
+    id: 'preview-paused',
+    type: RewardType.COFFEE_COUPON,
+    name: '네이버페이 포인트 5,000원권',
+    description: '교환 준비를 마치고 다시 만나요.',
+    value: 7800,
+    discount: false,
+    discountRate: 0,
+    imageUrl: null,
+    availableFrom: null,
+    exchangeEnabled: false,
+    stockQuantity: 10,
+  },
+  {
+    id: 'preview-sold-out',
+    type: RewardType.COFFEE_COUPON,
+    name: '따뜻한 카페 라테',
+    description: '다음 작은 기쁨을 준비하고 있어요.',
+    value: 5200,
+    discount: false,
+    discountRate: 0,
+    imageUrl: null,
+    availableFrom: null,
+    exchangeEnabled: true,
+    stockQuantity: 0,
+  },
 ];
 
 export default function RewardDesignPreviewPage() {
