@@ -1,7 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { CalendarClock, ImageIcon, PackageCheck, PackageX, Upload } from 'lucide-react';
+import {
+  ArrowDownUp,
+  CalendarClock,
+  ImageIcon,
+  PackageCheck,
+  PackageX,
+  Upload,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { apiFetch } from '@/app/lib/apiClient';
 import EditableNumberInput from '@/app/components/EditableNumberInput';
@@ -9,6 +16,7 @@ import { ActionBtn, Field } from './components';
 import { Reward, RewardForm, RewardType, defaultRewardForm } from './types';
 import ConfirmModal from '@/app/components/ConfirmModal';
 import { uploadRewardImage } from '@/app/lib/rewardImageUpload';
+import RewardOrderEditor from './reward-order-editor';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -39,15 +47,19 @@ export default function RewardsTab() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Reward | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
+  const [ordering, setOrdering] = useState<boolean>(false);
+  const [loadError, setLoadError] = useState<string>('');
 
   const fetchList = useCallback(async () => {
     setLoading(true);
+    setLoadError('');
     try {
       const res = await apiFetch(`${API_URL}/api/rewards/`);
-      if (res.ok) {
-        const d = await res.json();
-        setList(d.data ?? []);
-      }
+      if (!res.ok) throw new Error('보상 목록을 불러오지 못했어요.');
+      const d = await res.json();
+      setList(d.data ?? []);
+    } catch {
+      setLoadError('보상 목록을 불러오지 못했어요. 다시 시도해 주세요.');
     } finally {
       setLoading(false);
     }
@@ -168,15 +180,37 @@ export default function RewardsTab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">{list.length}개의 보상</p>
-        <button
-          onClick={openCreate}
-          disabled={uploadingImage || saving}
-          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
-        >
-          + 새 보상
-        </button>
+        {!ordering && (
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setOrdering(true)}
+              disabled={
+                loading ||
+                !!loadError ||
+                list.length < 2 ||
+                showForm ||
+                saving ||
+                uploadingImage ||
+                deletingId !== null ||
+                togglingId !== null
+              }
+              className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-border px-3 text-sm font-medium text-foreground hover:bg-muted disabled:opacity-40"
+            >
+              <ArrowDownUp className="size-4" />
+              순서 조정
+            </button>
+            <button
+              onClick={openCreate}
+              disabled={uploadingImage || saving}
+              className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+            >
+              + 새 보상
+            </button>
+          </div>
+        )}
       </div>
 
       {showForm && (
@@ -363,11 +397,35 @@ export default function RewardsTab() {
         </div>
       )}
 
-      {loading ? (
+      {ordering ? (
+        <RewardOrderEditor
+          rewards={list}
+          onSaved={(items) => {
+            setList(items);
+            setOrdering(false);
+          }}
+          onCancel={() => setOrdering(false)}
+          onReload={() => {
+            setOrdering(false);
+            void fetchList();
+          }}
+        />
+      ) : loading ? (
         <div className="space-y-2">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="h-16 bg-stone-100 dark:bg-white/5 rounded-xl animate-pulse" />
           ))}
+        </div>
+      ) : loadError ? (
+        <div role="alert" className="py-10 text-center text-sm text-muted-foreground">
+          <p>{loadError}</p>
+          <button
+            type="button"
+            className="mt-3 min-h-11 rounded-lg border border-border px-4 hover:bg-muted"
+            onClick={() => void fetchList()}
+          >
+            다시 시도
+          </button>
         </div>
       ) : list.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground text-sm">

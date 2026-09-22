@@ -7,6 +7,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export interface RewardsApiResponse {
   id: number;
+  sortOrder: number;
   name: string;
   type: 'COUPON' | 'POINT';
   point: number;

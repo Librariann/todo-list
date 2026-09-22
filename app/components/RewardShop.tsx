@@ -68,19 +68,10 @@ function availabilityOf(reward: Reward): Availability {
     };
   }
 
-  if (requiresStock && reward.stockQuantity <= 2) {
-    return {
-      available: true,
-      label: `마지막 ${reward.stockQuantity}개`,
-      detail: '준비된 수량이 얼마 남지 않았어요.',
-      tone: 'amber',
-    };
-  }
-
   return {
     available: true,
     label: '지금 교환 가능',
-    detail: requiresStock ? `${reward.stockQuantity}개 준비되어 있어요.` : '바로 교환할 수 있어요.',
+    detail: '모은 포인트로 작은 기쁨을 만나보세요.',
     tone: 'green',
   };
 }
@@ -248,7 +239,7 @@ export default function RewardShop({
               작은 기쁨으로 바꿔요.
             </h2>
             <p className="mt-4 max-w-lg text-sm leading-6 text-muted-foreground">
-              미리 둘러보고 천천히 모아도 괜찮아요. 준비된 수량과 교환 날짜를 솔직하게 알려드릴게요.
+              미리 둘러보고 천천히 모아도 괜찮아요. 나를 위한 작은 선물을 골라보세요.
             </p>
           </div>
           <div className="flex items-end justify-between bg-[#2c3931] px-6 py-7 text-[#f6f2e8] sm:px-8 lg:flex-col lg:items-start">

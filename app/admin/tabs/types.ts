@@ -78,6 +78,7 @@ export const defaultChallengeForm: ChallengeForm = {
 
 export interface Reward {
   id: number;
+  sortOrder: number;
   name: string;
   type: RewardType;
   point: number;
