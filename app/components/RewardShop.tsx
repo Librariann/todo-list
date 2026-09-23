@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Clock3, Coffee, PackageOpen, PauseCircle, Ticket } from 'lucide-react';
+import { ArrowRight, Clock3, Coffee, PackageOpen, PauseCircle, Ticket } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -239,23 +240,33 @@ export default function RewardShop({
               작은 기쁨으로 바꿔요.
             </h2>
             <p className="mt-4 max-w-lg text-sm leading-6 text-muted-foreground">
-              미리 둘러보고 천천히 모아도 괜찮아요. 나를 위한 작은 선물을 골라보세요.
+              미리 둘러보고 천천히 모아도 괜찮아요. <br />
+              나를 위한 작은 선물을 골라보세요.
             </p>
           </div>
-          <div className="flex items-end justify-between bg-[#2c3931] px-6 py-7 text-[#f6f2e8] sm:px-8 lg:flex-col lg:items-start">
-            <Ticket className="h-8 w-8 text-[#a8c9b1]" strokeWidth={1.4} />
-            <div>
-              <span className="text-xs text-[#adbbb1]">내가 모은 포인트</span>
-              <strong className="friendly-heading mt-1 block text-3xl font-bold">
-                {userPoints.toLocaleString()} P
-              </strong>
+          <div className="bg-[#2c3931] px-6 py-7 text-[#f6f2e8] sm:px-8">
+            <div className="flex items-end justify-between gap-6 lg:flex-col lg:items-start lg:gap-8">
+              <Ticket className="h-8 w-8 text-[#a8c9b1]" strokeWidth={1.4} />
+              <div>
+                <span className="text-xs text-[#adbbb1]">내가 모은 포인트</span>
+                <strong className="friendly-heading mt-1 block text-3xl font-bold">
+                  {userPoints.toLocaleString()} P
+                </strong>
+              </div>
             </div>
+            <Link
+              href="/coupons"
+              className="mt-6 inline-flex min-h-11 w-full items-center justify-between rounded-xl border border-[#718178] bg-[#34443b] px-4 text-sm font-bold text-[#f6f2e8] outline-none transition-colors hover:bg-[#405248] focus-visible:ring-2 focus-visible:ring-[#b9d7c2] focus-visible:ring-offset-2 focus-visible:ring-offset-[#2c3931]"
+            >
+              <span>내 쿠폰함 가기</span>
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
           </div>
         </div>
 
         <div className="px-4 py-6 sm:px-7 sm:py-8">
           {isLoading ? (
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2">
               {[0, 1].map((item) => (
                 <div key={item} className="h-[25rem] animate-pulse rounded-[1.5rem] bg-muted" />
               ))}
@@ -267,7 +278,7 @@ export default function RewardShop({
               <p className="mt-2 text-sm text-muted-foreground">{loadError}</p>
             </div>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2">
               {rewards.map((reward) => {
                 const purchasePoint = calculateRewardPoint(reward);
                 const availability = availabilityOf(reward);
@@ -318,7 +329,7 @@ export default function RewardShop({
                     <div className="flex min-h-48 flex-col px-5 pb-5 pt-5">
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0">
-                          <h3 className="friendly-heading truncate text-xl font-bold tracking-[-0.035em]">
+                          <h3 className="friendly-heading line-clamp-2 break-words text-xl font-bold leading-snug tracking-[-0.035em]">
                             {reward.name}
                           </h3>
                           <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">
@@ -339,8 +350,8 @@ export default function RewardShop({
                         <span>{availability.detail}</span>
                       </div>
 
-                      <div className="mt-auto flex items-end justify-between gap-4 pt-5">
-                        <div>
+                      <div className="mt-auto flex flex-col items-stretch gap-3 pt-5 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+                        <div className="min-w-0">
                           <strong
                             className={`text-lg font-extrabold ${unavailable ? 'text-muted-foreground' : 'text-[#287148] dark:text-primary'}`}
                           >
@@ -356,7 +367,7 @@ export default function RewardShop({
                           type="button"
                           onClick={() => openDialog(reward)}
                           disabled={!canExchange || isRedeeming}
-                          className={`min-h-11 min-w-28 rounded-xl ${unavailable ? 'border border-[#d4d2c9] bg-[#e5e3d9] text-[#65655a] disabled:opacity-100 dark:border-[#555d4d] dark:bg-[#353d30] dark:text-[#cbcdbf]' : ''}`}
+                          className={`min-h-11 w-full rounded-xl sm:w-auto sm:min-w-28 ${unavailable ? 'border border-[#d4d2c9] bg-[#e5e3d9] text-[#65655a] disabled:opacity-100 dark:border-[#555d4d] dark:bg-[#353d30] dark:text-[#cbcdbf]' : ''}`}
                           variant={canExchange ? 'default' : 'secondary'}
                         >
                           {!availability.available
