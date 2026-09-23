@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import Calendar from '@/app/components/Calendar';
-import { fetchActiveGoalStartDates } from '@/app/lib/goalsApi';
+import { fetchGoalMarkedDates } from '@/app/lib/goalsApi';
 import { getTodayDateString } from '@/app/lib/dateUtils';
 import { calculateTodayFlowMetrics } from '@/app/lib/taskMetrics';
 import { fetchTodoMarkedDates } from '@/app/lib/todosApi';
@@ -46,12 +46,9 @@ export default function TaskInsights({ activeTab }: TaskInsightsProps) {
     const month = currentMonth.getMonth() + 1;
     const lastDay = new Date(year, month, 0).getDate();
     return {
-      year,
-      month,
       prefix: `${year}-${String(month).padStart(2, '0')}`,
       from: toDateString(year, month, 1),
       to: toDateString(year, month, lastDay),
-      lastDay,
     };
   }, [currentMonth]);
 
@@ -61,54 +58,42 @@ export default function TaskInsights({ activeTab }: TaskInsightsProps) {
     let active = true;
     const controller = new AbortController();
 
-    Promise.all([
-      fetchTodoMarkedDates(monthRange.from, monthRange.to, controller.signal),
-      fetchActiveGoalStartDates(controller.signal),
-    ])
-      .then(([todoDates, goalStartDates]) => {
+    const datesRequest =
+      activeTab === 'todos'
+        ? fetchTodoMarkedDates(monthRange.from, monthRange.to, controller.signal)
+        : fetchGoalMarkedDates(monthRange.from, monthRange.to, controller.signal);
+
+    datesRequest
+      .then((dates) => {
         if (!active) return;
-
-        const goalDates = new Set<string>();
-        const earliestGoalStart = [...goalStartDates].sort()[0];
-        if (earliestGoalStart) {
-          for (let day = 1; day <= monthRange.lastDay; day += 1) {
-            const date = toDateString(monthRange.year, monthRange.month, day);
-            if (date >= earliestGoalStart) goalDates.add(date);
-          }
-        }
-
-        setRemoteTodoDates(new Set(todoDates));
-        setRemoteGoalDates(goalDates);
+        if (activeTab === 'todos') setRemoteTodoDates(new Set(dates));
+        else setRemoteGoalDates(new Set(dates));
       })
       .catch(() => {
         if (!active) return;
-        setRemoteTodoDates(new Set());
-        setRemoteGoalDates(new Set());
+        if (activeTab === 'todos') setRemoteTodoDates(new Set());
+        else setRemoteGoalDates(new Set());
       });
 
     return () => {
       active = false;
       controller.abort();
     };
-  }, [isAuthenticated, marksVersion, monthRange, showsCalendar]);
+  }, [activeTab, isAuthenticated, marksVersion, monthRange, showsCalendar]);
 
   const markedDates = useMemo(() => {
+    if (activeTab === 'goals') return remoteGoalDates;
+
     const todoDates = new Set(remoteTodoDates);
-    const goalDates = new Set(remoteGoalDates);
 
     Object.entries(todosByDate).forEach(([date, items]) => {
       if (!date.startsWith(monthRange.prefix)) return;
       if (items.length > 0) todoDates.add(date);
       else todoDates.delete(date);
     });
-    Object.entries(goalsByDate).forEach(([date, items]) => {
-      if (!date.startsWith(monthRange.prefix)) return;
-      if (items.length > 0) goalDates.add(date);
-      else goalDates.delete(date);
-    });
 
-    return new Set([...todoDates, ...goalDates]);
-  }, [goalsByDate, monthRange.prefix, remoteGoalDates, remoteTodoDates, todosByDate]);
+    return todoDates;
+  }, [activeTab, monthRange.prefix, remoteGoalDates, remoteTodoDates, todosByDate]);
 
   const handleDateSelect = (date: string) => {
     setSelectedDate(date);
@@ -117,9 +102,9 @@ export default function TaskInsights({ activeTab }: TaskInsightsProps) {
   return (
     <aside className={`grid gap-4 ${showsCalendar ? 'sm:grid-cols-2 xl:grid-cols-1' : ''}`}>
       {showsCalendar ? (
-        <section className="rounded-[1.75rem] bg-[#cfe6ed] p-6 text-[#294850] dark:bg-[oklch(0.4_0.055_225)] dark:text-foreground">
+        <section className="rounded-[1.75rem] bg-[#cfe6ed] p-3 text-[#294850] sm:p-6 dark:bg-[oklch(0.4_0.055_225)] dark:text-foreground">
           <p className="text-xs font-bold text-[#3f6873] dark:text-foreground/70">날짜별 기록</p>
-          <div className="mt-5 rounded-2xl bg-[#fbf8ef]/80 p-2 text-[#26302a] dark:bg-card dark:text-foreground">
+          <div className="mt-4 rounded-2xl bg-[#fbf8ef]/80 p-1.5 text-[#26302a] sm:mt-5 sm:p-2 dark:bg-card dark:text-foreground">
             <Calendar
               selectedDate={selectedDate}
               onDateSelect={handleDateSelect}
