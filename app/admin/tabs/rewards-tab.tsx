@@ -17,6 +17,7 @@ import { Reward, RewardForm, RewardType, defaultRewardForm } from './types';
 import ConfirmModal from '@/app/components/ConfirmModal';
 import { uploadRewardImage } from '@/app/lib/rewardImageUpload';
 import RewardOrderEditor from './reward-order-editor';
+import RewardCouponInventory from './reward-coupon-inventory';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -48,6 +49,7 @@ export default function RewardsTab() {
   const [deleteTarget, setDeleteTarget] = useState<Reward | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [ordering, setOrdering] = useState<boolean>(false);
+  const [inventoryReward, setInventoryReward] = useState<Reward | null>(null);
   const [loadError, setLoadError] = useState<string>('');
 
   const fetchList = useCallback(async () => {
@@ -104,7 +106,6 @@ export default function RewardsTab() {
       imageUrl: r.imageUrl ?? '',
       availableFrom: toLocalDateTime(r.availableFrom),
       exchangeEnabled: r.exchangeEnabled,
-      stockQuantity: r.stockQuantity,
     });
     setShowForm(true);
   }
@@ -176,6 +177,19 @@ export default function RewardsTab() {
     } finally {
       setDeletingId(null);
     }
+  }
+
+  if (inventoryReward) {
+    return (
+      <RewardCouponInventory
+        reward={inventoryReward}
+        onClose={() => {
+          setInventoryReward(null);
+          void fetchList();
+        }}
+        onInventoryChanged={() => void fetchList()}
+      />
+    );
   }
 
   return (
@@ -313,14 +327,12 @@ export default function RewardsTab() {
                 onChange={(e) => setForm((f) => ({ ...f, availableFrom: e.target.value }))}
               />
             </Field>
-            <Field label={form.type === 'COUPON' ? '준비된 쿠폰 재고' : '재고 관리 안 함'}>
-              <EditableNumberInput
-                className="input-common"
-                min={0}
-                disabled={form.type !== 'COUPON'}
-                value={form.stockQuantity}
-                onValueChange={(stockQuantity) => setForm((f) => ({ ...f, stockQuantity }))}
-              />
+            <Field label="재고">
+              <div className="flex min-h-11 items-center rounded-xl bg-muted px-3 text-sm text-muted-foreground">
+                {form.type === 'COUPON'
+                  ? '상품을 저장한 뒤 실제 쿠폰 이미지와 PIN을 등록하면 자동 계산돼요.'
+                  : '포인트 보상은 재고를 관리하지 않아요.'}
+              </div>
             </Field>
             <Field label="교환 운영">
               <button
@@ -496,6 +508,9 @@ export default function RewardsTab() {
                 </div>
               </div>
               <div className="flex shrink-0 flex-wrap gap-1.5 sm:justify-end">
+                {r.type === 'COUPON' ? (
+                  <ActionBtn onClick={() => setInventoryReward(r)}>쿠폰 재고</ActionBtn>
+                ) : null}
                 <ActionBtn
                   onClick={() => void handleExchangeToggle(r)}
                   disabled={togglingId === r.id}

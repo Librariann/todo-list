@@ -59,7 +59,7 @@ function GrantModal({ target, onClose, onGranted }: GrantModalProps) {
       const response = await apiFetch(`${API_URL}/api/user/points/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: target.userId, point: amount }),
+        body: JSON.stringify({ id: Number(target.userId), point: Math.trunc(amount) }),
       });
       if (!response.ok) throw await responseError(response, '포인트를 지급하지 못했어요.');
       await onGranted();
@@ -119,8 +119,12 @@ function GrantModal({ target, onClose, onGranted }: GrantModalProps) {
               className="input-common"
               type="number"
               min={1}
+              step={1}
               value={amount || ''}
-              onChange={(event) => setAmount(Number(event.currentTarget.value))}
+              onChange={(event) => {
+                const nextAmount = event.currentTarget.valueAsNumber;
+                setAmount(Number.isFinite(nextAmount) ? Math.trunc(nextAmount) : 0);
+              }}
               placeholder="지급할 포인트를 입력하세요"
               onKeyDown={(event) => {
                 if (event.key === 'Enter') void handleGrant();

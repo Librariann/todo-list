@@ -63,6 +63,7 @@ export default function ChallengeCard({ challenge }: ChallengeCardProps) {
             <h3 className="font-semibold text-foreground text-sm">{challenge.title}</h3>
           </div>
 
+          {/* 정책 확정 후 자동 생성 부제목으로 전환: challenge.subtitle || challenge.description */}
           {challenge.description && (
             <p className="text-xs text-muted-foreground mb-3">{challenge.description}</p>
           )}

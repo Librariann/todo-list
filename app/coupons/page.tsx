@@ -13,6 +13,7 @@ import {
   type OwnedRewardApiResponse,
 } from '@/app/lib/rewardsApi';
 import { useAuthStore } from '@/app/store/authStore';
+import PrivateCouponImage from './private-coupon-image';
 
 type CouponFilter = 'available' | 'used';
 
@@ -25,6 +26,10 @@ const acquiredDateFormatter = new Intl.DateTimeFormat('ko-KR', {
 
 function couponDate(value: string): string {
   return acquiredDateFormatter.format(new Date(value));
+}
+
+function isCouponExpired(coupon: OwnedRewardApiResponse): boolean {
+  return Boolean(coupon.expiresAt && new Date(coupon.expiresAt).getTime() <= Date.now());
 }
 
 export default function CouponsPage() {
@@ -72,12 +77,14 @@ export default function CouponsPage() {
   }, [isAuthenticated, mounted, router]);
 
   const availableCount = useMemo(
-    () => coupons.filter((coupon) => !coupon.isUsed).length,
+    () => coupons.filter((coupon) => !coupon.isUsed && !isCouponExpired(coupon)).length,
     [coupons]
   );
   const usedCount = coupons.length - availableCount;
   const visibleCoupons = coupons.filter((coupon) =>
-    filter === 'available' ? !coupon.isUsed : coupon.isUsed
+    filter === 'available'
+      ? !coupon.isUsed && !isCouponExpired(coupon)
+      : coupon.isUsed || isCouponExpired(coupon)
   );
 
   const handleUseCoupon = async (coupon: OwnedRewardApiResponse) => {
@@ -196,7 +203,7 @@ export default function CouponsPage() {
                       : 'text-muted-foreground'
                   }`}
                 >
-                  사용 완료 {usedCount}
+                  사용 완료·만료 {usedCount}
                 </button>
               </div>
             </div>
@@ -216,7 +223,7 @@ export default function CouponsPage() {
                   <h3 className="friendly-heading mt-5 text-2xl font-bold">
                     {filter === 'available'
                       ? '아직 꺼내볼 쿠폰이 없어요.'
-                      : '사용한 쿠폰이 아직 없어요.'}
+                      : '사용했거나 만료된 쿠폰이 아직 없어요.'}
                   </h3>
                   <p className="mt-3 text-sm leading-6 text-muted-foreground">
                     {filter === 'available'
@@ -238,12 +245,14 @@ export default function CouponsPage() {
                 {visibleCoupons.map((coupon) => {
                   const isExpanded = expandedId === coupon.id;
                   const isConfirming = confirmingId === coupon.id;
+                  const isExpired = isCouponExpired(coupon);
+                  const isUnavailable = coupon.isUsed || isExpired;
 
                   return (
                     <article
                       key={coupon.id}
                       className={`overflow-hidden rounded-[1.4rem] border transition-colors ${
-                        coupon.isUsed
+                        isUnavailable
                           ? 'border-stone-200 bg-stone-100/65 dark:border-border dark:bg-muted/45'
                           : 'border-[#cddbc9] bg-[#fffdf7] dark:border-primary/20 dark:bg-card'
                       }`}
@@ -262,7 +271,7 @@ export default function CouponsPage() {
                             role={coupon.imageUrl ? 'img' : undefined}
                             aria-label={coupon.imageUrl ? `${coupon.name} 상품 이미지` : undefined}
                             className={`flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden bg-cover bg-center ${
-                              coupon.isUsed
+                              isUnavailable
                                 ? 'rounded-2xl bg-stone-200 text-stone-500 grayscale dark:bg-background'
                                 : 'rounded-2xl bg-[#e4eddf] text-[#216c40] dark:bg-secondary dark:text-primary'
                             }`}
@@ -274,7 +283,7 @@ export default function CouponsPage() {
                                 : undefined
                             }
                           >
-                            {!coupon.imageUrl && coupon.isUsed ? (
+                            {!coupon.imageUrl && isUnavailable ? (
                               <CircleCheck className="h-5 w-5" />
                             ) : !coupon.imageUrl ? (
                               <Store className="h-5 w-5" />
@@ -294,12 +303,12 @@ export default function CouponsPage() {
                           <span>
                             <span
                               className={`block text-xs font-bold ${
-                                coupon.isUsed
+                                isUnavailable
                                   ? 'text-muted-foreground'
                                   : 'text-[#2e8c54] dark:text-primary'
                               }`}
                             >
-                              {coupon.isUsed ? '사용 완료' : '사용 가능'}
+                              {coupon.isUsed ? '사용 완료' : isExpired ? '기간 만료' : '사용 가능'}
                             </span>
                             <span className="mt-1 block text-xs text-muted-foreground">
                               {coupon.point.toLocaleString()} P
@@ -333,19 +342,25 @@ export default function CouponsPage() {
                                   {coupon.point.toLocaleString()} P
                                 </dd>
                               </div>
+                              {coupon.expiresAt ? (
+                                <div>
+                                  <dt className="text-xs text-muted-foreground">유효기간</dt>
+                                  <dd className="mt-1 font-semibold">
+                                    {couponDate(coupon.expiresAt)}까지
+                                  </dd>
+                                </div>
+                              ) : null}
                             </dl>
 
-                            {!coupon.isUsed ? (
+                            {!isUnavailable ? (
                               <div className="mt-5 rounded-2xl bg-[#eef0e7] px-4 py-4 dark:bg-muted">
                                 {coupon.couponImageUrl || coupon.couponCode ? (
                                   <div>
                                     <p className="text-sm font-bold">매장에서 보여주세요</p>
-                                    {coupon.couponImageUrl ? (
-                                      // eslint-disable-next-line @next/next/no-img-element
-                                      <img
-                                        src={coupon.couponImageUrl}
+                                    {isExpanded && coupon.couponImageUrl ? (
+                                      <PrivateCouponImage
+                                        imagePath={coupon.couponImageUrl}
                                         alt={`${coupon.name} 모바일 쿠폰`}
-                                        className="mt-4 max-h-80 w-full rounded-xl object-contain"
                                       />
                                     ) : null}
                                     {coupon.couponCode ? (
@@ -362,7 +377,7 @@ export default function CouponsPage() {
                                         쿠폰 발급 정보를 준비 중이에요
                                       </p>
                                       <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                                        기프티쇼 연동 후 바코드와 유효기간이 이 자리에 표시돼요.
+                                        발급 정보를 확인할 수 없어요. 잠시 후 다시 확인해 주세요.
                                       </p>
                                     </div>
                                   </div>
@@ -370,7 +385,7 @@ export default function CouponsPage() {
                               </div>
                             ) : null}
 
-                            {!coupon.isUsed && !isConfirming ? (
+                            {!isUnavailable && !isConfirming ? (
                               <div className="mt-5 flex justify-end">
                                 <Button
                                   variant="outline"

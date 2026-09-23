@@ -1,0 +1,172 @@
+{
+  "schemaVersion": "presentation-finalization.v1",
+  "finalSha256": "1c1d121325a49778ac9320deaac07b4a6c65b9a48b1d5d76a57c2c8d787dcb40",
+  "byteCount": 202734,
+  "packageIntegrity": {
+    "chart_count": 0,
+    "claim_boundary": "Structural package checks only; no slide text, notes, formulas, chart values, or native PowerPoint execution were inspected.",
+    "finding_count": 0,
+    "findings": [],
+    "notes_parts_skipped": 6,
+    "relationship_part_count": 17,
+    "slide_count": 6,
+    "status": "pass",
+    "exitCode": 0,
+    "findingCount": 0,
+    "warnings": []
+  },
+  "presentationLayout": {
+    "finding_count": 0,
+    "findings": [],
+    "font_policy": {
+      "checked_text_script_count": 154,
+      "native_font_rendering_verified": false,
+      "observed_font_families": [
+        "Apple SD Gothic Neo"
+      ],
+      "observed_font_use_counts": {
+        "Apple SD Gothic Neo": 154
+      },
+      "passed": true,
+      "performed": true
+    },
+    "slide_count": 6,
+    "slide_size_in": [
+      13.3333,
+      7.5
+    ],
+    "warning_count": 5,
+    "warnings": [
+      {
+        "character_count": 57,
+        "heading_role": "subtitle",
+        "kind": "presentation_heading_trailing_full_stop",
+        "object_id": "3",
+        "slide": 2
+      },
+      {
+        "character_count": 52,
+        "heading_role": "subtitle",
+        "kind": "presentation_heading_trailing_full_stop",
+        "object_id": "3",
+        "slide": 3
+      },
+      {
+        "character_count": 62,
+        "heading_role": "subtitle",
+        "kind": "presentation_heading_trailing_full_stop",
+        "object_id": "3",
+        "slide": 4
+      },
+      {
+        "character_count": 48,
+        "heading_role": "subtitle",
+        "kind": "presentation_heading_trailing_full_stop",
+        "object_id": "3",
+        "slide": 5
+      },
+      {
+        "character_count": 60,
+        "heading_role": "subtitle",
+        "kind": "presentation_heading_trailing_full_stop",
+        "object_id": "3",
+        "slide": 6
+      }
+    ],
+    "exitCode": 0,
+    "findingCount": 0,
+    "fontPolicy": {
+      "checked_text_script_count": 154,
+      "native_font_rendering_verified": false,
+      "observed_font_families": [
+        "Apple SD Gothic Neo"
+      ],
+      "observed_font_use_counts": {
+        "Apple SD Gothic Neo": 154
+      },
+      "passed": true,
+      "performed": true
+    }
+  },
+  "fontSelection": {
+    "basis": "design",
+    "approvedFamilies": [
+      "Apple SD Gothic Neo"
+    ],
+    "scriptFonts": {},
+    "referenceSha256": null,
+    "referenceFontsVerifiedInEncodedText": false,
+    "checked_text_script_count": 154,
+    "native_font_rendering_verified": false,
+    "observed_font_families": [
+      "Apple SD Gothic Neo"
+    ],
+    "observed_font_use_counts": {
+      "Apple SD Gothic Neo": 154
+    },
+    "passed": true,
+    "performed": true
+  },
+  "firstPartyImport": {
+    "performed": true,
+    "passed": true,
+    "slideCount": 6,
+    "sha256": "1c1d121325a49778ac9320deaac07b4a6c65b9a48b1d5d76a57c2c8d787dcb40",
+    "runtimeNodeModules": "/Users/librarian/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules",
+    "nodeExecutable": "/Users/librarian/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node"
+  },
+  "nativeTableArithmetic": {
+    "performed": true,
+    "checked_column_count": 0,
+    "checks": [],
+    "claim_boundary": "Displayed-value arithmetic with rounding tolerance; not source-data verification.",
+    "eligible_table_count": 0,
+    "finding_count": 0,
+    "findings": [],
+    "native_table_count": 0,
+    "passed": true,
+    "schema_version": "presentation-native-table-arithmetic.v1",
+    "skipped_tables": [],
+    "slide_count": 6,
+    "warning_count": 0,
+    "warnings": []
+  },
+  "nativeChartTitles": {
+    "performed": true,
+    "checks": [],
+    "finding_count": 0,
+    "findings": [],
+    "native_chart_count": 0,
+    "native_powerpoint_verified": false,
+    "passed": true,
+    "presentation_sha256": "1c1d121325a49778ac9320deaac07b4a6c65b9a48b1d5d76a57c2c8d787dcb40",
+    "schema_version": "presentation-native-chart-titles.v1",
+    "slide_count": 6,
+    "source_text_emitted": false,
+    "unresolved_linked_title_count": 0
+  },
+  "sourceDerivedPolicyFlags": [
+    "--expected-slide-size-emu",
+    "12192000,6858000",
+    "--validate-heading-fit",
+    "--validate-heading-punctuation",
+    "--cover-role",
+    "cover",
+    "--cover-word-limit",
+    "45",
+    "--folio-mode",
+    "actual_unpadded",
+    "--expected-slide-count",
+    "6",
+    "--approved-font-family",
+    "Apple SD Gothic Neo"
+  ],
+  "nativeChartValidation": {
+    "detectedOwnerSlides": [],
+    "detectedChartCount": 0,
+    "targetApplication": "portable",
+    "sourceChartOwnersExplicitlyDeclared": true,
+    "validatorRan": false,
+    "passed": true
+  }
+}

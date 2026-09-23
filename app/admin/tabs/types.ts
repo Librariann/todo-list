@@ -103,7 +103,6 @@ export interface RewardForm {
   imageUrl: string;
   availableFrom: string;
   exchangeEnabled: boolean;
-  stockQuantity: number;
 }
 
 export const defaultRewardForm: RewardForm = {
@@ -117,7 +116,6 @@ export const defaultRewardForm: RewardForm = {
   imageUrl: '',
   availableFrom: '',
   exchangeEnabled: true,
-  stockQuantity: 0,
 };
 
 export interface AdminUser {

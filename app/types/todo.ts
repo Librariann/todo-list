@@ -124,6 +124,7 @@ export enum ChallengeCondition {
 export interface Challenge {
   id: string;
   title: string;
+  // subtitle?: string; // 정책 확정 후 구조화된 부제목을 사용할 때 활성화
   description: string;
   type: ChallengeType;
   condition: ChallengeCondition;

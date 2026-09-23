@@ -9,7 +9,9 @@ export interface ChallengesApiResponse {
   description: string;
   icon: string;
   recurrenceType: string;
+  // workType: 'HABITS' | 'TODOS' | 'GOALS'; // 자동 부제목 적용 시 활성화
   targetCount: number;
+  // dailyMaxCount: number; // 자동 부제목 적용 시 활성화
   point: number;
   isActive: boolean;
   isAchieved: boolean;
@@ -32,10 +34,47 @@ function mapRecurrenceType(recurrenceType: string): ChallengeType {
   return ChallengeType.MONTHLY;
 }
 
+/* 정책 확정 후 작업 종류에 맞는 조건과 부제목을 자동 생성할 때 활성화
+function mapCondition(workType: 'HABITS' | 'TODOS' | 'GOALS'): ChallengeCondition {
+  switch (workType) {
+    case 'TODOS':
+      return ChallengeCondition.COMPLETE_TODOS;
+    case 'GOALS':
+      return ChallengeCondition.COMPLETE_GOALS;
+    default:
+      return ChallengeCondition.COMPLETE_HABITS;
+  }
+}
+
+function createChallengeSubtitle(challenge: ChallengesApiResponse): string {
+  const periodLabel =
+    challenge.recurrenceType === 'DAILY'
+      ? '오늘'
+      : challenge.recurrenceType === 'WEEKLY'
+        ? '이번 주'
+        : '이번 달';
+
+  const targetLabel =
+    challenge.workType === 'HABITS'
+      ? `습관을 ${challenge.targetCount}회 달성하면 완료`
+      : challenge.workType === 'TODOS'
+        ? `할 일을 ${challenge.targetCount}개 완료하면 달성`
+        : `목표를 ${challenge.targetCount}개 달성하면 완료`;
+
+  const dailyLimitLabel =
+    challenge.recurrenceType !== 'DAILY' && challenge.dailyMaxCount < challenge.targetCount
+      ? ` · 하루 최대 ${challenge.dailyMaxCount}회 반영`
+      : '';
+
+  return `${periodLabel} ${targetLabel}${dailyLimitLabel}`;
+}
+*/
+
 export function mapUserChallengeProgress(c: UserChallengeProgressResponse): Challenge {
   return {
     id: c.id.toString(),
     title: c.name,
+    // subtitle: createChallengeSubtitle(c),
     description: c.description || '',
     type: mapRecurrenceType(c.recurrenceType),
     condition: ChallengeCondition.COMPLETE_HABITS,
@@ -50,6 +89,7 @@ export function mapChallenge(challenge: ChallengesApiResponse): Challenge {
   return {
     id: challenge.id.toString(),
     title: challenge.name,
+    // subtitle: createChallengeSubtitle(challenge),
     description: challenge.description || '',
     type: mapRecurrenceType(challenge.recurrenceType),
     condition: ChallengeCondition.COMPLETE_HABITS,

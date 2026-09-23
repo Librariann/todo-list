@@ -1,0 +1,161 @@
+{"kind":"deck","id":"pr/rlq4dc","name":"Deck"}
+{"kind":"layout","layoutId":"791f9fe0-9091-4532-98ae-234735afa9e7","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"8acd50aa-2b31-43fe-8368-3f10cf43c412","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/ahef0x","slide":1,"title":"GrowDo","textShapes":6}
+{"kind":"textbox","id":"sh/nyt4zq1s","slide":1,"text":"GrowDo","textPreview":"GrowDo","textChars":6,"textLines":1,"bbox":[145,72,230,48]}
+{"kind":"textbox","id":"sh/mxknql0n","slide":1,"text":"기프티쇼 비즈 API 연동","textPreview":"기프티쇼 비즈 API 연동","textChars":14,"textLines":1,"bbox":[72,206,760,72]}
+{"kind":"textbox","id":"sh/xov65kza","slide":1,"text":"서비스 기획서","textPreview":"서비스 기획서","textChars":7,"textLines":1,"bbox":[72,276,520,70]}
+{"kind":"textbox","id":"sh/wnm5wfip","slide":1,"text":"사용자가 습관과 목표를 달성해 적립한 포인트를\n모바일 쿠폰으로 교환하는 고객 보상 서비스","textPreview":"사용자가 습관과 목표를 달성해 적립한 포인트를 | 모바일 쿠폰으로 교환하는 고객 보상 서비스","textChars":49,"textLines":2,"bbox":[76,384,720,92]}
+{"kind":"textbox","id":"sh/bmdo3ah4","slide":1,"text":"작성일  2026.09.23","textPreview":"작성일  2026.09.23","textChars":15,"textLines":1,"bbox":[76,626,280,24]}
+{"kind":"textbox","id":"sh/alknu50j","slide":1,"text":"담당 문의  okpc0305@gmail.com","textPreview":"담당 문의  okpc0305@gmail.com","textChars":25,"textLines":1,"bbox":[816,626,390,24]}
+{"kind":"image","id":"im/x836xgfy","slide":1,"name":"","alt":"GrowDo 로고","bbox":[72,66,58,58]}
+{"kind":"notes","id":"nt/ahef0x","slide":1,"text":""}
+{"kind":"slide","id":"sl/m1l166","slide":2,"title":"01  서비스 개요","textShapes":20}
+{"kind":"textbox","id":"sh/9w3ih8z6","slide":2,"text":"01  서비스 개요","textPreview":"01  서비스 개요","textChars":10,"textLines":1,"bbox":[72,46,420,24]}
+{"kind":"textbox","id":"sh/mtcj6tgv","slide":2,"text":"기록과 달성을 연결하는 자기관리 서비스","textPreview":"기록과 달성을 연결하는 자기관리 서비스","textChars":21,"textLines":1,"bbox":[72,82,1120,64]}
+{"kind":"textbox","id":"sh/7ul0fyhg","slide":2,"text":"GrowDo는 습관, 할 일, 목표를 기록하고 달성 흐름을 이어가도록 돕는 웹 및 모바일 서비스입니다.","textPreview":"GrowDo는 습관, 할 일, 목표를 기록하고 달성 흐름을 이어가도록 돕는 웹 및 모바일 서비스입니다.","textChars":57,"textLines":1,"bbox":[72,148,1080,52]}
+{"kind":"textbox","id":"sh/k7a143yp","slide":2,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[84,246,44,44]}
+{"kind":"textbox","id":"sh/ls3id8za","slide":2,"text":"기록","textPreview":"기록","textChars":2,"textLines":1,"bbox":[142,244,190,28]}
+{"kind":"textbox","id":"sh/y5sj2tgj","slide":2,"text":"반복 행동과 오늘 할 일을\n성격에 맞게 나누어 관리","textPreview":"반복 행동과 오늘 할 일을 | 성격에 맞게 나누어 관리","textChars":28,"textLines":2,"bbox":[142,277,224,58]}
+{"kind":"shape","id":"sh/z610byh4","slide":2,"bbox":[106,334,252,0]}
+{"kind":"textbox","id":"sh/c3a10jyt","slide":2,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[84,365,44,44]}
+{"kind":"textbox","id":"sh/x4ji9ozy","slide":2,"text":"달성","textPreview":"달성","textChars":2,"textLines":1,"bbox":[142,363,190,28]}
+{"kind":"textbox","id":"sh/d0rupoz6","slide":2,"text":"완료 기록을 바탕으로\n챌린지 진행도를 반영","textPreview":"완료 기록을 바탕으로 | 챌린지 진행도를 반영","textChars":23,"textLines":2,"bbox":[142,396,224,58]}
+{"kind":"shape","id":"sh/czitwjyl","slide":2,"bbox":[106,453,252,0]}
+{"kind":"textbox","id":"sh/bypcneh0","slide":2,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[84,484,44,44]}
+{"kind":"textbox","id":"sh/qxgbu9gf","slide":2,"text":"보상","textPreview":"보상","textChars":2,"textLines":1,"bbox":[142,482,190,28]}
+{"kind":"textbox","id":"sh/pw7ulozu","slide":2,"text":"챌린지 포인트로\n모바일 쿠폰을 교환","textPreview":"챌린지 포인트로 | 모바일 쿠폰을 교환","textChars":19,"textLines":2,"bbox":[142,515,224,58]}
+{"kind":"shape","id":"sh/ovytsjy9","slide":2,"bbox":[760,210,326,430]}
+{"kind":"textbox","id":"sh/2tgbq9gj","slide":2,"text":"실제 모바일 화면","textPreview":"실제 모바일 화면","textChars":9,"textLines":1,"bbox":[1098,600,110,22]}
+{"kind":"textbox","id":"sh/1s7ah4zy","slide":2,"text":"포인트와 쿠폰은 서비스 활동을 이어가는 작은 보상으로 운영합니다. 현금 환급이나 재판매 기능은 제공하지 않습니다.","textPreview":"포인트와 쿠폰은 서비스 활동을 이어가는 작은 보상으로 운영합니다. 현금 환급이나 재판매 기능은 제공하지 않습니다.","textChars":63,"textLines":1,"bbox":[405,266,290,126]}
+{"kind":"shape","id":"sh/grytozyd","slide":2,"bbox":[405,422,250,0]}
+{"kind":"textbox","id":"sh/sbit4z69","slide":2,"text":"대상 이용자","textPreview":"대상 이용자","textChars":6,"textLines":1,"bbox":[405,453,120,24]}
+{"kind":"textbox","id":"sh/tcrud47u","slide":2,"text":"만 14세 이상 GrowDo 회원","textPreview":"만 14세 이상 GrowDo 회원","textChars":18,"textLines":1,"bbox":[405,485,270,32]}
+{"kind":"textbox","id":"sh/690b29o3","slide":2,"text":"가입 방식","textPreview":"가입 방식","textChars":5,"textLines":1,"bbox":[405,545,120,24]}
+{"kind":"textbox","id":"sh/7a9cbepo","slide":2,"text":"Google · Apple · 카카오 · 네이버","textPreview":"Google · Apple · 카카오 · 네이버","textChars":26,"textLines":1,"bbox":[405,577,310,34]}
+{"kind":"shape","id":"sh/k7it0z6x","slide":2,"bbox":[72,680,1136,0]}
+{"kind":"textbox","id":"sh/58ru947i","slide":2,"text":"GrowDo  |  기프티쇼 비즈 API 연동","textPreview":"GrowDo  |  기프티쇼 비즈 API 연동","textChars":25,"textLines":1,"bbox":[72,688,360,20]}
+{"kind":"textbox","id":"sh/il0bypo7","slide":2,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[1160,688,48,20]}
+{"kind":"image","id":"im/0fmh4fi9","slide":2,"name":"","geometry":"roundRect","alt":"GrowDo 습관 화면","bbox":[806,224,234,398]}
+{"kind":"notes","id":"nt/m1l166","slide":2,"text":"GrowDo 실제 모바일 화면은 신청 서비스에서 캡처한 자료입니다."}
+{"kind":"slide","id":"sl/yna01j","slide":3,"title":"02  사용자 이용 흐름","textShapes":21}
+{"kind":"textbox","id":"sh/lo7mx43u","slide":3,"text":"02  사용자 이용 흐름","textPreview":"02  사용자 이용 흐름","textChars":13,"textLines":1,"bbox":[72,46,420,24]}
+{"kind":"textbox","id":"sh/elg32pk3","slide":3,"text":"포인트 적립부터 내 쿠폰 확인까지","textPreview":"포인트 적립부터 내 쿠폰 확인까지","textChars":18,"textLines":1,"bbox":[72,82,1120,64]}
+{"kind":"textbox","id":"sh/zmp4vulo","slide":3,"text":"로그인한 이용자가 자신의 포인트로 교환을 요청하고, 발급된 쿠폰은 같은 계정에서만 확인합니다.","textPreview":"로그인한 이용자가 자신의 포인트로 교환을 요청하고, 발급된 쿠폰은 같은 계정에서만 확인합니다.","textChars":52,"textLines":1,"bbox":[72,148,1080,52]}
+{"kind":"shape","id":"sh/8ryl8z2l","slide":3,"bbox":[74,218,318,400]}
+{"kind":"textbox","id":"sh/mpg36pkf","slide":3,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[454,228,46,26]}
+{"kind":"textbox","id":"sh/nqp4zul0","slide":3,"text":"활동 완료","textPreview":"활동 완료","textChars":5,"textLines":1,"bbox":[518,226,180,32]}
+{"kind":"textbox","id":"sh/4velwf21","slide":3,"text":"습관, 할 일 또는 목표 완료","textPreview":"습관, 할 일 또는 목표 완료","textChars":16,"textLines":1,"bbox":[720,229,400,30]}
+{"kind":"shape","id":"sh/pwn2pk3m","slide":3,"bbox":[454,284,676,0]}
+{"kind":"textbox","id":"sh/pormhojq","slide":3,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[454,302,46,26]}
+{"kind":"textbox","id":"sh/onil8ji5","slide":3,"text":"포인트 적립","textPreview":"포인트 적립","textChars":6,"textLines":1,"bbox":[518,300,180,32]}
+{"kind":"textbox","id":"sh/3294fe1k","slide":3,"text":"챌린지 기준 충족 시 지급","textPreview":"챌린지 기준 충족 시 지급","textChars":14,"textLines":1,"bbox":[720,303,400,30]}
+{"kind":"shape","id":"sh/2103690z","slide":3,"bbox":[454,358,676,0]}
+{"kind":"textbox","id":"sh/dsbml8jm","slide":3,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[454,376,46,26]}
+{"kind":"textbox","id":"sh/cr25c3i1","slide":3,"text":"보상 선택","textPreview":"보상 선택","textChars":5,"textLines":1,"bbox":[518,374,180,32]}
+{"kind":"textbox","id":"sh/bqt4jy1g","slide":3,"text":"원하는 모바일 쿠폰 선택","textPreview":"원하는 모바일 쿠폰 선택","textChars":13,"textLines":1,"bbox":[720,377,400,30]}
+{"kind":"shape","id":"sh/qp03at0v","slide":3,"bbox":[454,432,676,0]}
+{"kind":"textbox","id":"sh/lwbmp8ji","slide":3,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[454,450,46,26]}
+{"kind":"textbox","id":"sh/kv25g3id","slide":3,"text":"교환 확정","textPreview":"교환 확정","textChars":5,"textLines":1,"bbox":[518,448,180,32]}
+{"kind":"textbox","id":"sh/4bux8bul","slide":3,"text":"포인트와 발급 조건 검증","textPreview":"포인트와 발급 조건 검증","textChars":13,"textLines":1,"bbox":[720,451,400,30]}
+{"kind":"shape","id":"sh/5c3y1gb6","slide":3,"bbox":[454,506,676,0]}
+{"kind":"textbox","id":"sh/i9cf61cf","slide":3,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[454,524,46,26]}
+{"kind":"textbox","id":"sh/jalgz6t0","slide":3,"text":"쿠폰 확인","textPreview":"쿠폰 확인","textChars":5,"textLines":1,"bbox":[518,522,180,32]}
+{"kind":"textbox","id":"sh/sfexcbuh","slide":3,"text":"내 쿠폰함에서 본인만 열람","textPreview":"내 쿠폰함에서 본인만 열람","textChars":14,"textLines":1,"bbox":[720,525,400,30]}
+{"kind":"shape","id":"sh/tgny5gb2","slide":3,"bbox":[454,604,676,42]}
+{"kind":"textbox","id":"sh/6dcfalcr","slide":3,"text":"쿠폰 유효기간은 API 응답값을 기준으로 상세 화면에 표시합니다.","textPreview":"쿠폰 유효기간은 API 응답값을 기준으로 상세 화면에 표시합니다.","textChars":36,"textLines":1,"bbox":[476,614,630,24]}
+{"kind":"shape","id":"sh/re5g3qtc","slide":3,"bbox":[72,680,1136,0]}
+{"kind":"textbox","id":"sh/8jax0rud","slide":3,"text":"GrowDo  |  기프티쇼 비즈 API 연동","textPreview":"GrowDo  |  기프티쇼 비즈 API 연동","textChars":25,"textLines":1,"bbox":[72,688,360,20]}
+{"kind":"textbox","id":"sh/9kjetwvy","slide":3,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[1160,688,48,20]}
+{"kind":"image","id":"im/kvuxsfex","slide":3,"name":"","geometry":"roundRect","alt":"GrowDo 보상 화면","bbox":[108,232,250,372]}
+{"kind":"notes","id":"nt/yna01j","slide":3,"text":"GrowDo 실제 보상 화면은 신청 서비스에서 캡처한 자료입니다."}
+{"kind":"slide","id":"sl/bualyv","slide":4,"title":"03  API 연동 계획","textShapes":15}
+{"kind":"textbox","id":"sh/7etwru1w","slide":4,"text":"03  API 연동 계획","textPreview":"03  API 연동 계획","textChars":13,"textLines":1,"bbox":[72,46,420,24]}
+{"kind":"textbox","id":"sh/sf2xkzih","slide":4,"text":"교환 요청과 쿠폰 발급 처리","textPreview":"교환 요청과 쿠폰 발급 처리","textChars":15,"textLines":1,"bbox":[72,82,1120,64]}
+{"kind":"textbox","id":"sh/tgbyt4jm","slide":4,"text":"1차 연동 희망 방식은 바코드 이미지 수신형(I)이며, 운영 협의에 따라 PIN 수신형(Y)도 함께 검토합니다.","textPreview":"1차 연동 희망 방식은 바코드 이미지 수신형(I)이며, 운영 협의에 따라 PIN 수신형(Y)도 함께 검토합니다.","textChars":62,"textLines":1,"bbox":[72,148,1080,52]}
+{"kind":"textbox","id":"sh/i9kfe50z","slide":4,"text":"GrowDo 사용자","textPreview":"GrowDo 사용자","textChars":10,"textLines":1,"bbox":[100,230,210,34]}
+{"kind":"shape","id":"sh/jatwna1k","slide":4,"bbox":[205,276,0,0]}
+{"kind":"shape","id":"sh/kb2xgfi5","slide":4,"bbox":[205,276,0,314]}
+{"kind":"textbox","id":"sh/5cbepkjq","slide":4,"text":"GrowDo 백엔드","textPreview":"GrowDo 백엔드","textChars":10,"textLines":1,"bbox":[390,230,210,34]}
+{"kind":"shape","id":"sh/al0fa503","slide":4,"bbox":[495,276,0,0]}
+{"kind":"shape","id":"sh/vm9wja1o","slide":4,"bbox":[495,276,0,314]}
+{"kind":"textbox","id":"sh/ja1kze1o","slide":4,"text":"기프티쇼 API","textPreview":"기프티쇼 API","textChars":8,"textLines":1,"bbox":[680,230,210,34]}
+{"kind":"shape","id":"sh/i9s369k3","slide":4,"bbox":[785,276,0,0]}
+{"kind":"shape","id":"sh/5cj214ju","slide":4,"bbox":[785,276,0,314]}
+{"kind":"textbox","id":"sh/kbal8j29","slide":4,"text":"비공개 저장소","textPreview":"비공개 저장소","textChars":7,"textLines":1,"bbox":[970,230,210,34]}
+{"kind":"shape","id":"sh/7e1k3e10","slide":4,"bbox":[1075,276,0,0]}
+{"kind":"shape","id":"sh/6ds3a90f","slide":4,"bbox":[1075,276,0,314]}
+{"kind":"shape","id":"sh/t0325oj6","slide":4,"bbox":[205,306,290,20]}
+{"kind":"textbox","id":"sh/szalcjil","slide":4,"text":"1  포인트 교환 요청","textPreview":"1  포인트 교환 요청","textChars":12,"textLines":1,"bbox":[205,282,290,22]}
+{"kind":"shape","id":"sh/nihkru1g","slide":4,"bbox":[205,360,290,20]}
+{"kind":"textbox","id":"sh/mh8jypkb","slide":4,"text":"2  포인트·중복·상품 검증","textPreview":"2  포인트·중복·상품 검증","textChars":15,"textLines":1,"bbox":[205,336,290,22]}
+{"kind":"shape","id":"sh/q9gfmhov","slide":4,"bbox":[495,414,290,20]}
+{"kind":"textbox","id":"sh/bapwvmpg","slide":4,"text":"3  쿠폰 발급 API 호출","textPreview":"3  쿠폰 발급 API 호출","textChars":15,"textLines":1,"bbox":[495,390,290,22]}
+{"kind":"shape","id":"sh/cbyxor61","slide":4,"bbox":[495,468,290,20]}
+{"kind":"textbox","id":"sh/dcrexw7m","slide":4,"text":"4  PIN·이미지·유효기간 응답","textPreview":"4  PIN·이미지·유효기간 응답","textChars":18,"textLines":1,"bbox":[495,444,290,22]}
+{"kind":"shape","id":"sh/25gvih8z","slide":4,"bbox":[495,522,580,20]}
+{"kind":"textbox","id":"sh/36pwrmpk","slide":4,"text":"5  암호화 및 비공개 저장","textPreview":"5  암호화 및 비공개 저장","textChars":15,"textLines":1,"bbox":[495,498,580,22]}
+{"kind":"shape","id":"sh/o7yxkrqp","slide":4,"bbox":[205,576,290,20]}
+{"kind":"textbox","id":"sh/p87etc7a","slide":4,"text":"6  내 쿠폰 정보 반환","textPreview":"6  내 쿠폰 정보 반환","textChars":13,"textLines":1,"bbox":[205,552,290,22]}
+{"kind":"shape","id":"sh/ehwvex8n","slide":4,"bbox":[72,680,1136,0]}
+{"kind":"textbox","id":"sh/fi5wn2p8","slide":4,"text":"GrowDo  |  기프티쇼 비즈 API 연동","textPreview":"GrowDo  |  기프티쇼 비즈 API 연동","textChars":25,"textLines":1,"bbox":[72,688,360,20]}
+{"kind":"textbox","id":"sh/hwvit0rq","slide":4,"text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[1160,688,48,20]}
+{"kind":"notes","id":"nt/bualyv","slide":4,"text":"출처: 기프티쇼 비즈 API 연동규격서 https://biz.giftishow.com/external/down/api_qna.pdf\n규격서의 발송 구분값 I(바코드 이미지), Y(PIN 번호) 설명을 참고했습니다."}
+{"kind":"slide","id":"sl/bevdbr","slide":5,"title":"04  보안 및 운영 정책","textShapes":18}
+{"kind":"textbox","id":"sh/re5svmxo","slide":5,"text":"04  보안 및 운영 정책","textPreview":"04  보안 및 운영 정책","textChars":14,"textLines":1,"bbox":[72,46,420,24]}
+{"kind":"textbox","id":"sh/sfe9o7e9","slide":5,"text":"중복 발급과 쿠폰 정보 노출 방지","textPreview":"중복 발급과 쿠폰 정보 노출 방지","textChars":18,"textLines":1,"bbox":[72,82,1120,64]}
+{"kind":"textbox","id":"sh/dgnaxcfu","slide":5,"text":"교환 거래의 정합성, 발급 데이터 보호, 사용자 소유권 확인을 각각 분리해 적용합니다.","textPreview":"교환 거래의 정합성, 발급 데이터 보호, 사용자 소유권 확인을 각각 분리해 적용합니다.","textChars":48,"textLines":1,"bbox":[72,148,1080,52]}
+{"kind":"shape","id":"sh/i9crixg7","slide":5,"bbox":[640,232,0,0]}
+{"kind":"shape","id":"sh/jal8r2xs","slide":5,"bbox":[640,232,0,330]}
+{"kind":"shape","id":"sh/4be9k7yd","slide":5,"bbox":[82,396,1116,0]}
+{"kind":"textbox","id":"sh/5cnatcfi","slide":5,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[86,244,50,26]}
+{"kind":"textbox","id":"sh/ulcrexgv","slide":5,"text":"중복 교환 방지","textPreview":"중복 교환 방지","textChars":8,"textLines":1,"bbox":[86,280,470,38]}
+{"kind":"textbox","id":"sh/vml8n2xg","slide":5,"text":"UUID 기반 멱등성 키와 DB 고유 제약을 적용합니다. 교환 중에는 사용자, 보상, 재고 행을 트랜잭션에서 잠급니다.","textPreview":"UUID 기반 멱등성 키와 DB 고유 제약을 적용합니다. 교환 중에는 사용자, 보상, 재고 행을 트랜잭션에서 잠급니다.","textChars":66,"textLines":1,"bbox":[86,332,470,78]}
+{"kind":"textbox","id":"sh/7qhgnalc","slide":5,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[682,244,50,26]}
+{"kind":"textbox","id":"sh/6p8fu5kr","slide":5,"text":"쿠폰 PIN 암호화","textPreview":"쿠폰 PIN 암호화","textChars":10,"textLines":1,"bbox":[682,280,470,38]}
+{"kind":"textbox","id":"sh/tcjypk3i","slide":5,"text":"쿠폰 번호는 AES-256-GCM 방식으로 암호화합니다. 운영 화면과 로그에는 평문 PIN을 남기지 않습니다.","textPreview":"쿠폰 번호는 AES-256-GCM 방식으로 암호화합니다. 운영 화면과 로그에는 평문 PIN을 남기지 않습니다.","textChars":61,"textLines":1,"bbox":[682,332,470,78]}
+{"kind":"textbox","id":"sh/srqxwf2x","slide":5,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[86,422,50,26]}
+{"kind":"textbox","id":"sh/fe1gralo","slide":5,"text":"쿠폰 이미지 비공개","textPreview":"쿠폰 이미지 비공개","textChars":10,"textLines":1,"bbox":[86,458,470,38]}
+{"kind":"textbox","id":"sh/udszypk3","slide":5,"text":"공개 S3 URL을 제공하지 않습니다. GrowDo가 소유권을 확인한 뒤 비공개 이미지 서버를 통해 이미지를 전달합니다.","textPreview":"공개 S3 URL을 제공하지 않습니다. GrowDo가 소유권을 확인한 뒤 비공개 이미지 서버를 통해 이미지를 전달합니다.","textChars":67,"textLines":1,"bbox":[86,510,470,78]}
+{"kind":"textbox","id":"sh/hgjytk3e","slide":5,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[682,422,50,26]}
+{"kind":"textbox","id":"sh/gfah0f29","slide":5,"text":"본인 계정만 열람","textPreview":"본인 계정만 열람","textChars":9,"textLines":1,"bbox":[682,458,470,38]}
+{"kind":"textbox","id":"sh/vixgfql4","slide":5,"text":"발급 쿠폰은 사용자 보상 이력과 연결합니다. 다른 사용자 번호로 요청하면 PIN과 이미지를 반환하지 않습니다.","textPreview":"발급 쿠폰은 사용자 보상 이력과 연결합니다. 다른 사용자 번호로 요청하면 PIN과 이미지를 반환하지 않습니다.","textChars":61,"textLines":1,"bbox":[682,510,470,78]}
+{"kind":"textbox","id":"sh/ahofmlkz","slide":5,"text":"쿠폰 문의와 클레임은 GrowDo 고객지원에서 1차 확인하고 발급 이력을 추적합니다.","textPreview":"쿠폰 문의와 클레임은 GrowDo 고객지원에서 1차 확인하고 발급 이력을 추적합니다.","textChars":47,"textLines":1,"bbox":[154,618,972,30]}
+{"kind":"shape","id":"sh/ypgrax8j","slide":5,"bbox":[72,680,1136,0]}
+{"kind":"textbox","id":"sh/zqpsji94","slide":5,"text":"GrowDo  |  기프티쇼 비즈 API 연동","textPreview":"GrowDo  |  기프티쇼 비즈 API 연동","textChars":25,"textLines":1,"bbox":[72,688,360,20]}
+{"kind":"textbox","id":"sh/0rytcnqp","slide":5,"text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[1160,688,48,20]}
+{"kind":"notes","id":"nt/bevdbr","slide":5,"text":""}
+{"kind":"slide","id":"sl/8tfwuk","slide":6,"title":"05  운영 계획 및 요청 사항","textShapes":24}
+{"kind":"textbox","id":"sh/72x4n6pg","slide":6,"text":"05  운영 계획 및 요청 사항","textPreview":"05  운영 계획 및 요청 사항","textChars":17,"textLines":1,"bbox":[72,46,420,24]}
+{"kind":"textbox","id":"sh/836lwbq1","slide":6,"text":"소규모 베타 운영 후 발급량 확대","textPreview":"소규모 베타 운영 후 발급량 확대","textChars":18,"textLines":1,"bbox":[72,82,1120,64]}
+{"kind":"textbox","id":"sh/tofmpg76","slide":6,"text":"초기에는 커피 쿠폰 중심으로 발급과 문의 흐름을 검증하고, 운영 결과를 확인한 뒤 상품을 확대할 계획입니다.","textPreview":"초기에는 커피 쿠폰 중심으로 발급과 문의 흐름을 검증하고, 운영 결과를 확인한 뒤 상품을 확대할 계획입니다.","textChars":60,"textLines":1,"bbox":[72,148,1080,52]}
+{"kind":"textbox","id":"sh/yx43q18j","slide":6,"text":"이용 목적","textPreview":"이용 목적","textChars":5,"textLines":1,"bbox":[82,236,140,28]}
+{"kind":"textbox","id":"sh/jyd4j6p4","slide":6,"text":"고객관리 및 서비스 이용 리워드","textPreview":"고객관리 및 서비스 이용 리워드","textChars":17,"textLines":1,"bbox":[238,236,510,30]}
+{"kind":"shape","id":"sh/kz6lsrqp","slide":6,"bbox":[82,278,666,0]}
+{"kind":"textbox","id":"sh/l0fmlw7a","slide":6,"text":"초기 상품","textPreview":"초기 상품","textChars":5,"textLines":1,"bbox":[82,294,140,28]}
+{"kind":"textbox","id":"sh/2t8n2l83","slide":6,"text":"스타벅스 커피 등 소액 모바일 쿠폰","textPreview":"스타벅스 커피 등 소액 모바일 쿠폰","textChars":19,"textLines":1,"bbox":[238,294,510,30]}
+{"kind":"shape","id":"sh/3uh4vqpo","slide":6,"bbox":[82,336,666,0]}
+{"kind":"textbox","id":"sh/bux4bqtk","slide":6,"text":"예상 규모","textPreview":"예상 규모","textChars":5,"textLines":1,"bbox":[82,352,140,28]}
+{"kind":"textbox","id":"sh/ato32lsz","slide":6,"text":"베타 월 10-30건 내외, 이용자 증가에 따라 확대","textPreview":"베타 월 10-30건 내외, 이용자 증가에 따라 확대","textChars":29,"textLines":1,"bbox":[238,352,510,30]}
+{"kind":"shape","id":"sh/xwzmd0ba","slide":6,"bbox":[82,394,666,0]}
+{"kind":"textbox","id":"sh/cv654va5","slide":6,"text":"발급 시점","textPreview":"발급 시점","textChars":5,"textLines":1,"bbox":[82,410,140,28]}
+{"kind":"textbox","id":"sh/zyh4fqtg","slide":6,"text":"사용자가 포인트 교환을 확정한 즉시","textPreview":"사용자가 포인트 교환을 확정한 즉시","textChars":19,"textLines":1,"bbox":[238,410,510,30]}
+{"kind":"shape","id":"sh/yx8n6lsv","slide":6,"bbox":[82,452,666,0]}
+{"kind":"textbox","id":"sh/l0zmh0bm","slide":6,"text":"희망 방식","textPreview":"희망 방식","textChars":5,"textLines":1,"bbox":[82,468,140,28]}
+{"kind":"textbox","id":"sh/kzq58va1","slide":6,"text":"바코드 이미지 수신(I), 필요 시 PIN 수신(Y)","textPreview":"바코드 이미지 수신(I), 필요 시 PIN 수신(Y)","textChars":29,"textLines":1,"bbox":[238,468,510,30]}
+{"kind":"shape","id":"sh/72h4jats","slide":6,"bbox":[82,510,666,0]}
+{"kind":"textbox","id":"sh/m18na5s7","slide":6,"text":"고객 문의","textPreview":"고객 문의","textChars":5,"textLines":1,"bbox":[82,526,140,28]}
+{"kind":"textbox","id":"sh/29wzytgr","slide":6,"text":"GrowDo가 직접 1차 접수 및 처리","textPreview":"GrowDo가 직접 1차 접수 및 처리","textChars":21,"textLines":1,"bbox":[238,526,510,30]}
+{"kind":"shape","id":"sh/3u5gryhw","slide":6,"bbox":[82,568,666,0]}
+{"kind":"shape","id":"sh/4veh03yh","slide":6,"bbox":[818,234,390,224]}
+{"kind":"textbox","id":"sh/pwnyt8z2","slide":6,"text":"연동 요청","textPreview":"연동 요청","textChars":5,"textLines":1,"bbox":[850,266,120,24]}
+{"kind":"textbox","id":"sh/u5cfutgf","slide":6,"text":"API 연동발송\n서비스 승인","textPreview":"API 연동발송 | 서비스 승인","textChars":15,"textLines":2,"bbox":[850,310,318,88]}
+{"kind":"textbox","id":"sh/f6lgnyh0","slide":6,"text":"상용 인증키 발급과 연동 검토를 요청드립니다.","textPreview":"상용 인증키 발급과 연동 검토를 요청드립니다.","textChars":25,"textLines":1,"bbox":[850,408,310,28]}
+{"kind":"textbox","id":"sh/g7uxw3yl","slide":6,"text":"GrowDo 서비스 운영","textPreview":"GrowDo 서비스 운영","textChars":13,"textLines":1,"bbox":[818,500,260,32]}
+{"kind":"textbox","id":"sh/h8nyp8z6","slide":6,"text":"okpc0305@gmail.com","textPreview":"okpc0305@gmail.com","textChars":18,"textLines":1,"bbox":[818,542,260,26]}
+{"kind":"textbox","id":"sh/e1gz6dgj","slide":6,"text":"https://growdo.kr","textPreview":"https://growdo.kr","textChars":17,"textLines":1,"bbox":[818,574,260,26]}
+{"kind":"textbox","id":"sh/z2pgzih4","slide":6,"text":"예상 규모는 베타 운영 기준이며 실제 이용자 수에 따라 변동될 수 있습니다.","textPreview":"예상 규모는 베타 운영 기준이며 실제 이용자 수에 따라 변동될 수 있습니다.","textChars":42,"textLines":1,"bbox":[82,622,666,24]}
+{"kind":"shape","id":"sh/9wripcjm","slide":6,"bbox":[72,680,1136,0]}
+{"kind":"textbox","id":"sh/ovi1wri1","slide":6,"text":"GrowDo  |  기프티쇼 비즈 API 연동","textPreview":"GrowDo  |  기프티쇼 비즈 API 연동","textChars":25,"textLines":1,"bbox":[72,688,360,20]}
+{"kind":"textbox","id":"sh/nu90nm1g","slide":6,"text":"6","textPreview":"6","textChars":1,"textLines":1,"bbox":[1160,688,48,20]}
+{"kind":"notes","id":"nt/8tfwuk","slide":6,"text":"참고: 기프티쇼 비즈 API 연동규격서 https://biz.giftishow.com/external/down/api_qna.pdf\n참고: 모바일 쿠폰 API 가이드 https://biz.giftishow.com/blog/mobile-coupon-api-guide"}
