@@ -94,6 +94,7 @@ export default function GoalSection({ createRequestKey }: GoalSectionProps) {
       adjustPoints(getAwardedPoints(result.achievements));
       notifyChallengeAchievements(result.achievements);
       await Promise.all([fetchGoals(selectedDate, true), refreshSummary()]);
+      if (result.achieved) invalidateCalendarMarks();
       if (result.achievements.length === 0) {
         toast.success('목표가 완료됐어요', {
           description: '이번 기간 전체에 완료 상태가 반영됐어요.',
@@ -168,7 +169,7 @@ export default function GoalSection({ createRequestKey }: GoalSectionProps) {
           ) : goalsWithCompletion.length === 0 ? (
             <TaskEmptyState
               title="이 날짜에 진행 중인 목표가 없어요."
-              description="목표는 생성한 날짜부터 달력에 표시돼요."
+              description="달력의 점은 목표를 시작하거나 달성한 날에만 표시돼요."
             />
           ) : (
             goalsWithCompletion.map((goal) => (
