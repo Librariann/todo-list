@@ -92,23 +92,27 @@ export default function Calendar({
   const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
 
   return (
-    <Card className="soft-panel border-border bg-card p-4 shadow-none">
+    <Card className="soft-panel min-w-0 border-border bg-card p-3 shadow-none sm:p-4">
       {/* 헤더 */}
-      <div className="flex items-center justify-between mb-4">
-        <Button onClick={goToPreviousMonth} variant="ghost" size="sm" aria-label="이전 달">
+      <div className="mb-4 grid grid-cols-[2.25rem_minmax(0,1fr)_2.25rem] items-center gap-1">
+        <Button onClick={goToPreviousMonth} variant="ghost" size="icon-sm" aria-label="이전 달">
           <ChevronLeft className="h-4 w-4" />
         </Button>
 
-        <div
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="text-center lg:cursor-default flex flex-col items-center gap-1 cursor-pointer rounded-md px-3 py-1 transition-colors hover:bg-accent dark:hover:bg-secondary"
-        >
-          <div className="flex items-center gap-2">
-            <h3 className="font-bold text-foreground">{formatMonthYear(currentMonth)}</h3>
+        <div className="flex min-w-0 flex-col items-center gap-1 text-center">
+          <button
+            type="button"
+            onClick={() => setIsExpanded(!isExpanded)}
+            aria-expanded={isExpanded}
+            className="flex min-h-8 max-w-full items-center justify-center gap-1 rounded-md px-1 transition-colors hover:bg-accent dark:hover:bg-secondary"
+          >
+            <span className="whitespace-nowrap text-sm font-bold text-foreground sm:text-base">
+              {formatMonthYear(currentMonth)}
+            </span>
             <ChevronDown
-              className={`w-4 h-4 lg:hidden transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+              className={`size-4 shrink-0 lg:hidden transition-transform ${isExpanded ? 'rotate-180' : ''}`}
             />
-          </div>
+          </button>
           <Button
             onClick={(e) => {
               e.stopPropagation();
@@ -122,7 +126,7 @@ export default function Calendar({
           </Button>
         </div>
 
-        <Button onClick={goToNextMonth} variant="ghost" size="sm" aria-label="다음 달">
+        <Button onClick={goToNextMonth} variant="ghost" size="icon-sm" aria-label="다음 달">
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
@@ -163,7 +167,7 @@ export default function Calendar({
               variant={selectedFlag ? 'default' : todayFlag ? 'secondary' : 'ghost'}
               size="sm"
               className={`
-                aspect-square text-sm font-medium transition-all relative p-0
+                aspect-square h-auto min-h-8 w-full p-0 text-sm font-medium transition-all
                 ${selectedFlag ? 'font-bold' : ''}
                 ${todayFlag && !selectedFlag ? 'bg-primary/10 text-primary' : ''}
                 ${
@@ -177,15 +181,19 @@ export default function Calendar({
                 }
               `}
             >
-              <span className="block">{date.getDate()}</span>
-              {dataFlag ? (
+              <span className="flex flex-col items-center justify-center gap-1.5">
+                <span className="leading-none">{date.getDate()}</span>
                 <span
                   aria-hidden="true"
-                  className={`absolute bottom-1 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full ${
-                    selectedFlag ? 'bg-primary-foreground' : 'bg-primary'
+                  className={`size-[3px] rounded-full ${
+                    dataFlag
+                      ? selectedFlag
+                        ? 'bg-primary-foreground'
+                        : 'bg-primary'
+                      : 'opacity-0'
                   }`}
                 />
-              ) : null}
+              </span>
             </Button>
           );
         })}
