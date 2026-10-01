@@ -45,6 +45,19 @@ export async function fetchTodos(date: string): Promise<Todo[]> {
   return ((data.data ?? []) as TodoApiResponse[]).map(mapApiTodo);
 }
 
+export async function fetchTodoMarkedDates(
+  from: string,
+  to: string,
+  signal?: AbortSignal
+): Promise<string[]> {
+  const query = new URLSearchParams({ from, to });
+  const res = await apiFetch(`${API_URL}/api/todos/calendar?${query.toString()}`, { signal });
+  if (!res.ok) throw new Error('할 일이 등록된 날짜를 불러오지 못했습니다.');
+
+  const data = (await res.json()) as { data?: string[] };
+  return data.data ?? [];
+}
+
 export async function createTodo(name: string, targetDate: string): Promise<Todo> {
   const res = await apiFetch(`${API_URL}/api/todos/register`, {
     method: 'POST',
