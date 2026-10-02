@@ -84,6 +84,16 @@ export async function fetchGoalsByDate(date: string, signal?: AbortSignal): Prom
   return (body.data ?? []).map(mapGoalByDate);
 }
 
+export async function fetchActiveGoalStartDates(signal?: AbortSignal): Promise<string[]> {
+  const response = await apiFetch(`${API_URL}/api/goals`, { signal });
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response, '목표가 등록된 날짜를 불러오지 못했습니다.'));
+  }
+
+  const body = (await response.json()) as { data?: GoalResponse[] };
+  return [...new Set((body.data ?? []).map((goal) => goal.startDate))];
+}
+
 export async function achieveGoal(goalId: string): Promise<GoalAchievementResult> {
   const response = await apiFetch(`${API_URL}/api/goals/${goalId}/achieve`, {
     method: 'POST',
