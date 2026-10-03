@@ -4,10 +4,12 @@ import { getTodayDateString } from '../lib/dateUtils';
 interface CalendarState {
   selectedDate: string;
   currentMonth: Date;
+  marksVersion: number;
 
   setSelectedDate: (date: string) => void;
   setCurrentMonth: (date: Date) => void;
   goToToday: () => void;
+  invalidateMarks: () => void;
   resetCalendar: () => void;
 }
 
@@ -22,6 +24,7 @@ function createInitialCalendar() {
   return {
     selectedDate: today,
     currentMonth: getMonthFromDate(today),
+    marksVersion: 0,
   };
 }
 
@@ -48,6 +51,10 @@ export const useCalendarStore = create<CalendarState>((set) => ({
       selectedDate: today,
       currentMonth: getMonthFromDate(today),
     });
+  },
+
+  invalidateMarks: () => {
+    set((state) => ({ marksVersion: state.marksVersion + 1 }));
   },
 
   resetCalendar: () => {
