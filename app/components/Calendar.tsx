@@ -8,7 +8,7 @@ import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 interface CalendarProps {
   selectedDate: string;
   onDateSelect: (date: string) => void;
-  // markedDates?: string[]; // 데이터가 있는 날짜들
+  markedDates?: ReadonlySet<string>;
   currentMonth: Date;
   onMonthChange: (date: Date) => void;
 }
@@ -16,7 +16,7 @@ interface CalendarProps {
 export default function Calendar({
   selectedDate,
   onDateSelect,
-  // markedDates,
+  markedDates = new Set<string>(),
   currentMonth,
   onMonthChange,
 }: CalendarProps) {
@@ -69,9 +69,7 @@ export default function Calendar({
     return toDateString(date) === selectedDate;
   };
 
-  // const hasData = (date: Date) => {
-  //   return markedDates.includes(toDateString(date));
-  // };
+  const hasData = (date: Date) => markedDates.has(toDateString(date));
 
   const goToPreviousMonth = () => {
     const newDate = new Date(currentMonth);
@@ -154,12 +152,14 @@ export default function Calendar({
           const isSaturday = date.getDay() === 6;
           const todayFlag = isToday(date);
           const selectedFlag = isSelected(date);
-          // const dataFlag = hasData(date);
+          const dataFlag = hasData(date);
+          const dateLabel = `${date.getMonth() + 1}월 ${date.getDate()}일${dataFlag ? ', 등록된 항목 있음' : ''}`;
 
           return (
             <Button
               key={toDateString(date)}
               onClick={() => onDateSelect(toDateString(date))}
+              aria-label={dateLabel}
               variant={selectedFlag ? 'default' : todayFlag ? 'secondary' : 'ghost'}
               size="sm"
               className={`
@@ -178,10 +178,14 @@ export default function Calendar({
               `}
             >
               <span className="block">{date.getDate()}</span>
-              {/* 데이터 있음 표시 점 */}
-              {/* {dataFlag && !selectedFlag && (
-                <span className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
-              )} */}
+              {dataFlag ? (
+                <span
+                  aria-hidden="true"
+                  className={`absolute bottom-1 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full ${
+                    selectedFlag ? 'bg-primary-foreground' : 'bg-primary'
+                  }`}
+                />
+              ) : null}
             </Button>
           );
         })}
