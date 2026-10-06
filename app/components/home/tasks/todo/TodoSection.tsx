@@ -32,6 +32,7 @@ export default function TodoSection({ createRequestKey }: TodoSectionProps) {
   const [deleteTarget, setDeleteTarget] = useState<Todo | null>(null);
   const [editTarget, setEditTarget] = useState<Todo | null>(null);
   const selectedDate = useCalendarStore((calendar) => calendar.selectedDate);
+  const invalidateCalendarMarks = useCalendarStore((calendar) => calendar.invalidateMarks);
   const todos = useTodosStore((state) => state.todosByDate[selectedDate] ?? EMPTY_TODOS);
   const loading = useTodosStore((state) => state.loadingByDate[selectedDate] ?? false);
   const loadError = useTodosStore((state) => state.errorsByDate[selectedDate] ?? null);
@@ -85,6 +86,7 @@ export default function TodoSection({ createRequestKey }: TodoSectionProps) {
 
     const created = await createTodo(input.name, selectedDate);
     setTodosForDate(selectedDate, (previousTodos) => [created, ...previousTodos]);
+    invalidateCalendarMarks();
     toast.success('할 일을 추가했어요.');
   };
 
@@ -95,6 +97,7 @@ export default function TodoSection({ createRequestKey }: TodoSectionProps) {
 
     try {
       await deleteTodo(todoId);
+      invalidateCalendarMarks();
       if (snapshot.some((todo) => todo.id === todoId && todo.status === TodoStatus.DONE)) {
         await refreshSummary();
       }
