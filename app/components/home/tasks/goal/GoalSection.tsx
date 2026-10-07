@@ -23,6 +23,7 @@ interface GoalSectionProps {
 
 export default function GoalSection({ createRequestKey }: GoalSectionProps) {
   const selectedDate = useCalendarStore((calendar) => calendar.selectedDate);
+  const invalidateCalendarMarks = useCalendarStore((calendar) => calendar.invalidateMarks);
   const goals = useGoalsStore((state) => state.goalsByDate[selectedDate] ?? EMPTY_GOALS);
   const loading = useGoalsStore((state) => state.loadingByDate[selectedDate] ?? false);
   const fetchGoals = useGoalsStore((state) => state.fetchGoals);
@@ -118,6 +119,7 @@ export default function GoalSection({ createRequestKey }: GoalSectionProps) {
 
     try {
       await deleteGoal(id);
+      invalidateCalendarMarks();
       toast.success('목표를 삭제했어요.');
     } catch (error) {
       setGoalsForDate(selectedDate, (previousGoals) => {
@@ -142,6 +144,7 @@ export default function GoalSection({ createRequestKey }: GoalSectionProps) {
 
     await createGoal(input.name, input.recurrenceType, selectedDate);
     await fetchGoals(selectedDate, true);
+    invalidateCalendarMarks();
     toast.success('목표를 추가했어요.');
   };
 
