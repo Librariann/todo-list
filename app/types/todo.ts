@@ -75,6 +75,8 @@ export interface Habit {
   lastUpdatedDate?: string; // 마지막 업데이트 날짜 (YYYY-MM-DD)
   streak?: number; // 서버에서 받은 연속 달성 일수 (API 연동 시 사용)
   createdAt: Date;
+  reminderTime?: string | null;
+  reminderDays?: number[];
 }
 
 // 목표 (Goals)
@@ -104,6 +106,7 @@ export interface Todo {
   date: string;
   createdAt: Date;
   completedAt?: Date;
+  reminderAt?: string | null;
 }
 
 // 도전과제 타입
