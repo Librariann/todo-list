@@ -19,6 +19,8 @@ export interface HabitsApiResponse {
   todayAchieved: boolean;
   currentStreak: number;
   longestStreak: number;
+  reminderTime?: string | null;
+  reminderDays?: number[];
 }
 
 export interface CreateHabitPayload {
@@ -26,6 +28,8 @@ export interface CreateHabitPayload {
   dailyTarget: number;
   description?: string;
   unit?: string;
+  reminderTime?: string | null;
+  reminderDays?: number[];
 }
 
 export interface UpdateHabitPayload {
@@ -33,6 +37,8 @@ export interface UpdateHabitPayload {
   dailyTarget?: number;
   description?: string;
   unit?: string;
+  reminderTime?: string | null;
+  reminderDays?: number[];
 }
 
 export interface HabitIncrementResult {
@@ -55,6 +61,8 @@ export function mapApiHabit(api: HabitsApiResponse): Habit {
     lastUpdatedDate: today,
     streak: api.currentStreak, // 서버 스트릭 사용
     createdAt: new Date(api.createdAt),
+    reminderTime: api.reminderTime ?? null,
+    reminderDays: api.reminderDays ?? [],
   };
 }
 
