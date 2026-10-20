@@ -13,6 +13,7 @@ export interface TodoApiResponse {
   status: 'READY' | 'PROCESS' | 'DONE';
   orderIndex: number;
   targetDate: string;
+  reminderAt?: string | null;
 }
 
 const STATUS_FROM_API: Record<string, TodoStatus> = {
@@ -33,6 +34,7 @@ export function mapApiTodo(raw: TodoApiResponse): Todo {
     title: raw.name,
     status: STATUS_FROM_API[raw.status] ?? TodoStatus.TODO,
     date: raw.targetDate,
+    reminderAt: raw.reminderAt ?? null,
     createdAt: new Date(raw.createdAt),
     completedAt: raw.status === 'DONE' ? new Date(raw.updatedAt) : undefined,
   };
@@ -58,11 +60,15 @@ export async function fetchTodoMarkedDates(
   return data.data ?? [];
 }
 
-export async function createTodo(name: string, targetDate: string): Promise<Todo> {
+export async function createTodo(
+  name: string,
+  targetDate: string,
+  reminderAt?: string | null
+): Promise<Todo> {
   const res = await apiFetch(`${API_URL}/api/todos/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, targetDate }),
+    body: JSON.stringify({ name, targetDate, reminderAt }),
   });
 
   if (!res.ok) {
@@ -74,11 +80,15 @@ export async function createTodo(name: string, targetDate: string): Promise<Todo
   return mapApiTodo(data.data as TodoApiResponse);
 }
 
-export async function updateTodo(id: string, name: string): Promise<Todo> {
+export async function updateTodo(
+  id: string,
+  name: string,
+  reminderAt?: string | null
+): Promise<Todo> {
   const res = await apiFetch(`${API_URL}/api/todos/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name }),
+    body: JSON.stringify({ name, reminderAt }),
   });
 
   if (!res.ok) {
