@@ -31,7 +31,7 @@ export default function SimpleTodoCard({
 
   return (
     <article
-      className={`companion-entry group relative ${
+      className={`@container/todo companion-entry group relative min-w-0 ${
         isDone
           ? 'border-primary/20 bg-secondary/45'
           : featured
@@ -39,8 +39,8 @@ export default function SimpleTodoCard({
             : ''
       }`}
     >
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="flex min-w-0 items-start gap-3 sm:flex-1 sm:items-center">
+      <div className="flex flex-col gap-3 @min-[30rem]/todo:flex-row @min-[30rem]/todo:items-center">
+        <div className="flex min-w-0 items-start gap-3 @min-[30rem]/todo:flex-1 @min-[30rem]/todo:items-center">
           {/* 체크박스 */}
           <Button
             onClick={() => {
@@ -75,7 +75,7 @@ export default function SimpleTodoCard({
           {/* 제목 */}
           <div className="min-w-0 flex-1">
             <h3
-              className={`break-words text-base font-medium leading-6 text-foreground ${isDone ? 'line-through opacity-60' : ''}`}
+              className={`break-words text-base font-medium leading-6 text-foreground [overflow-wrap:anywhere] ${isDone ? 'line-through opacity-60' : ''}`}
             >
               {todo.title}
             </h3>
@@ -93,7 +93,7 @@ export default function SimpleTodoCard({
           </div>
         </div>
 
-        <div className="flex min-w-0 items-center justify-end gap-1 border-t border-border/60 pt-2 sm:gap-1 sm:border-t-0 sm:pt-0">
+        <div className="flex min-w-0 flex-wrap items-center justify-end gap-1 border-t border-border/60 pt-2 @min-[30rem]/todo:border-t-0 @min-[30rem]/todo:pt-0">
           {/* 진행 중 버튼 */}
           {!isDone ? (
             <button
