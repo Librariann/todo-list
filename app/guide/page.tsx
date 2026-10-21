@@ -91,8 +91,15 @@ export default function GuidePage() {
   return (
     <div className="min-h-screen bg-[#d9e1d5] px-3 py-3 dark:bg-background sm:px-6 sm:py-6">
       <div className="mx-auto max-w-[1180px] overflow-hidden rounded-[2rem] bg-[#fbf8ef] text-[#26302a] shadow-[0_24px_70px_rgba(38,48,42,0.12)] dark:bg-card dark:text-foreground">
-        <header className="flex min-h-20 items-center justify-between border-b border-border px-5 sm:px-8">
-          <Link href="/" className="flex items-center gap-3" aria-label="GrowDo 홈">
+        <header className="grid min-h-16 grid-cols-[44px_minmax(0,1fr)_44px] items-center border-b border-border px-5 sm:flex sm:min-h-20 sm:justify-between sm:px-8">
+          <Link
+            href="/"
+            aria-label="오늘로 돌아가기"
+            className="inline-flex size-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:hidden"
+          >
+            <ArrowLeft className="size-5" aria-hidden="true" />
+          </Link>
+          <Link href="/" className="hidden items-center gap-3 sm:flex" aria-label="GrowDo 홈">
             <Image
               src="/growdo-logo.png"
               alt=""
@@ -102,13 +109,14 @@ export default function GuidePage() {
             />
             <span className="friendly-heading text-xl font-bold tracking-[-0.06em]">GrowDo</span>
           </Link>
-          <div className="flex items-center gap-2">
+          <span className="friendly-heading justify-self-center truncate px-2 text-base font-bold sm:hidden">사용법</span>
+          <div className="flex items-center justify-self-end gap-2">
             <Link
               href="/"
-              className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-bold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:px-4"
+              className="hidden min-h-11 items-center gap-2 rounded-full px-4 text-sm font-bold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
             >
               <ArrowLeft className="size-4" />
-              <span className="hidden sm:inline">오늘로 돌아가기</span>
+              오늘로 돌아가기
             </Link>
             <ThemeToggleStandalone />
           </div>
