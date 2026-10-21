@@ -44,14 +44,14 @@ export default function HomeHero({
         : '꾸준히 모은 포인트로 오늘의 작은 기쁨을 골라보세요.';
 
   return (
-    <div className="relative flex min-h-[15rem] flex-col justify-end gap-5 overflow-hidden px-4 pt-10 pb-5 sm:min-h-[17rem] sm:px-10 sm:pt-14 lg:px-12">
+    <div className="relative flex min-h-[13rem] flex-col justify-end gap-5 px-3 pt-8 pb-5 @min-[28rem]/workspace:min-h-[15rem] @min-[28rem]/workspace:px-6 @min-[48rem]/workspace:px-8">
       <div className="relative z-10">
         <p className="mb-3 text-sm font-semibold text-[#2e8c54] dark:text-primary md:text-base">
           {mainTab === 'tasks' ? selectedDateLabel : 'GrowDo'}
         </p>
         {mainTab === 'tasks' ? (
           <h1 className="friendly-heading max-w-3xl font-normal leading-[1.22] tracking-[-0.06em] sm:leading-[1.18]">
-            <span className="flex min-w-0 items-center gap-1 whitespace-nowrap text-[clamp(1.05rem,5.25vw,1.7rem)] sm:inline md:text-[2.25rem] xl:text-[2.5rem]">
+            <span className="flex min-w-0 items-center gap-1 text-[clamp(1.1rem,4.5cqw,2.5rem)]">
               <span className="shrink-0">{greeting.message},</span>
               <span className="min-w-0 truncate" title={`${username || '사용자'}님`}>
                 {username || '사용자'}님.
@@ -61,12 +61,12 @@ export default function HomeHero({
                 className={`size-[0.82em] shrink-0 stroke-[1.8] sm:inline-block sm:align-[-0.08em] ${greetingIconColor}`}
               />
             </span>
-            <span className="mt-1 block whitespace-nowrap text-[clamp(1.05rem,5.25vw,1.7rem)] sm:mt-0 md:text-[2.25rem] xl:text-[2.5rem]">
+            <span className="mt-1 block break-keep text-[clamp(1.1rem,4.5cqw,2.5rem)]">
               오늘 머물 곳을 정리해뒀어요.
             </span>
           </h1>
         ) : (
-          <h1 className="friendly-heading max-w-3xl text-4xl font-normal leading-[1.18] tracking-[-0.06em] sm:text-6xl">
+          <h1 className="friendly-heading max-w-3xl break-keep text-[clamp(1.75rem,6cqw,3.5rem)] font-normal leading-[1.18] tracking-[-0.06em]">
             {title}
           </h1>
         )}
