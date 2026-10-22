@@ -9,6 +9,7 @@ interface CalendarProps {
   selectedDate: string;
   onDateSelect: (date: string) => void;
   markedDates?: ReadonlySet<string>;
+  minDate?: string;
   currentMonth: Date;
   onMonthChange: (date: Date) => void;
 }
@@ -17,6 +18,7 @@ export default function Calendar({
   selectedDate,
   onDateSelect,
   markedDates = new Set<string>(),
+  minDate,
   currentMonth,
   onMonthChange,
 }: CalendarProps) {
@@ -72,15 +74,11 @@ export default function Calendar({
   const hasData = (date: Date) => markedDates.has(toDateString(date));
 
   const goToPreviousMonth = () => {
-    const newDate = new Date(currentMonth);
-    newDate.setMonth(newDate.getMonth() - 1);
-    onMonthChange(newDate);
+    onMonthChange(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
   };
 
   const goToNextMonth = () => {
-    const newDate = new Date(currentMonth);
-    newDate.setMonth(newDate.getMonth() + 1);
-    onMonthChange(newDate);
+    onMonthChange(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
   };
 
   const goToToday = () => {
@@ -90,12 +88,22 @@ export default function Calendar({
   };
 
   const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
+  const previousMonthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 0);
+  const cannotGoBack = !!minDate && toDateString(previousMonthEnd) < minDate;
+  const cannotSelectToday = !!minDate && toDateString(new Date()) < minDate;
 
   return (
     <Card className="@container/calendar soft-panel min-w-0 border-border bg-card p-2 shadow-none">
       {/* 헤더 */}
       <div className="mb-4 grid grid-cols-[2.25rem_minmax(0,1fr)_2.25rem] items-center gap-1">
-        <Button onClick={goToPreviousMonth} variant="ghost" size="icon-sm" aria-label="이전 달">
+        <Button
+          type="button"
+          onClick={goToPreviousMonth}
+          disabled={cannotGoBack}
+          variant="ghost"
+          size="icon-sm"
+          aria-label="이전 달"
+        >
           <ChevronLeft className="h-4 w-4" />
         </Button>
 
@@ -114,11 +122,13 @@ export default function Calendar({
             />
           </button>
           <Button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
               goToToday();
             }}
             variant="link"
+            disabled={cannotSelectToday}
             size="sm"
             className="text-xs text-primary p-0 h-auto"
           >
@@ -126,7 +136,13 @@ export default function Calendar({
           </Button>
         </div>
 
-        <Button onClick={goToNextMonth} variant="ghost" size="icon-sm" aria-label="다음 달">
+        <Button
+          type="button"
+          onClick={goToNextMonth}
+          variant="ghost"
+          size="icon-sm"
+          aria-label="다음 달"
+        >
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
@@ -161,9 +177,12 @@ export default function Calendar({
 
           return (
             <Button
+              type="button"
               key={toDateString(date)}
               onClick={() => onDateSelect(toDateString(date))}
               aria-label={dateLabel}
+              aria-pressed={selectedFlag}
+              disabled={!!minDate && toDateString(date) < minDate}
               variant={selectedFlag ? 'default' : todayFlag ? 'secondary' : 'ghost'}
               size="sm"
               className={`
