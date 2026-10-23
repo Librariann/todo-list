@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
@@ -115,17 +114,25 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-[#d9e1d5] px-3 py-3 dark:bg-background sm:px-6 sm:py-6">
       <div className="mx-auto max-w-[1280px] overflow-hidden rounded-[2rem] bg-card shadow-[0_24px_70px_rgba(38,48,42,0.12)]">
-        <header className="flex min-h-20 items-center justify-between border-b border-border px-5 sm:px-8">
-          <Link href="/" className="friendly-heading text-2xl font-bold tracking-[-0.06em]">
+        <header className="grid min-h-16 grid-cols-[44px_minmax(0,1fr)_44px] items-center border-b border-border px-5 sm:flex sm:min-h-20 sm:justify-between sm:px-8">
+          <Link
+            href="/"
+            aria-label="오늘로 돌아가기"
+            className="inline-flex size-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:hidden"
+          >
+            <ArrowLeft className="size-5" aria-hidden="true" />
+          </Link>
+          <Link href="/" className="friendly-heading hidden text-2xl font-bold tracking-[-0.06em] sm:inline-flex">
             GrowDo
           </Link>
-          <div className="flex items-center gap-2">
+          <span className="friendly-heading justify-self-center truncate px-2 text-base font-bold sm:hidden">내 정보</span>
+          <div className="flex items-center justify-self-end gap-2">
             <Link
               href="/"
-              className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-bold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:px-4"
+              className="hidden min-h-11 items-center gap-2 rounded-full px-4 text-sm font-bold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">오늘로 돌아가기</span>
+              오늘로 돌아가기
             </Link>
             <ThemeToggleStandalone />
           </div>
