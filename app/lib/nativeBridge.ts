@@ -1,4 +1,6 @@
 export type NativeAuthEvent = 'ACCOUNT_DELETED' | 'AUTH_EXPIRED' | 'LOGOUT';
+export type NativeNavigationDestination = 'home' | 'profile' | 'coupons';
+export type NativeNavigationTarget = NativeNavigationDestination;
 export type NativeNotificationScreen =
   | 'habits'
   | 'todos'
@@ -38,6 +40,17 @@ interface NativeNotificationMessage {
   destination: NativeNotificationDestination;
 }
 
+export type NativeNavigationMessage =
+  | {
+      source: typeof NATIVE_SOURCE;
+      type: 'NATIVE_NAVIGATION_READY';
+    }
+  | {
+      source: typeof NATIVE_SOURCE;
+      type: 'OPEN_DESTINATION';
+      destination: NativeNavigationTarget;
+    };
+
 function postNativeEvent(type: NativeAuthEvent | 'WEB_READY'): boolean {
   if (typeof window === 'undefined') return false;
 
@@ -70,6 +83,66 @@ export function postNativeAuthEvent(type: NativeAuthEvent): boolean {
 
 export function postNativeBridgeReady(): boolean {
   return postNativeEvent('WEB_READY');
+}
+
+export function postNativeNavigationState(destination: NativeNavigationDestination): boolean {
+  if (typeof window === 'undefined') return false;
+
+  const bridge = (window as NativeBridgeWindow).ReactNativeWebView;
+  if (!bridge?.postMessage) return false;
+
+  bridge.postMessage(
+    JSON.stringify({
+      source: BRIDGE_SOURCE,
+      type: 'NAVIGATION_STATE',
+      destination,
+      isDark: document.documentElement.classList.contains('dark'),
+      capabilities: ['home', 'profile', 'coupons'],
+    })
+  );
+  return true;
+}
+
+function parseNavigationMessage(value: unknown): NativeNavigationMessage | null {
+  if (!value || typeof value !== 'object') return null;
+
+  const message = value as Partial<NativeNavigationMessage>;
+  if (message.source !== NATIVE_SOURCE) return null;
+  if (message.type === 'NATIVE_NAVIGATION_READY') {
+    return message as NativeNavigationMessage;
+  }
+  if (
+    message.type === 'OPEN_DESTINATION' &&
+    (message.destination === 'home' || message.destination === 'profile' || message.destination === 'coupons')
+  ) {
+    return message as NativeNavigationMessage;
+  }
+  return null;
+}
+
+export function subscribeToNativeNavigationMessages(
+  listener: (message: NativeNavigationMessage) => void
+): () => void {
+  const handleMessage = (event: Event) => {
+    const messageEvent = event as MessageEvent<unknown>;
+    if (typeof messageEvent.data !== 'string') return;
+    if (messageEvent.origin && messageEvent.origin !== window.location.origin) return;
+    if (messageEvent.source && messageEvent.source !== window) return;
+
+    try {
+      const message = parseNavigationMessage(JSON.parse(messageEvent.data) as unknown);
+      if (message) listener(message);
+    } catch {
+      // 앱 메뉴 명령이 아니거나 허용되지 않은 목적지이면 무시한다.
+    }
+  };
+
+  window.addEventListener('message', handleMessage);
+  document.addEventListener('message', handleMessage);
+  return () => {
+    window.removeEventListener('message', handleMessage);
+    document.removeEventListener('message', handleMessage);
+  };
 }
 
 export function subscribeToNativeNotificationMessages(
