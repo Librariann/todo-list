@@ -33,7 +33,7 @@ export default function TaskModalLayout({
       }}
     >
       <DialogContent
-        className="w-full max-w-md"
+        className="max-w-md"
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
         <DialogHeader>
