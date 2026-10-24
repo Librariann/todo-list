@@ -80,6 +80,8 @@ export default function HabitSection({ createRequestKey }: HabitSectionProps) {
       const updated = await updateHabit(editTarget.id, {
         name: input.name,
         dailyTarget: input.dailyTarget,
+        reminderTime: input.reminderTime,
+        reminderDays: input.reminderDays,
       });
       setHabits((previousHabits) =>
         previousHabits.map((habit) => (habit.id === updated.id ? updated : habit))
@@ -90,6 +92,8 @@ export default function HabitSection({ createRequestKey }: HabitSectionProps) {
     const created = await createHabit({
       name: input.name,
       dailyTarget: input.dailyTarget,
+      reminderTime: input.reminderTime,
+      reminderDays: input.reminderDays,
     });
     setHabits((previousHabits) => [created, ...previousHabits]);
   };
