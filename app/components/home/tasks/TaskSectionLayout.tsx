@@ -23,8 +23,8 @@ export function TaskSectionHeader({
   showAdd = true,
 }: TaskSectionHeaderProps) {
   return (
-    <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-      <div>
+    <div className="mb-4 flex items-start justify-between gap-3">
+      <div className="min-w-0">
         <h2 className="friendly-heading text-2xl font-bold text-foreground">{title}</h2>
         <p className="mt-1 text-sm text-muted-foreground">{description}</p>
       </div>
@@ -33,7 +33,7 @@ export function TaskSectionHeader({
           type="button"
           onClick={onAdd}
           data-tour="task-add"
-          className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-primary/90"
+          className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors hover:bg-primary/90"
           aria-label={addLabel}
         >
           <Plus className="h-5 w-5" />
