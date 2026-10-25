@@ -218,11 +218,11 @@ export default function Header({ mainTab, onTabChange }: HeaderProps) {
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="inline-flex h-11 items-center gap-1 rounded-full bg-muted px-3 text-foreground transition-colors hover:bg-secondary"
+                    className="inline-flex h-11 shrink-0 items-center gap-1 rounded-full bg-muted px-2 text-foreground transition-colors hover:bg-secondary sm:px-3"
                     aria-label={`${user?.username || '사용자'}님 메뉴 열기`}
                   >
                     <UserRound className="h-5 w-5" />
-                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                    <ChevronDown className="hidden h-3.5 w-3.5 text-muted-foreground min-[360px]:block" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" sideOffset={8} className="w-52 rounded-xl p-1.5">
@@ -272,7 +272,7 @@ export default function Header({ mainTab, onTabChange }: HeaderProps) {
 
       {!isAdminPage && (
         <nav
-          className="fixed inset-x-0 bottom-0 z-50 flex border-t border-border bg-card pl-[max(0.5rem,env(safe-area-inset-left))] pr-[max(0.5rem,env(safe-area-inset-right))] pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_rgba(32,54,39,0.06)] xl:hidden"
+          className="fixed bottom-[max(0.75rem,calc(env(safe-area-inset-bottom)+0.25rem))] left-[max(1rem,env(safe-area-inset-left))] right-[max(1rem,env(safe-area-inset-right))] z-50 mx-auto flex h-12 max-w-[22rem] rounded-full bg-card p-0.5 shadow-[0_4px_16px_rgba(24,48,30,0.12)] ring-1 ring-border dark:shadow-[0_4px_16px_rgba(0,0,0,0.24)] xl:hidden"
           aria-label="모바일 주요 메뉴"
         >
           {navigation.map((item) => {
@@ -282,13 +282,12 @@ export default function Header({ mainTab, onTabChange }: HeaderProps) {
                 key={item.key}
                 type="button"
                 onClick={() => handleNavigate(item)}
-                className={`relative flex min-h-12 min-w-0 flex-1 items-center justify-center rounded-xl text-xs font-semibold transition-colors ${
-                  active ? 'bg-secondary text-primary' : 'text-muted-foreground'
+                className={`relative flex h-11 min-w-0 flex-1 items-center justify-center rounded-full text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring ${
+                  active ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-muted active:bg-muted'
                 }`}
                 aria-current={active ? 'page' : undefined}
               >
                 {item.label}
-                {active && <span className="absolute bottom-1.5 h-1 w-1 rounded-full bg-primary" />}
               </button>
             );
           })}
