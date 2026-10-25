@@ -102,7 +102,7 @@ export default function AddTaskModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-full max-w-md">
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <p className="journal-kicker">가볍게 시작해요</p>
           <DialogTitle className="friendly-heading text-2xl">{getModalTitle()}</DialogTitle>
