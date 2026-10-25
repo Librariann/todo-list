@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Gowun_Dodum, Noto_Sans_KR } from 'next/font/google';
 import { ThemeProvider } from 'next-themes';
 import './globals.css';
@@ -20,6 +20,12 @@ const friendlyFont = Gowun_Dodum({
 export const metadata: Metadata = {
   title: 'GrowDo — 오늘도 하나씩',
   description: '할 일과 습관, 목표를 부담 없이 이어가는 나의 일상 생산성 공간.',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({
