@@ -76,7 +76,7 @@ export default function TodoSection({ createRequestKey }: TodoSectionProps) {
 
   const handleSubmitTodo = async (input: CreateTodoInput) => {
     if (editTarget) {
-      const updated = await updateTodo(editTarget.id, input.name);
+      const updated = await updateTodo(editTarget.id, input.name, input.reminderAt);
       setTodosForDate(selectedDate, (previousTodos) =>
         previousTodos.map((todo) => (todo.id === updated.id ? updated : todo))
       );
@@ -84,7 +84,7 @@ export default function TodoSection({ createRequestKey }: TodoSectionProps) {
       return;
     }
 
-    const created = await createTodo(input.name, selectedDate);
+    const created = await createTodo(input.name, selectedDate, input.reminderAt);
     setTodosForDate(selectedDate, (previousTodos) => [created, ...previousTodos]);
     invalidateCalendarMarks();
     toast.success('할 일을 추가했어요.');
@@ -123,7 +123,7 @@ export default function TodoSection({ createRequestKey }: TodoSectionProps) {
 
       const result =
         newStatus === TodoStatus.DONE
-          ? { ...snapshot, status: newStatus, completedAt: new Date() }
+          ? { ...snapshot, status: newStatus, completedAt: new Date(), reminderAt: null }
           : { ...snapshot, status: newStatus, completedAt: undefined };
 
       return result;
