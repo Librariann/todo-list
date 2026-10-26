@@ -150,15 +150,15 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-background px-4 py-8 sm:px-6 lg:flex lg:items-center lg:px-12">
+    <main className="relative flex min-h-dvh items-center bg-background pl-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] pt-[max(2rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))] sm:px-6 lg:px-12">
       <div className="absolute right-4 top-4 z-10 sm:right-8 sm:top-8">
         <ThemeToggleStandalone />
       </div>
 
-      <div className="daily-shell mx-auto grid w-full max-w-6xl overflow-hidden lg:grid-cols-[1.08fr_0.92fr]">
-        <section className="relative flex min-h-[420px] flex-col justify-between overflow-hidden bg-[oklch(0.95_0.065_95)] p-8 text-foreground dark:bg-secondary/70 sm:p-12 lg:min-h-[680px] lg:p-16">
+      <div className="daily-shell mx-auto grid w-full max-w-6xl overflow-hidden md:grid-cols-[1.08fr_0.92fr]">
+        <section className="@container/login-hero relative flex min-w-0 flex-col justify-between bg-[oklch(0.95_0.065_95)] p-5 text-foreground dark:bg-secondary/70 sm:p-8 lg:p-12">
           <div>
-            <div className="mb-16 flex items-center gap-3">
+            <div className="mb-10 flex items-center gap-3">
               <Image
                 src="/growdo-logo.png"
                 alt=""
@@ -169,7 +169,7 @@ export default function LoginPage() {
               <span className="friendly-heading text-2xl font-bold">GrowDo</span>
             </div>
             <p className="mb-5 text-sm font-bold text-primary">매일 쓰는 나의 생산성 공간</p>
-            <h1 className="friendly-heading max-w-xl break-keep text-4xl font-bold leading-[1.3] sm:text-5xl">
+            <h1 className="friendly-heading max-w-xl break-keep text-[clamp(1.6rem,8cqw,3rem)] font-bold leading-[1.3]">
               오늘 할 일도,
               <br />
               부담 없이 하나씩.
@@ -179,7 +179,7 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <ul className="relative z-10 mt-16 grid gap-3 text-sm sm:grid-cols-3 lg:grid-cols-1">
+          <ul className="relative z-10 mt-10 flex flex-wrap gap-3 text-sm">
             {['오늘 필요한 것만 한눈에', '완료할 때마다 기분 좋게', '꾸준함은 가볍게 확인'].map(
               (item) => (
                 <li
@@ -193,9 +193,9 @@ export default function LoginPage() {
           </ul>
         </section>
 
-        <section className="flex flex-col justify-center p-7 sm:p-12 lg:p-16">
+        <section className="flex min-w-0 flex-col justify-center p-5 sm:p-8 lg:p-12">
           <p className="journal-kicker mb-3">반가워요</p>
-          <h2 className="friendly-heading text-3xl font-bold">오늘도 함께해볼까요?</h2>
+          <h2 className="friendly-heading break-keep text-2xl font-bold lg:text-3xl">오늘도 함께해볼까요?</h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
             사용하던 계정으로 간편하게 시작할 수 있어요.
           </p>
