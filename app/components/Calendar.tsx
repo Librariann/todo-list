@@ -92,7 +92,7 @@ export default function Calendar({
   const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
 
   return (
-    <Card className="soft-panel min-w-0 border-border bg-card p-3 shadow-none sm:p-4">
+    <Card className="@container/calendar soft-panel min-w-0 border-border bg-card p-2 shadow-none">
       {/* 헤더 */}
       <div className="mb-4 grid grid-cols-[2.25rem_minmax(0,1fr)_2.25rem] items-center gap-1">
         <Button onClick={goToPreviousMonth} variant="ghost" size="icon-sm" aria-label="이전 달">
@@ -106,7 +106,7 @@ export default function Calendar({
             aria-expanded={isExpanded}
             className="flex min-h-8 max-w-full items-center justify-center gap-1 rounded-md px-1 transition-colors hover:bg-accent dark:hover:bg-secondary"
           >
-            <span className="whitespace-nowrap text-sm font-bold text-foreground sm:text-base">
+            <span className="whitespace-nowrap text-xs font-bold text-foreground @min-[18rem]/calendar:text-base">
               {formatMonthYear(currentMonth)}
             </span>
             <ChevronDown
