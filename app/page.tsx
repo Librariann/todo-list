@@ -29,6 +29,8 @@ import HabitSection from './components/home/tasks/habits/HabitSection';
 import GoalSection from './components/home/tasks/goal/GoalSection';
 import TodoSection from './components/home/tasks/todo/TodoSection';
 import GettingStartedGuide from './components/onboarding/GettingStartedGuide';
+import RecommendationsPanel from '@/app/components/home/RecommendationsPanel';
+import { RecommendationType, type Recommendation } from '@/app/types/recommendation';
 
 export default function Home() {
   const isAuthenticated = useAuthStore((auth) => auth.isAuthenticated);
@@ -68,6 +70,20 @@ export default function Home() {
     });
   };
 
+  const handleRecommendationAccepted = (recommendation: Recommendation): void => {
+    const tabByType: Record<RecommendationType, TaskTabType> = {
+      [RecommendationType.TODO]: 'todos',
+      [RecommendationType.HABIT]: 'habits',
+      [RecommendationType.GOAL]: 'goals',
+    };
+    setTaskTab(tabByType[recommendation.type]);
+    setSelectedDate(
+      recommendation.payload.targetDate ??
+      recommendation.payload.startDate ??
+      getTodayDateString()
+    );
+  };
+
   useEffect(() => {
     const openNotificationDestination = (destination: NativeNotificationDestination) => {
       if (destination.date) setSelectedDate(destination.date);
@@ -94,7 +110,16 @@ export default function Home() {
 
     const queuedDestination = consumeQueuedNativeNotification();
     if (queuedDestination) openNotificationDestination(queuedDestination);
-    return subscribeToQueuedNativeNotification(openNotificationDestination);
+    const unsubscribe = subscribeToQueuedNativeNotification(openNotificationDestination);
+    const handleNativeHome = () => {
+      setMainTab('tasks');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    window.addEventListener('growdo:native-home', handleNativeHome);
+    return () => {
+      unsubscribe();
+      window.removeEventListener('growdo:native-home', handleNativeHome);
+    };
   }, [setSelectedDate]);
 
   useEffect(() => {
@@ -171,6 +196,13 @@ export default function Home() {
                         userId={user?.id}
                         onCreate={handleOnboardingCreate}
                       />
+                      {user ? (
+                        <RecommendationsPanel
+                          key={user.id}
+                          userId={user.id}
+                          onAccepted={handleRecommendationAccepted}
+                        />
+                      ) : null}
                       <div data-tour="task-tabs">
                         <TaskTabs activeTab={taskTab} onChange={setTaskTab} />
                       </div>
