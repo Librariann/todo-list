@@ -86,12 +86,12 @@ export default function NotificationSettingsForm() {
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#dfeadd] text-[#267345] dark:bg-primary/15 dark:text-primary">
           <BellRing className="h-5 w-5" aria-hidden="true" />
         </div>
-        <div>
+        <div className="min-w-0">
           <p className="journal-kicker mb-1">REMINDER</p>
-          <h2 className="friendly-heading text-2xl font-bold tracking-[-0.045em] text-foreground sm:text-3xl">
+          <h2 className="friendly-heading break-keep text-2xl font-bold tracking-[-0.045em] text-foreground sm:text-3xl">
             필요한 때에만 가볍게 알려드려요
           </h2>
-          <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
+          <p className="mt-2 max-w-xl break-keep text-sm leading-6 text-muted-foreground">
             오늘 할 일을 놓치지 않도록 원하는 시간에 한 번 알려드릴게요.
           </p>
         </div>
@@ -110,10 +110,10 @@ export default function NotificationSettingsForm() {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="mt-7 space-y-5">
-          <div className="flex min-h-20 items-center justify-between gap-5 rounded-[1.5rem] bg-[#eef0e7] px-5 py-4 dark:bg-muted sm:px-6">
-            <Label htmlFor="push-enabled" className="cursor-pointer">
-              <span className="block text-sm font-bold text-foreground">알림 받기</span>
-              <span className="mt-1 block text-xs font-normal leading-5 text-muted-foreground">
+          <div className="flex min-h-20 items-center justify-between gap-3 rounded-[1.5rem] bg-[#eef0e7] px-4 py-4 dark:bg-muted sm:gap-5 sm:px-6">
+            <Label htmlFor="push-enabled" className="min-w-0 flex-1 cursor-pointer flex-col items-start gap-1">
+              <span className="whitespace-nowrap text-sm font-bold leading-5 text-foreground">알림 받기</span>
+              <span id="push-enabled-description" className="break-keep text-xs font-normal leading-5 text-muted-foreground">
                 GrowDo의 일일 할 일 리마인더를 받아요.
               </span>
             </Label>
@@ -122,7 +122,7 @@ export default function NotificationSettingsForm() {
               checked={settings.pushEnabled}
               onCheckedChange={(pushEnabled) => setSettings((current) => ({ ...current, pushEnabled }))}
               aria-describedby="push-enabled-description"
-              className="h-7 w-12 [&_[data-slot=switch-thumb]]:size-6"
+              className="relative data-[size=default]:h-7 data-[size=default]:w-12 before:absolute before:-inset-x-1 before:-inset-y-2 before:content-[''] [&_[data-slot=switch-thumb]]:size-6"
             />
           </div>
 
@@ -137,13 +137,14 @@ export default function NotificationSettingsForm() {
                 <Label htmlFor="daily-reminder-time" className="text-sm font-bold">
                   매일 알림 시간
                 </Label>
-                <p id="push-enabled-description" className="mt-1 text-xs leading-5 text-muted-foreground">
+                <p id="daily-reminder-time-description" className="mt-1 text-xs leading-5 text-muted-foreground">
                   현재 기기의 시간대를 기준으로 발송해요.
                 </p>
               </div>
             </div>
             <Input
               id="daily-reminder-time"
+              aria-describedby="daily-reminder-time-description"
               type="time"
               value={settings.dailyReminderTime}
               disabled={!settings.pushEnabled}
