@@ -3,7 +3,7 @@
 import { Habit } from '../types/todo';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Minus, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Bell, Minus, Pencil, Plus, Trash2 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import {
   getTodayProgress,
@@ -37,6 +37,12 @@ export default function HabitCard({
   const completed = isCompletedToday(habit);
   const canIncrement = canIncrementProgress(habit);
   const canDecrement = canDecrementProgress(habit);
+  const reminderDays = habit.reminderDays ?? [];
+  const reminderDaysLabel = reminderDays.length === 7 ? '매일'
+    : reminderDays.length === 5 && [1, 2, 3, 4, 5].every((day) => reminderDays.includes(day))
+      ? '평일'
+      : [1, 2, 3, 4, 5, 6, 0].filter((day) => reminderDays.includes(day))
+        .map((day) => ['일', '월', '화', '수', '목', '금', '토'][day]).join('·');
 
   return (
     <article
@@ -66,6 +72,12 @@ export default function HabitCard({
                 </Badge>
               )}
             </div>
+            {habit.reminderTime && reminderDays.length > 0 ? (
+              <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+                <Bell aria-hidden="true" className="size-3 shrink-0" />
+                {reminderDaysLabel} {habit.reminderTime} 알림 · 한국 시간
+              </p>
+            ) : null}
           </div>
           <div className="-mr-2 -mt-1 flex shrink-0 items-center gap-0.5">
             {onEdit && (
