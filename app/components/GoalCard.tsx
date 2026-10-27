@@ -69,9 +69,9 @@ export default function GoalCard({ goal, onToggle, onDelete, onEdit }: GoalCardP
 
   return (
     <article
-      className={`companion-entry group relative ${goal.completed ? 'border-primary/25 bg-secondary/55' : ''}`}
+      className={`@container/goal companion-entry group relative min-w-0 ${goal.completed ? 'border-primary/25 bg-secondary/55' : ''}`}
     >
-      <div className="flex items-center gap-3">
+      <div className="grid grid-cols-[44px_minmax(0,1fr)] items-start gap-3 @min-[30rem]/goal:grid-cols-[44px_minmax(0,1fr)_auto] @min-[30rem]/goal:items-center">
         {/* 체크박스 */}
         <Button
           onClick={() => onToggle(goal.id)}
@@ -97,7 +97,7 @@ export default function GoalCard({ goal, onToggle, onDelete, onEdit }: GoalCardP
         {/* 제목 */}
         <div className="flex-1 min-w-0">
           <h3
-            className={`font-medium text-foreground ${goal.completed ? 'line-through opacity-70' : ''}`}
+            className={`break-words font-medium text-foreground [overflow-wrap:anywhere] ${goal.completed ? 'line-through opacity-70' : ''}`}
           >
             {goal.title}
           </h3>
@@ -137,29 +137,31 @@ export default function GoalCard({ goal, onToggle, onDelete, onEdit }: GoalCardP
           </p>
         </div>
 
-        {onEdit && (
+        <div className="col-span-2 flex justify-end border-t border-border/60 pt-2 @min-[30rem]/goal:col-span-1 @min-[30rem]/goal:border-t-0 @min-[30rem]/goal:pt-0">
+          {onEdit && (
+            <Button
+              type="button"
+              onClick={() => onEdit(goal)}
+              variant="ghost"
+              size="sm"
+              className="h-11 w-11 flex-shrink-0 p-0 text-muted-foreground hover:text-foreground"
+              aria-label={`${goal.title} 이름 수정`}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+          )}
+
           <Button
             type="button"
-            onClick={() => onEdit(goal)}
+            onClick={() => onDelete(goal.id)}
             variant="ghost"
             size="sm"
-            className="h-11 w-11 flex-shrink-0 p-0 text-muted-foreground hover:text-foreground"
-            aria-label={`${goal.title} 이름 수정`}
+            className="h-11 w-11 flex-shrink-0 p-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
+            aria-label={`${goal.title} 삭제`}
           >
-            <Pencil className="h-4 w-4" />
+            <Trash2 className="h-4 w-4" />
           </Button>
-        )}
-
-        <Button
-          type="button"
-          onClick={() => onDelete(goal.id)}
-          variant="ghost"
-          size="sm"
-          className="h-11 w-11 flex-shrink-0 p-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
-          aria-label={`${goal.title} 삭제`}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        </div>
       </div>
     </article>
   );
