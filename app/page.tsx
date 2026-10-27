@@ -134,7 +134,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#d9e1d5] px-2 pt-2 pb-24 dark:bg-background sm:px-6 sm:pt-6 md:pb-6">
+    <div className="min-h-dvh bg-[#d9e1d5] pl-[max(0.5rem,env(safe-area-inset-left))] pr-[max(0.5rem,env(safe-area-inset-right))] pt-2 pb-[calc(6rem+env(safe-area-inset-bottom))] dark:bg-background sm:pl-[max(1.5rem,env(safe-area-inset-left))] sm:pr-[max(1.5rem,env(safe-area-inset-right))] sm:pt-6 xl:pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <div className="mx-auto max-w-[1500px] overflow-hidden rounded-[2rem] bg-card shadow-[0_24px_70px_rgba(38,48,42,0.12)]">
         <Header mainTab={mainTab} onTabChange={setMainTab} />
         <NoticeBanner />
@@ -143,17 +143,17 @@ export default function Home() {
           <div
             className={`overflow-hidden ${
               mainTab === 'tasks'
-                ? 'grid grid-cols-1 lg:grid-cols-[minmax(0,1.38fr)_minmax(20rem,0.62fr)]'
+                ? 'grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_18rem] xl:grid-cols-[minmax(0,1fr)_20rem]'
                 : ''
             }`}
           >
             {mainTab === 'tasks' ? (
-              <aside className="order-2 space-y-6 border-t border-white/12 bg-[#28342d] px-6 py-9 sm:px-9 sm:py-11 lg:border-l lg:border-t-0 lg:px-10">
+              <aside className="order-2 min-w-0 space-y-6 border-t border-white/12 bg-[#28342d] px-5 py-9 sm:px-8 sm:py-11 lg:border-l lg:border-t-0 lg:px-6">
                 <StatsPanel />
               </aside>
             ) : null}
 
-            <section className="order-1 min-w-0 bg-[#fbf8ef] text-[#26302a] dark:bg-card dark:text-foreground">
+            <section className="@container/workspace order-1 min-w-0 bg-[#fbf8ef] text-[#26302a] dark:bg-card dark:text-foreground">
               <div className="overflow-hidden">
                 <div data-tour="home-hero">
                   <HomeHero
@@ -164,9 +164,9 @@ export default function Home() {
                   />
                 </div>
 
-                <div className="px-4 pt-5 pb-10 sm:px-10 sm:pb-12 lg:px-12">
+                <div className="px-3 pt-5 pb-10 @min-[28rem]/workspace:px-6 @min-[48rem]/workspace:px-8 sm:pb-12">
                   {mainTab === 'tasks' ? (
-                    <div id="task-workspace">
+                    <div id="task-workspace" className="@container/tasks min-w-0 scroll-mt-6">
                       <GettingStartedGuide
                         userId={user?.id}
                         onCreate={handleOnboardingCreate}
@@ -175,8 +175,8 @@ export default function Home() {
                         <TaskTabs activeTab={taskTab} onChange={setTaskTab} />
                       </div>
 
-                      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(17rem,0.7fr)]">
-                        <section className="rounded-[1.75rem] bg-[#eef0e7] px-4 py-6 dark:bg-muted sm:px-7 sm:py-7 xl:row-span-2">
+                      <div className="grid min-w-0 items-start gap-4 @min-[40rem]/tasks:grid-cols-[minmax(0,1fr)_17rem]">
+                        <section className="@container/task-panel min-w-0 rounded-[1.75rem] bg-[#eef0e7] px-3 py-6 dark:bg-muted @min-[28rem]/tasks:px-5 @min-[40rem]/tasks:row-span-2">
                           {taskTab === 'habits' ? (
                             <HabitSection
                               createRequestKey={
@@ -198,7 +198,7 @@ export default function Home() {
                           )}
                         </section>
 
-                        <div data-tour="task-insights">
+                        <div data-tour="task-insights" className="@container/insights min-w-0">
                           <TaskInsights activeTab={taskTab} />
                         </div>
                       </div>
