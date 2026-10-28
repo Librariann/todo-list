@@ -87,7 +87,7 @@ export default function Header({ mainTab, onTabChange }: HeaderProps) {
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-sm">
-        <div className="flex min-h-16 items-center justify-between px-4 sm:min-h-20 sm:px-8">
+        <div className="flex min-h-16 min-w-0 items-center justify-between gap-2 px-3 sm:min-h-20 sm:px-6">
           <Link href="/" className="group flex items-center gap-2" aria-label="GrowDo 홈">
             <span className="friendly-heading text-2xl font-bold tracking-[-0.06em] text-foreground">
               GrowDo
@@ -95,7 +95,7 @@ export default function Header({ mainTab, onTabChange }: HeaderProps) {
           </Link>
 
           {!isAdminPage && (
-            <nav className="hidden items-center gap-1 md:flex" aria-label="주요 메뉴">
+            <nav className="hidden shrink-0 items-center gap-1 xl:flex" aria-label="주요 메뉴">
               {navigation.map((item) => {
                 const active = isItemActive(item);
                 return (
@@ -117,7 +117,7 @@ export default function Header({ mainTab, onTabChange }: HeaderProps) {
             </nav>
           )}
 
-          <div className="hidden items-center gap-2 md:flex">
+          <div className="hidden min-w-0 items-center gap-1 xl:flex">
             {isAuthenticated && !isAdminPage ? (
               <button
                 type="button"
@@ -179,7 +179,7 @@ export default function Header({ mainTab, onTabChange }: HeaderProps) {
                 aria-label="내 정보 설정으로 이동"
               >
                 <UserRound className="h-4 w-4" />
-                <span className="hidden max-w-36 truncate lg:block">
+                <span className="hidden max-w-24 truncate xl:block">
                   {user?.username || '사용자'}님
                 </span>
               </Link>
@@ -197,7 +197,7 @@ export default function Header({ mainTab, onTabChange }: HeaderProps) {
             )}
           </div>
 
-          <div className="flex items-center gap-1 md:hidden">
+          <div className="flex min-w-0 items-center gap-1 xl:hidden">
             {isAuthenticated && !isAdminPage ? (
               <button
                 type="button"
@@ -209,7 +209,7 @@ export default function Header({ mainTab, onTabChange }: HeaderProps) {
                 <span className="flex size-5 items-center justify-center rounded-full bg-primary text-[0.65rem] font-bold text-primary-foreground">
                   P
                 </span>
-                {points.toLocaleString()} P
+                <span className="max-w-[5.5rem] truncate">{points.toLocaleString()} P</span>
               </button>
             ) : null}
             <ThemeToggleStandalone />
@@ -272,7 +272,7 @@ export default function Header({ mainTab, onTabChange }: HeaderProps) {
 
       {!isAdminPage && (
         <nav
-          className="fixed inset-x-0 bottom-0 z-50 flex overflow-x-auto border-t border-border bg-card px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_rgba(32,54,39,0.06)] md:hidden"
+          className="fixed inset-x-0 bottom-0 z-50 flex border-t border-border bg-card pl-[max(0.5rem,env(safe-area-inset-left))] pr-[max(0.5rem,env(safe-area-inset-right))] pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_rgba(32,54,39,0.06)] xl:hidden"
           aria-label="모바일 주요 메뉴"
         >
           {navigation.map((item) => {
@@ -282,7 +282,7 @@ export default function Header({ mainTab, onTabChange }: HeaderProps) {
                 key={item.key}
                 type="button"
                 onClick={() => handleNavigate(item)}
-                className={`relative flex min-h-12 min-w-[4.3rem] flex-1 items-center justify-center rounded-xl text-xs font-semibold transition-colors ${
+                className={`relative flex min-h-12 min-w-0 flex-1 items-center justify-center rounded-xl text-xs font-semibold transition-colors ${
                   active ? 'bg-secondary text-primary' : 'text-muted-foreground'
                 }`}
                 aria-current={active ? 'page' : undefined}
