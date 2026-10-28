@@ -2,7 +2,7 @@
 
 import { Todo, TodoStatus } from '../types/todo';
 import { Button } from '@/components/ui/button';
-import { Check, Pencil, Trash2 } from 'lucide-react';
+import { Bell, Check, Pencil, Trash2 } from 'lucide-react';
 import { getTodayDateString } from '../lib/dateUtils';
 
 interface SimpleTodoCardProps {
@@ -89,6 +89,19 @@ export default function SimpleTodoCard({
               </p>
             ) : featured && !isDone ? (
               <p className="mt-1 text-xs font-semibold text-primary">오늘의 우선순위</p>
+            ) : null}
+            {!isDone && todo.reminderAt ? (
+              <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                <Bell aria-hidden="true" className="size-3 shrink-0" />
+                <time dateTime={todo.reminderAt}>
+                  {new Date(todo.reminderAt).toLocaleString('ko-KR', {
+                    month: 'numeric',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                  })} 알림
+                </time>
+              </p>
             ) : null}
           </div>
         </div>
