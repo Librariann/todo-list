@@ -393,7 +393,7 @@ export default function RewardShop({
         }}
       >
         <DialogContent
-          className="w-full max-w-sm"
+          className="max-w-sm"
           showCloseButton={!isRedeeming}
           onEscapeKeyDown={(event) => isRedeeming && event.preventDefault()}
           onPointerDownOutside={(event) => isRedeeming && event.preventDefault()}
