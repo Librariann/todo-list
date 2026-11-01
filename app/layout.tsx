@@ -18,8 +18,12 @@ const friendlyFont = Gowun_Dodum({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://www.growdo.kr'),
   title: 'GrowDo — 오늘도 하나씩',
   description: '할 일과 습관, 목표를 부담 없이 이어가는 나의 일상 생산성 공간.',
+  other: {
+    'google-adsense-account': 'ca-pub-9234827645030095',
+  },
 };
 
 export const viewport: Viewport = {
