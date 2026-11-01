@@ -3,7 +3,7 @@
 import { Habit } from '../types/todo';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, Minus, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Bell, Minus, Moon, Pencil, Plus, Trash2 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import {
   getTodayProgress,
@@ -67,7 +67,8 @@ export default function HabitCard({
                 </Badge>
               )}
               {completed && (
-                <Badge className="rounded-full bg-primary px-2.5 py-1 text-xs text-primary-foreground">
+                <Badge className="rounded-full bg-primary px-2.5 py-1 text-xs text-primary-foreground in-data-[today-theme=night]:rounded-md">
+                  <Moon aria-hidden="true" className="hidden in-data-[today-theme=night]:block" />
                   오늘 완료
                 </Badge>
               )}
