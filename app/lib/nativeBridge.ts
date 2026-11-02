@@ -45,6 +45,13 @@ interface NativeBridgeWindow extends Window {
   ReactNativeWebView?: NativeWebViewBridge;
 }
 
+export function isNativeWebView(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    typeof (window as NativeBridgeWindow).ReactNativeWebView?.postMessage === 'function'
+  );
+}
+
 interface NativeNotificationMessage {
   source: typeof NATIVE_SOURCE;
   type: 'OPEN_NOTIFICATION';
