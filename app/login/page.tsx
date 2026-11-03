@@ -6,6 +6,11 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import ThemeToggleStandalone from '../components/ThemeToggleStandalone';
 import { postNativeAuthEvent } from '../lib/nativeBridge';
+import {
+  getLastLoginProvider,
+  PENDING_LOGIN_PROVIDER_KEY,
+  type OAuthProvider,
+} from '@/app/lib/loginProvider';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -35,8 +40,6 @@ const providers = [
       'border-transparent bg-black text-white hover:border-black hover:bg-[#1f1f1f] dark:border-white/15 dark:bg-black dark:text-white dark:hover:bg-[#171717]',
   },
 ] as const;
-
-type OAuthProvider = (typeof providers)[number]['key'];
 
 function OAuthLogo({ provider }: { provider: OAuthProvider }) {
   if (provider === 'apple') {
@@ -109,11 +112,14 @@ async function createCodeChallenge(codeVerifier: string): Promise<string> {
 export default function LoginPage() {
   const [pendingProvider, setPendingProvider] = useState<OAuthProvider | null>(null);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [lastLoginProvider, setLastLoginProvider] = useState<OAuthProvider | null>(null);
   const [isReturningToNativeLogin, setIsReturningToNativeLogin] = useState(false);
 
   useEffect(() => {
     if (postNativeAuthEvent('AUTH_EXPIRED')) {
       setIsReturningToNativeLogin(true);
+    } else {
+      setLastLoginProvider(getLastLoginProvider());
     }
   }, []);
 
@@ -131,11 +137,13 @@ export default function LoginPage() {
       const codeChallenge = await createCodeChallenge(codeVerifier);
 
       sessionStorage.setItem('oauth_code_verifier', codeVerifier);
+      sessionStorage.setItem(PENDING_LOGIN_PROVIDER_KEY, provider);
       window.location.assign(
         `${API_URL}/api/auth/oauth/authorize/${provider}?code_challenge=${encodeURIComponent(codeChallenge)}`
       );
     } catch {
       sessionStorage.removeItem('oauth_code_verifier');
+      sessionStorage.removeItem(PENDING_LOGIN_PROVIDER_KEY);
       setPendingProvider(null);
       setLoginError('로그인을 시작하지 못했습니다. 잠시 후 다시 시도해 주세요.');
     }
@@ -197,24 +205,40 @@ export default function LoginPage() {
           <p className="journal-kicker mb-3">반가워요</p>
           <h2 className="friendly-heading break-keep text-2xl font-bold lg:text-3xl">오늘도 함께해볼까요?</h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            사용하던 계정으로 간편하게 시작할 수 있어요.
+            {lastLoginProvider
+              ? '익숙한 계정으로, 오늘도 가볍게 시작해요.'
+              : '사용하던 계정으로 간편하게 시작할 수 있어요.'}
           </p>
 
           <div className="mt-10 space-y-3">
             {providers.map((provider) => (
-              <button
-                key={provider.key}
-                type="button"
-                onClick={() => void handleOAuthLogin(provider.key)}
-                disabled={pendingProvider !== null}
-                className={`group flex min-h-14 w-full items-center gap-4 rounded-2xl border px-5 text-left text-sm font-semibold transition-colors active:translate-y-px disabled:opacity-60 ${provider.className}`}
-              >
-                <OAuthLogo provider={provider.key} />
-                <span className="flex-1">
-                  {pendingProvider === provider.key ? '로그인 페이지 여는 중...' : provider.label}
-                </span>
-                <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
-              </button>
+              <div key={provider.key} className="space-y-2">
+                {lastLoginProvider === provider.key ? (
+                  <div className="pointer-events-none flex justify-end pr-[18px] pb-1">
+                    <p
+                      id={`recent-login-${provider.key}`}
+                      className="relative inline-flex max-w-full items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-sm font-medium leading-5 text-foreground"
+                    >
+                      <span aria-hidden="true" className="size-[5px] shrink-0 rounded-full bg-primary" />
+                      지난번에 사용했어요
+                      <span aria-hidden="true" className="absolute -bottom-[5px] right-5 size-2 rotate-45 border-r border-b border-border bg-card" />
+                    </p>
+                  </div>
+                ) : null}
+                <button
+                  type="button"
+                  aria-describedby={lastLoginProvider === provider.key ? `recent-login-${provider.key}` : undefined}
+                  onClick={() => void handleOAuthLogin(provider.key)}
+                  disabled={pendingProvider !== null}
+                  className={`group flex min-h-14 w-full items-center gap-4 rounded-2xl border px-5 text-left text-sm font-semibold transition-colors active:translate-y-px disabled:opacity-60 ${provider.className}`}
+                >
+                  <OAuthLogo provider={provider.key} />
+                  <span className="flex-1">
+                    {pendingProvider === provider.key ? '로그인 페이지 여는 중...' : provider.label}
+                  </span>
+                  <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+                </button>
+              </div>
             ))}
           </div>
 

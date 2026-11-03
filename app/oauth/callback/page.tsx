@@ -4,6 +4,7 @@ import { Suspense, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/app/store/authStore';
 import { postNativeAuthEvent } from '@/app/lib/nativeBridge';
+import { PENDING_LOGIN_PROVIDER_KEY, rememberLoginProvider } from '@/app/lib/loginProvider';
 
 function CallbackHandler() {
   const router = useRouter();
@@ -18,11 +19,13 @@ function CallbackHandler() {
     const code = searchParams.get('code');
     const error = searchParams.get('error');
     const codeVerifier = sessionStorage.getItem('oauth_code_verifier');
+    const loginProvider = sessionStorage.getItem(PENDING_LOGIN_PROVIDER_KEY);
 
     window.history.replaceState({}, document.title, '/oauth/callback');
 
     if (error || !code || !codeVerifier) {
       sessionStorage.removeItem('oauth_code_verifier');
+      sessionStorage.removeItem(PENDING_LOGIN_PROVIDER_KEY);
       if (!postNativeAuthEvent('AUTH_EXPIRED')) router.replace('/login');
       return;
     }
@@ -62,11 +65,13 @@ function CallbackHandler() {
           role: data.role,
         });
 
+        rememberLoginProvider(loginProvider);
         router.replace('/');
       } catch {
         if (!postNativeAuthEvent('AUTH_EXPIRED')) router.replace('/login');
       } finally {
         sessionStorage.removeItem('oauth_code_verifier');
+        sessionStorage.removeItem(PENDING_LOGIN_PROVIDER_KEY);
       }
     };
 

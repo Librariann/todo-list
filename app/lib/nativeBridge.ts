@@ -14,6 +14,17 @@ export interface NativeNotificationDestination {
   entityId?: string;
 }
 
+export interface NativeWidgetSnapshot {
+  date: string;
+  todos: Array<{ id: string; title: string; completed: boolean }>;
+  todoTotal: number;
+  todoCompleted: number;
+  habitTotal: number;
+  habitCompleted: number;
+  habitProgress: number;
+  updatedAt: string;
+}
+
 const BRIDGE_SOURCE = 'growdo-web';
 const NATIVE_SOURCE = 'growdo-native';
 const PENDING_NOTIFICATION_KEY = 'growdo.pendingNotification';
@@ -83,6 +94,21 @@ export function postNativeAuthEvent(type: NativeAuthEvent): boolean {
 
 export function postNativeBridgeReady(): boolean {
   return postNativeEvent('WEB_READY');
+}
+
+export function postNativeWidgetSnapshot(snapshot: NativeWidgetSnapshot): boolean {
+  if (typeof window === 'undefined') return false;
+
+  const bridge = (window as NativeBridgeWindow).ReactNativeWebView;
+  if (!bridge?.postMessage) return false;
+
+  try {
+    bridge.postMessage(JSON.stringify({ source: BRIDGE_SOURCE, type: 'WIDGET_SNAPSHOT', snapshot }));
+    return true;
+  } catch {
+    // 위젯 동기화 실패로 앱의 할 일/습관 화면을 방해하지 않는다.
+    return false;
+  }
 }
 
 export function postNativeNavigationState(destination: NativeNavigationDestination): boolean {

@@ -13,6 +13,7 @@ import {
   type NativeNavigationDestination,
 } from '@/app/lib/nativeBridge';
 import { useAuthStore } from '@/app/store/authStore';
+import NativeWidgetSync from '@/app/components/NativeWidgetSync';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -80,6 +81,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      <NativeWidgetSync />
       {children}
       <Toaster
         position="top-center"
