@@ -7,6 +7,10 @@ import RewardShop from './components/RewardShop';
 import Header from './components/Header';
 import NoticeBanner from './components/NoticeBanner';
 import HomeHero from './components/home/HomeHero';
+import TodayThemePicker from '@/app/components/home/TodayThemePicker';
+import nightStyles from '@/app/components/home/NightObservatory.module.css';
+import skinStyles from '@/app/components/home/TodaySkins.module.css';
+import { ChevronDown } from 'lucide-react';
 import ChallengesPanel from './components/home/ChallengesPanel';
 import TaskTabs from './components/home/tasks/TaskTabs';
 import TaskInsights from './components/home/tasks/TaskInsights';
@@ -14,6 +18,7 @@ import LoginPage from './login/page';
 import type { MainTabType, TaskTabType } from './types/navigation';
 import { formatDate, getTodayDateString } from './lib/dateUtils';
 import { useTimeGreeting } from './hooks/useTimeGreeting';
+import { TodayTheme, useTodayTheme } from '@/app/hooks/useTodayTheme';
 import { useUserSummaryStore } from './store/userSummaryStore';
 import { useCalendarStore } from './store/calendarStore';
 import { useGoalsStore } from './store/goalsStore';
@@ -44,6 +49,12 @@ export default function HomeWorkspace() {
 
   const [mainTab, setMainTab] = useState<MainTabType>('tasks');
   const [taskTab, setTaskTab] = useState<TaskTabType>('habits');
+  const { theme, selectTheme } = useTodayTheme(user?.id);
+  const workspaceTheme = mainTab === 'tasks' ? theme : TodayTheme.Default;
+  const isNightTheme = workspaceTheme === TodayTheme.Night;
+  const isStudioTheme = workspaceTheme === TodayTheme.Studio;
+  const extraSkin = workspaceTheme === TodayTheme.Coast || isStudioTheme;
+  const skin = isNightTheme ? nightStyles : extraSkin ? skinStyles : undefined;
   const [createRequest, setCreateRequest] = useState<{
     type: TaskTabType;
     key: number;
@@ -160,27 +171,26 @@ export default function HomeWorkspace() {
     return <LoginPage />;
   }
 
+  const themePicker = mainTab === 'tasks' ? (
+    <TodayThemePicker theme={theme} onThemeChange={selectTheme} />
+  ) : null;
+
   return (
-    <div className="min-h-dvh bg-[#d9e1d5] pl-[max(0.5rem,env(safe-area-inset-left))] pr-[max(0.5rem,env(safe-area-inset-right))] pt-2 pb-[calc(6rem+env(safe-area-inset-bottom))] dark:bg-background sm:pl-[max(1.5rem,env(safe-area-inset-left))] sm:pr-[max(1.5rem,env(safe-area-inset-right))] sm:pt-6 xl:pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <div className="mx-auto max-w-[1500px] overflow-hidden rounded-[2rem] bg-card shadow-[0_24px_70px_rgba(38,48,42,0.12)]">
+    <div data-workspace-skin={extraSkin ? workspaceTheme : undefined} className={`min-h-dvh bg-[#d9e1d5] pl-[max(0.5rem,env(safe-area-inset-left))] pr-[max(0.5rem,env(safe-area-inset-right))] pt-2 pb-[calc(6rem+env(safe-area-inset-bottom))] dark:bg-background sm:pl-[max(1.5rem,env(safe-area-inset-left))] sm:pr-[max(1.5rem,env(safe-area-inset-right))] sm:pt-6 xl:pb-[max(1.5rem,env(safe-area-inset-bottom))] ${skin?.shell ?? ''}`}>
+      <div className={`mx-auto max-w-[1500px] overflow-hidden rounded-[2rem] bg-card shadow-[0_24px_70px_rgba(38,48,42,0.12)] ${skin?.frame ?? ''}`}>
         <Header mainTab={mainTab} onTabChange={setMainTab} />
         <NoticeBanner />
 
         <main id="main-content" className="page-reveal">
           <div
-            className={`overflow-hidden ${
+            data-today-theme={skin ? workspaceTheme : undefined}
+            className={`overflow-hidden ${skin?.layout ?? (
               mainTab === 'tasks'
                 ? 'grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_18rem] xl:grid-cols-[minmax(0,1fr)_20rem]'
                 : ''
-            }`}
+            )}`}
           >
-            {mainTab === 'tasks' ? (
-              <aside className="order-2 min-w-0 space-y-6 border-t border-white/12 bg-[#28342d] px-5 py-9 sm:px-8 sm:py-11 lg:border-l lg:border-t-0 lg:px-6">
-                <StatsPanel />
-              </aside>
-            ) : null}
-
-            <section className="@container/workspace order-1 min-w-0 bg-[#fbf8ef] text-[#26302a] dark:bg-card dark:text-foreground">
+            <section data-workspace-part="workspace" className="@container/workspace order-1 min-w-0 bg-[#fbf8ef] text-[#26302a] dark:bg-card dark:text-foreground">
               <div className="overflow-hidden">
                 <div data-tour="home-hero">
                   <HomeHero
@@ -188,12 +198,15 @@ export default function HomeWorkspace() {
                     selectedDateLabel={formatDate(selectedDate)}
                     greeting={greeting}
                     username={user?.username}
+                    actions={themePicker}
+                    theme={workspaceTheme}
+                    themeDate={selectedDate}
                   />
                 </div>
 
-                <div className="px-3 pt-5 pb-10 @min-[28rem]/workspace:px-6 @min-[48rem]/workspace:px-8 sm:pb-12">
+                <div data-workspace-part="body" className="px-3 pt-5 pb-10 @min-[28rem]/workspace:px-6 @min-[48rem]/workspace:px-8 sm:pb-12">
                   {mainTab === 'tasks' ? (
-                    <div id="task-workspace" className="@container/tasks min-w-0 scroll-mt-6">
+                    <div id="task-workspace" data-workspace-part="notebook" className="@container/tasks min-w-0 scroll-mt-6">
                       <GettingStartedGuide
                         userId={user?.id}
                         onCreate={handleOnboardingCreate}
@@ -207,12 +220,13 @@ export default function HomeWorkspace() {
                         />
                       ) : null}
                       */}
-                      <div data-tour="task-tabs">
-                        <TaskTabs activeTab={taskTab} onChange={setTaskTab} />
+                      <div data-tour="task-tabs" data-workspace-part="index">
+                        {skin ? <p aria-hidden="true">{isNightTheme ? '기록 색인' : isStudioTheme ? '트랙 목록' : '오늘의 산책길'}</p> : null}
+                        <TaskTabs activeTab={taskTab} onChange={setTaskTab} numbered={isNightTheme || isStudioTheme} />
                       </div>
 
-                      <div className="grid min-w-0 items-start gap-4 @min-[40rem]/tasks:grid-cols-[minmax(0,1fr)_17rem]">
-                        <section className="@container/task-panel min-w-0 rounded-[1.75rem] bg-[#eef0e7] px-3 py-6 dark:bg-muted @min-[28rem]/tasks:px-5 @min-[40rem]/tasks:row-span-2">
+                      <div data-workspace-part="records" className="grid min-w-0 items-start gap-4 @min-[40rem]/tasks:grid-cols-[minmax(0,1fr)_17rem]">
+                        <section data-workspace-part="sheet" className="@container/task-panel min-w-0 rounded-[1.75rem] bg-[#eef0e7] px-3 py-6 dark:bg-muted @min-[28rem]/tasks:px-5 @min-[40rem]/tasks:row-span-2">
                           {taskTab === 'habits' ? (
                             <HabitSection
                               createRequestKey={
@@ -247,6 +261,21 @@ export default function HomeWorkspace() {
                 </div>
               </div>
             </section>
+            {skin ? (
+              <details className={skin.summary}>
+                <summary>
+                  이번 주의 기록 요약
+                  <ChevronDown aria-hidden="true" className="size-4" />
+                </summary>
+                <div data-workspace-part="summary-panel" className="bg-[#1b2b37] p-5 sm:p-8">
+                  <StatsPanel />
+                </div>
+              </details>
+            ) : mainTab === 'tasks' ? (
+              <aside className="order-2 min-w-0 space-y-6 border-t border-white/12 bg-[#28342d] px-5 py-9 sm:px-8 sm:py-11 lg:border-l lg:border-t-0 lg:px-6">
+                <StatsPanel />
+              </aside>
+            ) : null}
           </div>
         </main>
       </div>
