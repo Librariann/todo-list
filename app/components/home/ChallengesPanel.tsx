@@ -1,4 +1,5 @@
 import { TaskErrorState } from '@/app/components/home/tasks/TaskSectionLayout';
+import ChallengeAdSlot from '@/app/components/home/ChallengeAdSlot';
 import { useAuthStore } from '@/app/store/authStore';
 import { useChallengesStore } from '@/app/store/challengesStore';
 import { ChallengeType } from '@/app/types/todo';
@@ -71,6 +72,7 @@ export default function ChallengesPanel() {
         comment="매달 1일에 초기화됩니다"
         loading={isLoading && challenges.length === 0}
       />
+      <ChallengeAdSlot />
     </div>
   );
 }
