@@ -29,8 +29,8 @@ import HabitSection from './components/home/tasks/habits/HabitSection';
 import GoalSection from './components/home/tasks/goal/GoalSection';
 import TodoSection from './components/home/tasks/todo/TodoSection';
 import GettingStartedGuide from './components/onboarding/GettingStartedGuide';
-import RecommendationsPanel from '@/app/components/home/RecommendationsPanel';
-import { RecommendationType, type Recommendation } from '@/app/types/recommendation';
+// import RecommendationsPanel from '@/app/components/home/RecommendationsPanel';
+// import { RecommendationType, type Recommendation } from '@/app/types/recommendation';
 
 export default function Home() {
   const isAuthenticated = useAuthStore((auth) => auth.isAuthenticated);
@@ -70,6 +70,7 @@ export default function Home() {
     });
   };
 
+  /*
   const handleRecommendationAccepted = (recommendation: Recommendation): void => {
     const tabByType: Record<RecommendationType, TaskTabType> = {
       [RecommendationType.TODO]: 'todos',
@@ -83,6 +84,7 @@ export default function Home() {
       getTodayDateString()
     );
   };
+  */
 
   useEffect(() => {
     const openNotificationDestination = (destination: NativeNotificationDestination) => {
@@ -196,6 +198,7 @@ export default function Home() {
                         userId={user?.id}
                         onCreate={handleOnboardingCreate}
                       />
+                      {/* 운영 추천 API가 준비될 때까지 추천 영역을 숨깁니다.
                       {user ? (
                         <RecommendationsPanel
                           key={user.id}
@@ -203,6 +206,7 @@ export default function Home() {
                           onAccepted={handleRecommendationAccepted}
                         />
                       ) : null}
+                      */}
                       <div data-tour="task-tabs">
                         <TaskTabs activeTab={taskTab} onChange={setTaskTab} />
                       </div>
