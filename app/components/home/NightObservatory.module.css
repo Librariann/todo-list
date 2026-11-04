@@ -34,7 +34,7 @@
 }
 
 /* One workspace, with a different page composition and an isolated palette. */
-.layout {
+.palette {
   --observatory-desk: #f2ead9;
   --observatory-rule: #9c8c72;
   --observatory-ink: #263645;
@@ -54,12 +54,15 @@
   --color-accent-foreground: #293845;
   --color-border: #c4b598;
   --color-ring: #405b6c;
+}
+
+.layout {
   display: block;
   background: var(--observatory-desk);
   color: var(--observatory-ink);
 }
 
-:global(.dark) .layout {
+:global(.dark) .palette {
   --observatory-desk: #1c2934;
   --observatory-rule: #776f60;
   --observatory-ink: #f4e8cf;
@@ -82,6 +85,12 @@
 .layout [data-workspace-part='workspace'] {
   background: var(--observatory-desk);
   color: var(--observatory-ink);
+}
+
+.layout [data-section-cover] {
+  border-bottom: 1px solid var(--observatory-rule);
+  background: #111c28;
+  color: #f8eed7;
 }
 
 .layout [data-workspace-part='body'] {
