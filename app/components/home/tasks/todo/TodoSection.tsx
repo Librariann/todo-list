@@ -31,6 +31,7 @@ export default function TodoSection({ createRequestKey }: TodoSectionProps) {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Todo | null>(null);
   const [editTarget, setEditTarget] = useState<Todo | null>(null);
+  const [savingRepeatIds, setSavingRepeatIds] = useState<string[]>([]);
   const selectedDate = useCalendarStore((calendar) => calendar.selectedDate);
   const invalidateCalendarMarks = useCalendarStore((calendar) => calendar.invalidateMarks);
   const todos = useTodosStore((state) => state.todosByDate[selectedDate] ?? EMPTY_TODOS);
@@ -76,8 +77,8 @@ export default function TodoSection({ createRequestKey }: TodoSectionProps) {
 
   const handleSubmitTodo = async (input: CreateTodoInput) => {
     if (editTarget) {
-      const updated = await updateTodo(editTarget.id, input.name, input.reminderAt);
-      setTodosForDate(selectedDate, (previousTodos) =>
+      const updated = await updateTodo(editTarget.id, { name: input.name, reminderAt: input.reminderAt });
+      setTodosForDate(editTarget.date, (previousTodos) =>
         previousTodos.map((todo) => (todo.id === updated.id ? updated : todo))
       );
       toast.success('할 일을 수정했어요.');
@@ -88,6 +89,33 @@ export default function TodoSection({ createRequestKey }: TodoSectionProps) {
     setTodosForDate(selectedDate, (previousTodos) => [created, ...previousTodos]);
     invalidateCalendarMarks();
     toast.success('할 일을 추가했어요.');
+  };
+
+  const handleRepeatChange = async (todo: Todo, repeatDaily: boolean) => {
+    if (todo.date < getTodayDateString() || savingRepeatIds.includes(todo.id)) return;
+
+    setSavingRepeatIds((ids) => [...ids, todo.id]);
+    setTodosForDate(todo.date, (items) => items.map((item) => (
+      item.id === todo.id ? { ...item, repeatDaily } : item
+    )));
+
+    try {
+      const updated = await updateTodo(todo.id, { repeatDaily });
+      if (updated.repeatDaily !== repeatDaily) {
+        throw new Error('반복 설정을 저장하지 못했어요. 잠시 후 다시 시도해주세요.');
+      }
+      setTodosForDate(todo.date, (items) => items.map((item) => (
+        item.id === todo.id ? { ...item, repeatDaily, repeatReminderTime: updated.repeatReminderTime } : item
+      )));
+      toast.success(repeatDaily ? '매일 반복을 켰어요.' : '매일 반복을 껐어요.');
+    } catch (error) {
+      setTodosForDate(todo.date, (items) => items.map((item) => (
+        item.id === todo.id ? { ...item, repeatDaily: todo.repeatDaily } : item
+      )));
+      toast.error(error instanceof Error ? error.message : '반복 설정을 저장하지 못했어요.');
+    } finally {
+      setSavingRepeatIds((ids) => ids.filter((id) => id !== todo.id));
+    }
   };
 
   const handleDeleteTodo = async (todoId: string) => {
@@ -109,34 +137,32 @@ export default function TodoSection({ createRequestKey }: TodoSectionProps) {
   };
 
   const handleTodoStatusChange = async (todoId: string, newStatus: TodoStatus) => {
-    const snapshot = [...todos];
-    const target = snapshot.find((snapshot) => snapshot.id === todoId);
+    const target = todos.find((todo) => todo.id === todoId);
 
     if (!target || target.date < today || (target.date > today && newStatus === TodoStatus.DONE)) {
       return;
     }
 
-    const optimistic = snapshot.map((snapshot) => {
-      if (snapshot.id !== todoId) {
-        return snapshot;
+    setTodosForDate(target.date, (items) => items.map((item) => {
+      if (item.id !== todoId) {
+        return item;
       }
 
-      const result =
-        newStatus === TodoStatus.DONE
-          ? { ...snapshot, status: newStatus, completedAt: new Date(), reminderAt: null }
-          : { ...snapshot, status: newStatus, completedAt: undefined };
-
-      return result;
-    });
-
-    setTodosForDate(selectedDate, optimistic);
+      return newStatus === TodoStatus.DONE
+        ? { ...item, status: newStatus, completedAt: new Date(), reminderAt: null }
+        : { ...item, status: newStatus, completedAt: undefined };
+    }));
 
     try {
       const result = await updateTodoStatus(todoId, newStatus);
       adjustPoints(getAwardedPoints(result.achievements));
       notifyChallengeAchievements(result.achievements);
     } catch {
-      setTodosForDate(selectedDate, snapshot);
+      setTodosForDate(target.date, (items) => items.map((item) => (
+        item.id === todoId && item.status === newStatus
+          ? { ...item, status: target.status, completedAt: target.completedAt, reminderAt: target.reminderAt }
+          : item
+      )));
       return;
     }
 
@@ -193,6 +219,8 @@ export default function TodoSection({ createRequestKey }: TodoSectionProps) {
                     onStatusChange={handleTodoStatusChange}
                     onDelete={() => setDeleteTarget(todo)}
                     onEdit={setEditTarget}
+                    onRepeatChange={handleRepeatChange}
+                    repeatSaving={savingRepeatIds.includes(todo.id)}
                   />
                 ))
               )}
@@ -203,7 +231,7 @@ export default function TodoSection({ createRequestKey }: TodoSectionProps) {
 
       <CreateTodoModal
         open={isCreateOpen || editTarget !== null}
-        selectedDate={selectedDate}
+        selectedDate={editTarget?.date ?? selectedDate}
         todo={editTarget}
         onOpenChange={(open) => {
           if (open) return;
@@ -218,7 +246,9 @@ export default function TodoSection({ createRequestKey }: TodoSectionProps) {
         title="이 할 일을 삭제할까요?"
         description={
           deleteTarget
-            ? `‘${deleteTarget.title}’ 할 일을 목록에서 삭제해요.`
+            ? deleteTarget.repeatDaily && deleteTarget.date >= today
+              ? `‘${deleteTarget.title}’ 할 일을 삭제하고 앞으로의 매일 반복을 중단해요.`
+              : `‘${deleteTarget.title}’ 할 일을 목록에서 삭제해요.`
             : '선택한 할 일을 삭제해요.'
         }
         onOpenChange={(open) => {
