@@ -309,6 +309,34 @@ body {
   font-kerning: normal;
 }
 
+@media (hover: none) and (pointer: coarse) {
+  html {
+    /* 스크롤은 허용하고 페이지 확대 제스처만 제한합니다. */
+    touch-action: pan-x pan-y;
+  }
+
+  /* 작은 글씨의 입력칸을 누를 때 iOS에서 자동 확대되는 것을 방지합니다. */
+  input:not([type]),
+  input:is(
+    [type='text'],
+    [type='search'],
+    [type='email'],
+    [type='password'],
+    [type='tel'],
+    [type='url'],
+    [type='number'],
+    [type='date'],
+    [type='time'],
+    [type='datetime-local'],
+    [type='month'],
+    [type='week']
+  ),
+  textarea,
+  select {
+    font-size: max(16px, 1rem);
+  }
+}
+
 /* 스크롤바 스타일링 */
 ::-webkit-scrollbar {
   width: 8px;
