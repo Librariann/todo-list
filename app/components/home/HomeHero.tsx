@@ -27,9 +27,11 @@ export default function HomeHero({
   actions,
 }: HomeHeroProps) {
   const title = mainTab === 'challenges' ? '이번 주도 가볍게 도전해요' : '나를 위한 보상';
-  const isNight = theme === TodayTheme.Night;
-  const isCoast = theme === TodayTheme.Coast;
-  const isSkinned = theme !== TodayTheme.Default;
+  const isToday = mainTab === 'tasks';
+  const hasTodayCover = isToday && theme !== TodayTheme.Default;
+  const hasSectionCover = !isToday && theme !== TodayTheme.Default;
+  const isNight = hasTodayCover && theme === TodayTheme.Night;
+  const isCoast = hasTodayCover && theme === TodayTheme.Coast;
 
   const GreetingIcon =
     greeting.period === 'morning'
@@ -59,10 +61,11 @@ export default function HomeHero({
   return (
     <div
       data-workspace-part="cover"
+      data-section-cover={hasSectionCover ? '' : undefined}
       className={
         isNight
           ? 'overflow-hidden bg-[#111c28] px-4 pt-3 pb-5 text-[#f8eed7] sm:px-8 sm:pt-5 sm:pb-7 lg:px-12'
-          : isSkinned
+          : hasTodayCover
             ? 'overflow-hidden px-4 pt-3 pb-5 sm:px-8 sm:pt-5 sm:pb-7 lg:px-12'
             : 'relative flex min-h-[13rem] flex-col justify-end gap-5 px-3 pt-8 pb-5 @min-[28rem]/workspace:min-h-[15rem] @min-[28rem]/workspace:px-6 @min-[48rem]/workspace:px-8'
       }
@@ -80,13 +83,13 @@ export default function HomeHero({
               />
               개인 기록실
             </p>
-          ) : isSkinned ? (
+          ) : hasTodayCover ? (
             <p className="min-w-0 text-xs font-bold tracking-[0.11em]">
               {isCoast ? '해안 산책로' : '그로우두 레코드 · A면'}
             </p>
           ) : (
-            <p className="min-w-0 text-sm font-semibold text-[#2e8c54] dark:text-primary md:text-base">
-              {mainTab === 'tasks' ? selectedDateLabel : 'GrowDo'}
+            <p className={`min-w-0 text-sm font-semibold md:text-base ${hasSectionCover ? 'text-current' : 'text-[#2e8c54] dark:text-primary'}`}>
+              {isToday ? selectedDateLabel : 'GrowDo'}
             </p>
           )}
           {actions}
@@ -95,7 +98,7 @@ export default function HomeHero({
           <NightObservatoryCover date={themeDate} username={username} />
         ) : isCoast ? (
           <CoastCover date={themeDate} />
-        ) : isSkinned ? (
+        ) : hasTodayCover ? (
           <StudioCover date={themeDate} />
         ) : mainTab === 'tasks' ? (
           <h1 className="friendly-heading max-w-3xl font-normal leading-[1.22] tracking-[-0.06em] sm:leading-[1.18]">
@@ -114,12 +117,12 @@ export default function HomeHero({
             </span>
           </h1>
         ) : (
-          <h1 className="friendly-heading max-w-3xl break-keep text-[clamp(1.75rem,6cqw,3.5rem)] font-normal leading-[1.18] tracking-[-0.06em]">
+          <h1 className={`friendly-heading max-w-3xl break-keep text-[clamp(1.75rem,6cqw,3.5rem)] font-normal leading-[1.18] tracking-[-0.06em] ${hasSectionCover ? 'mt-4' : ''}`}>
             {title}
           </h1>
         )}
-        {isSkinned ? null : (
-          <p className="mt-4 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base md:text-lg md:leading-7">
+        {hasTodayCover ? null : (
+          <p className={`mt-4 max-w-xl text-sm leading-6 sm:text-base md:text-lg md:leading-7 ${hasSectionCover ? 'text-current opacity-90' : 'text-muted-foreground'}`}>
             {description}
           </p>
         )}
