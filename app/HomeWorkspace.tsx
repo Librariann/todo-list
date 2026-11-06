@@ -135,6 +135,37 @@ export default function HomeWorkspace() {
   }, [setSelectedDate]);
 
   useEffect(() => {
+    if (!isAuthenticated) return;
+
+    let today = getTodayDateString();
+    let timer: number;
+    const checkForNewDay = () => {
+      window.clearTimeout(timer);
+      const nextToday = getTodayDateString();
+      if (nextToday !== today) {
+        const calendar = useCalendarStore.getState();
+        if (calendar.selectedDate === today) {
+          calendar.setSelectedDate(nextToday);
+        }
+        today = nextToday;
+        void useTodosStore.getState().fetchTodos(today).then(() => calendar.invalidateMarks());
+      }
+
+      const midnight = Date.parse(`${today}T00:00:00+09:00`) + 86_400_000;
+      timer = window.setTimeout(checkForNewDay, Math.max(0, midnight - Date.now()) + 50);
+    };
+
+    checkForNewDay();
+    window.addEventListener('focus', checkForNewDay);
+    document.addEventListener('visibilitychange', checkForNewDay);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener('focus', checkForNewDay);
+      document.removeEventListener('visibilitychange', checkForNewDay);
+    };
+  }, [isAuthenticated]);
+
+  useEffect(() => {
     if (!isAuthenticated) {
       resetSummary();
       resetHabits();
