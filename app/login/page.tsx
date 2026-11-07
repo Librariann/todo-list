@@ -260,6 +260,12 @@ export default function LoginPage() {
             에 동의한 것으로 간주됩니다.
           </p>
           <Link
+            href="/"
+            className="mt-4 inline-flex min-h-11 items-center text-xs font-semibold text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground"
+          >
+            GrowDo 서비스 소개 보기
+          </Link>
+          <Link
             href="/support"
             className="mt-4 inline-flex min-h-11 items-center text-xs font-semibold text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground"
           >
