@@ -1,13 +1,20 @@
+import type { ReactNode } from 'react';
 import { Moon, Sun, Sunrise, Sunset } from 'lucide-react';
 
 import type { TimeGreeting } from '@/app/hooks/useTimeGreeting';
 import type { MainTabType } from '@/app/types/navigation';
+import NightObservatoryCover from '@/app/components/home/NightObservatoryCover';
+import { CoastCover, StudioCover } from '@/app/components/home/TodaySkinCovers';
+import { TodayTheme } from '@/app/hooks/useTodayTheme';
 
 interface HomeHeroProps {
   mainTab: MainTabType;
   selectedDateLabel: string;
   greeting: TimeGreeting;
   username?: string;
+  theme: TodayTheme;
+  themeDate: string;
+  actions?: ReactNode;
 }
 
 export default function HomeHero({
@@ -15,8 +22,14 @@ export default function HomeHero({
   selectedDateLabel,
   greeting,
   username,
+  theme,
+  themeDate,
+  actions,
 }: HomeHeroProps) {
   const title = mainTab === 'challenges' ? '이번 주도 가볍게 도전해요' : '나를 위한 보상';
+  const isNight = theme === TodayTheme.Night;
+  const isCoast = theme === TodayTheme.Coast;
+  const isSkinned = theme !== TodayTheme.Default;
 
   const GreetingIcon =
     greeting.period === 'morning'
@@ -44,12 +57,47 @@ export default function HomeHero({
         : '꾸준히 모은 포인트로 오늘의 작은 기쁨을 골라보세요.';
 
   return (
-    <div className="relative flex min-h-[13rem] flex-col justify-end gap-5 px-3 pt-8 pb-5 @min-[28rem]/workspace:min-h-[15rem] @min-[28rem]/workspace:px-6 @min-[48rem]/workspace:px-8">
+    <div
+      data-workspace-part="cover"
+      className={
+        isNight
+          ? 'overflow-hidden bg-[#111c28] px-4 pt-3 pb-5 text-[#f8eed7] sm:px-8 sm:pt-5 sm:pb-7 lg:px-12'
+          : isSkinned
+            ? 'overflow-hidden px-4 pt-3 pb-5 sm:px-8 sm:pt-5 sm:pb-7 lg:px-12'
+            : 'relative flex min-h-[13rem] flex-col justify-end gap-5 px-3 pt-8 pb-5 @min-[28rem]/workspace:min-h-[15rem] @min-[28rem]/workspace:px-6 @min-[48rem]/workspace:px-8'
+      }
+    >
       <div className="relative z-10">
-        <p className="mb-3 text-sm font-semibold text-[#2e8c54] dark:text-primary md:text-base">
-          {mainTab === 'tasks' ? selectedDateLabel : 'GrowDo'}
-        </p>
-        {mainTab === 'tasks' ? (
+        <div
+          data-workspace-part="cover-toolbar"
+          className={`flex items-center justify-between gap-2 ${isNight ? 'border-b border-[#66727a] pb-3' : 'mb-3'}`}
+        >
+          {isNight ? (
+            <p className="flex min-w-0 items-center gap-2 text-xs font-bold tracking-[0.11em] text-[#e9cb8e]">
+              <span
+                aria-hidden="true"
+                className="size-2 shrink-0 rotate-45 border border-current"
+              />
+              개인 기록실
+            </p>
+          ) : isSkinned ? (
+            <p className="min-w-0 text-xs font-bold tracking-[0.11em]">
+              {isCoast ? '해안 산책로' : '그로우두 레코드 · A면'}
+            </p>
+          ) : (
+            <p className="min-w-0 text-sm font-semibold text-[#2e8c54] dark:text-primary md:text-base">
+              {mainTab === 'tasks' ? selectedDateLabel : 'GrowDo'}
+            </p>
+          )}
+          {actions}
+        </div>
+        {isNight ? (
+          <NightObservatoryCover date={themeDate} username={username} />
+        ) : isCoast ? (
+          <CoastCover date={themeDate} />
+        ) : isSkinned ? (
+          <StudioCover date={themeDate} />
+        ) : mainTab === 'tasks' ? (
           <h1 className="friendly-heading max-w-3xl font-normal leading-[1.22] tracking-[-0.06em] sm:leading-[1.18]">
             <span className="flex min-w-0 items-center gap-1 text-[clamp(1.1rem,4.5cqw,2.5rem)]">
               <span className="shrink-0">{greeting.message},</span>
@@ -70,9 +118,11 @@ export default function HomeHero({
             {title}
           </h1>
         )}
-        <p className="mt-4 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base md:text-lg md:leading-7">
-          {description}
-        </p>
+        {isSkinned ? null : (
+          <p className="mt-4 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base md:text-lg md:leading-7">
+            {description}
+          </p>
+        )}
       </div>
     </div>
   );
