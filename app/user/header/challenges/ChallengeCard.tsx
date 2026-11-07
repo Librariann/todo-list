@@ -39,16 +39,16 @@ export default function ChallengeCard({ challenge }: ChallengeCardProps) {
   return (
     <Card
       className={`
-      relative rounded-[1.35rem] p-5 shadow-none transition-colors
+      relative rounded-[1.35rem] p-5 shadow-none transition-colors in-data-[workspace-skin=night]:rounded-md in-data-[workspace-skin=studio]:rounded-lg
       border ${
         isCompleted
           ? 'border-primary/30 bg-secondary/50'
-          : 'border-stone-200 dark:border-white/[0.07]'
+          : 'border-stone-200 dark:border-white/[0.07] in-data-[workspace-skin]:border-border dark:in-data-[workspace-skin]:border-border'
       }
     `}
     >
       {challenge.completed && (
-        <Badge className="absolute right-3 top-3 rounded-full bg-primary text-xs text-white">받기 완료</Badge>
+        <Badge className="absolute right-3 top-3 rounded-full bg-primary text-xs text-white in-data-[workspace-skin]:text-primary-foreground">받기 완료</Badge>
       )}
 
       <div className="flex items-start">
@@ -56,7 +56,7 @@ export default function ChallengeCard({ challenge }: ChallengeCardProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span
-              className={`text-[11px] px-2 py-0.5 rounded-md font-semibold ${getTypeBadgeCls(challenge.type)}`}
+              className={`text-[11px] px-2 py-0.5 rounded-md font-semibold in-data-[workspace-skin]:bg-secondary in-data-[workspace-skin]:text-primary dark:in-data-[workspace-skin]:bg-secondary dark:in-data-[workspace-skin]:text-primary ${getTypeBadgeCls(challenge.type)}`}
             >
               {getTypeLabel(challenge.type)}
             </span>
@@ -81,7 +81,7 @@ export default function ChallengeCard({ challenge }: ChallengeCardProps) {
 
           {/* 보상 상태 */}
           <div className="flex items-center justify-between">
-            <span className="text-sm font-bold text-amber-600 dark:text-amber-400">
+            <span className="text-sm font-bold text-amber-600 dark:text-amber-400 in-data-[workspace-skin]:text-primary dark:in-data-[workspace-skin]:text-primary">
               +{challenge.rewardPoints}pt
             </span>
             {challenge.completed ? (
