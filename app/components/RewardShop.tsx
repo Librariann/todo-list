@@ -15,6 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import type { TodayTheme } from '@/app/hooks/useTodayTheme';
 import { calculateRewardPoint, fetchRewards, redeemReward } from '../lib/rewardsApi';
 import { useUserSummaryStore } from '../store/userSummaryStore';
 import { Reward, RewardType } from '../types/todo';
@@ -77,28 +78,34 @@ function availabilityOf(reward: Reward): Availability {
   };
 }
 
-function RewardVisual({ reward, unavailable }: { reward: Reward; unavailable: boolean }) {
+interface RewardVisualProps {
+  reward: Reward;
+  unavailable: boolean;
+  themed: boolean;
+}
+
+function RewardVisual({ reward, unavailable, themed }: RewardVisualProps) {
   if (reward.imageUrl) {
     return (
       <div
         role="img"
         aria-label={`${reward.name} 상품 이미지`}
-        className="h-52 bg-[#fffdf7] bg-contain bg-center bg-no-repeat dark:bg-card sm:h-64"
+        className={`h-52 bg-contain bg-center bg-no-repeat sm:h-64 ${themed ? 'bg-card' : 'bg-[#fffdf7] dark:bg-card'}`}
         style={{ backgroundImage: `url("${reward.imageUrl.replaceAll('"', '\\"')}")` }}
       />
     );
   }
 
   return (
-    <div className="relative flex h-full min-h-52 items-center justify-center overflow-hidden bg-[#dfece3] sm:min-h-64">
-      <span className="absolute -left-8 top-8 h-28 w-28 rounded-full border border-[#b8d0c0]" />
-      <span className="absolute -bottom-12 -right-8 h-40 w-40 rounded-full bg-[#c9ddce]" />
-      <div className="relative flex h-32 w-24 items-center justify-center rounded-b-[2.5rem] rounded-t-2xl bg-[#39473f] shadow-[0_18px_35px_rgba(45,59,51,0.2)]">
-        <div className="absolute -top-2 h-4 w-20 rounded-full bg-[#eff5eb]" />
-        <Coffee className="h-10 w-10 text-[#e9f0e6]" strokeWidth={1.4} />
+    <div className={`relative flex h-full min-h-52 items-center justify-center overflow-hidden sm:min-h-64 ${themed ? 'bg-secondary' : 'bg-[#dfece3]'}`}>
+      <span className={`absolute -left-8 top-8 h-28 w-28 rounded-full border ${themed ? 'border-border' : 'border-[#b8d0c0]'}`} />
+      <span className={`absolute -bottom-12 -right-8 h-40 w-40 rounded-full ${themed ? 'bg-primary/10' : 'bg-[#c9ddce]'}`} />
+      <div className={`relative flex h-32 w-24 items-center justify-center rounded-b-[2.5rem] rounded-t-2xl ${themed ? 'bg-primary text-primary-foreground' : 'bg-[#39473f] text-[#e9f0e6] shadow-[0_18px_35px_rgba(45,59,51,0.2)]'}`}>
+        <div className={`absolute -top-2 h-4 w-20 rounded-full ${themed ? 'bg-card' : 'bg-[#eff5eb]'}`} />
+        <Coffee className="h-10 w-10" strokeWidth={1.4} />
       </div>
       {!unavailable && (
-        <span className="absolute bottom-5 left-5 text-[10px] font-bold tracking-[0.18em] text-[#66806f]">
+        <span className={`absolute bottom-5 left-5 text-[10px] font-bold tracking-[0.18em] ${themed ? 'text-muted-foreground' : 'text-[#66806f]'}`}>
           A SMALL REWARD
         </span>
       )}
@@ -110,14 +117,17 @@ interface RewardShopProps {
   previewRewards?: Reward[];
   previewPoints?: number;
   previewOnly?: boolean;
+  themeScope?: { name: TodayTheme; paletteClassName: string };
 }
 
 export default function RewardShop({
   previewRewards,
   previewPoints,
   previewOnly = false,
+  themeScope,
 }: RewardShopProps = {}) {
   const router = useRouter();
+  const themed = Boolean(themeScope);
   const [selectedReward, setSelectedReward] = useState<Reward | null>(null);
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -229,9 +239,9 @@ export default function RewardShop({
   return (
     <>
       <section className="overflow-hidden">
-        <div className="grid border-b border-[#d9e1d6] bg-[#f4f1e7] dark:border-border dark:bg-card lg:grid-cols-[minmax(0,1fr)_17rem]">
+        <div className={`grid border-b lg:grid-cols-[minmax(0,1fr)_17rem] ${themed ? 'border-border bg-card' : 'border-[#d9e1d6] bg-[#f4f1e7] dark:border-border dark:bg-card'}`}>
           <div className="px-5 py-8 sm:px-8 sm:py-10">
-            <p className="text-[11px] font-bold tracking-[0.17em] text-[#64806e] dark:text-primary">
+            <p className={`text-[11px] font-bold tracking-[0.17em] ${themed ? 'text-primary' : 'text-[#64806e] dark:text-primary'}`}>
               GROWDO REWARD SHELF
             </p>
             <h2 className="friendly-heading mt-3 max-w-lg text-3xl font-bold leading-[1.2] tracking-[-0.045em] sm:text-4xl">
@@ -244,11 +254,11 @@ export default function RewardShop({
               나를 위한 작은 선물을 골라보세요.
             </p>
           </div>
-          <div className="bg-[#2c3931] px-6 py-7 text-[#f6f2e8] sm:px-8">
+          <div className={`px-6 py-7 sm:px-8 ${themed ? 'bg-primary text-primary-foreground' : 'bg-[#2c3931] text-[#f6f2e8]'}`}>
             <div className="flex items-end justify-between gap-6 lg:flex-col lg:items-start lg:gap-8">
-              <Ticket className="h-8 w-8 text-[#a8c9b1]" strokeWidth={1.4} />
+              <Ticket className={`h-8 w-8 ${themed ? 'text-current' : 'text-[#a8c9b1]'}`} strokeWidth={1.4} />
               <div>
-                <span className="text-xs text-[#adbbb1]">내가 모은 포인트</span>
+                <span className={`text-xs ${themed ? 'text-current' : 'text-[#adbbb1]'}`}>내가 모은 포인트</span>
                 <strong className="friendly-heading mt-1 block text-3xl font-bold">
                   {userPoints.toLocaleString()} P
                 </strong>
@@ -256,7 +266,7 @@ export default function RewardShop({
             </div>
             <Link
               href="/coupons"
-              className="mt-6 inline-flex min-h-11 w-full items-center justify-between rounded-xl border border-[#718178] bg-[#34443b] px-4 text-sm font-bold text-[#f6f2e8] outline-none transition-colors hover:bg-[#405248] focus-visible:ring-2 focus-visible:ring-[#b9d7c2] focus-visible:ring-offset-2 focus-visible:ring-offset-[#2c3931]"
+              className={`mt-6 inline-flex min-h-11 w-full items-center justify-between rounded-xl border px-4 text-sm font-bold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 ${themed ? 'border-primary-foreground/45 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20 focus-visible:ring-primary-foreground focus-visible:ring-offset-primary' : 'border-[#718178] bg-[#34443b] text-[#f6f2e8] hover:bg-[#405248] focus-visible:ring-[#b9d7c2] focus-visible:ring-offset-[#2c3931]'}`}
             >
               <span>내 쿠폰함 가기</span>
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -289,15 +299,19 @@ export default function RewardShop({
                 return (
                   <article
                     key={reward.id}
-                    className={`group grid overflow-hidden rounded-[1.5rem] border transition-colors ${
+                    className={`group grid overflow-hidden rounded-[1.5rem] border transition-colors in-data-[workspace-skin=night]:rounded-md in-data-[workspace-skin=studio]:rounded-lg ${
                       unavailable
-                        ? 'border-[#d4d2c9] bg-[#f2f1eb] dark:border-border dark:bg-muted/35'
-                        : 'border-[#d5ddd3] bg-[#fffdf7] hover:border-[#9fbaa7] dark:border-border dark:bg-card dark:hover:border-primary/45'
+                        ? themed
+                          ? 'border-border bg-muted'
+                          : 'border-[#d4d2c9] bg-[#f2f1eb] dark:border-border dark:bg-muted/35'
+                        : themed
+                          ? 'border-border bg-card hover:border-primary/65'
+                          : 'border-[#d5ddd3] bg-[#fffdf7] hover:border-[#9fbaa7] dark:border-border dark:bg-card dark:hover:border-primary/45'
                     }`}
                   >
                     <div className="relative min-h-52 overflow-hidden">
                       <div className={unavailable ? 'opacity-60 grayscale dark:opacity-40' : ''}>
-                        <RewardVisual reward={reward} unavailable={unavailable} />
+                        <RewardVisual reward={reward} unavailable={unavailable} themed={themed} />
                       </div>
                       {unavailable && (
                         <>
@@ -316,7 +330,7 @@ export default function RewardShop({
                       <Badge
                         className={`absolute left-4 top-4 rounded-full border-0 px-3 py-1 shadow-none ${
                           availability.tone === 'green'
-                            ? 'bg-[#275f40] text-[#f2f6ef]'
+                            ? themed ? 'bg-primary text-primary-foreground' : 'bg-[#275f40] text-[#f2f6ef]'
                             : availability.tone === 'amber'
                               ? 'bg-[#f4dfae] text-[#70521d]'
                               : 'bg-[#e4e1d6] text-[#59594f] dark:bg-[#40463b] dark:text-[#eeeade]'
@@ -353,7 +367,7 @@ export default function RewardShop({
                       <div className="mt-auto flex flex-col items-stretch gap-3 pt-5 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
                         <div className="min-w-0">
                           <strong
-                            className={`text-lg font-extrabold ${unavailable ? 'text-muted-foreground' : 'text-[#287148] dark:text-primary'}`}
+                            className={`text-lg font-extrabold ${unavailable ? 'text-muted-foreground' : themed ? 'text-primary' : 'text-[#287148] dark:text-primary'}`}
                           >
                             {purchasePoint.toLocaleString()} P
                           </strong>
@@ -393,7 +407,8 @@ export default function RewardShop({
         }}
       >
         <DialogContent
-          className="max-w-sm"
+          data-workspace-skin={themeScope?.name}
+          className={`max-w-sm ${themeScope ? `${themeScope.paletteClassName} border-border bg-card text-foreground [--color-background:var(--color-card)] [--color-input:var(--color-border)]` : ''}`}
           showCloseButton={!isRedeeming}
           onEscapeKeyDown={(event) => isRedeeming && event.preventDefault()}
           onPointerDownOutside={(event) => isRedeeming && event.preventDefault()}
@@ -408,7 +423,7 @@ export default function RewardShop({
           </DialogHeader>
 
           {selectedReward ? (
-            <div className="rounded-xl bg-[#f1f3eb] px-4 py-3 text-sm dark:bg-muted/60">
+            <div className={`rounded-xl px-4 py-3 text-sm ${themed ? 'bg-muted' : 'bg-[#f1f3eb] dark:bg-muted/60'}`}>
               <div className="flex justify-between gap-3 text-muted-foreground">
                 <span>현재 포인트</span>
                 <span className="font-semibold text-foreground">
@@ -417,7 +432,7 @@ export default function RewardShop({
               </div>
               <div className="mt-2 flex justify-between gap-3 border-t border-border/60 pt-2">
                 <span className="text-muted-foreground">교환 후</span>
-                <span className="font-bold text-[#287148] dark:text-primary">
+                <span className={`font-bold ${themed ? 'text-primary' : 'text-[#287148] dark:text-primary'}`}>
                   {(userPoints - calculateRewardPoint(selectedReward)).toLocaleString()} P
                 </span>
               </div>
