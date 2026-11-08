@@ -107,6 +107,8 @@ export interface Todo {
   createdAt: Date;
   completedAt?: Date;
   reminderAt?: string | null;
+  repeatDaily?: boolean;
+  repeatReminderTime?: string | null;
 }
 
 // 도전과제 타입
