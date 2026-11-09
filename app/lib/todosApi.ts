@@ -14,6 +14,14 @@ export interface TodoApiResponse {
   orderIndex: number;
   targetDate: string;
   reminderAt?: string | null;
+  repeatDaily?: boolean;
+  repeatReminderTime?: string | null;
+}
+
+interface UpdateTodoPayload {
+  name?: string;
+  reminderAt?: string | null;
+  repeatDaily?: boolean;
 }
 
 const STATUS_FROM_API: Record<string, TodoStatus> = {
@@ -35,6 +43,8 @@ export function mapApiTodo(raw: TodoApiResponse): Todo {
     status: STATUS_FROM_API[raw.status] ?? TodoStatus.TODO,
     date: raw.targetDate,
     reminderAt: raw.reminderAt ?? null,
+    repeatDaily: raw.repeatDaily === true,
+    repeatReminderTime: raw.repeatReminderTime ?? null,
     createdAt: new Date(raw.createdAt),
     completedAt: raw.status === 'DONE' ? new Date(raw.updatedAt) : undefined,
   };
@@ -80,20 +90,17 @@ export async function createTodo(
   return mapApiTodo(data.data as TodoApiResponse);
 }
 
-export async function updateTodo(
-  id: string,
-  name: string,
-  reminderAt?: string | null
-): Promise<Todo> {
+export async function updateTodo(id: string, payload: UpdateTodoPayload): Promise<Todo> {
   const res = await apiFetch(`${API_URL}/api/todos/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, reminderAt }),
+    body: JSON.stringify(payload),
   });
 
   if (!res.ok) {
-    const errorBody = (await res.json().catch(() => null)) as { message?: string } | null;
-    throw new Error(errorBody?.message ?? '할 일을 수정하지 못했습니다.');
+    const errorBody = (await res.json().catch(() => null)) as { message?: string | string[] } | null;
+    const message = errorBody?.message;
+    throw new Error((Array.isArray(message) ? message[0] : message) ?? '할 일을 수정하지 못했습니다.');
   }
 
   const data = await res.json();
