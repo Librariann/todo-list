@@ -1,9 +1,12 @@
+import motionStyles from './ThemeMotion.module.css';
+
 interface NightObservatoryCoverProps {
   date: string;
   username?: string;
+  headingAs?: 'h1' | 'h3';
 }
 
-function LunarChart() {
+export function LunarChart() {
   return (
     <svg viewBox="0 0 420 270" aria-hidden="true" className="block w-full">
       <g fill="none" stroke="#637a87" strokeWidth="0.7">
@@ -33,6 +36,12 @@ function LunarChart() {
         strokeWidth=".7"
         opacity=".6"
       />
+      <g fill="#f9e1ad">
+        <path className={motionStyles.nightStar} d="M103 101l2 5 5 2-5 2-2 5-2-5-5-2 5-2Z" />
+        <path className={motionStyles.nightStar} d="M330 87l2 6 6 2-6 2-2 6-2-6-6-2 6-2Z" />
+        <path className={motionStyles.nightStar} d="M360 199l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5Z" />
+      </g>
+      <circle className={motionStyles.moonHalo} cx="233" cy="135" r="72" fill="none" stroke="#efd59e" strokeWidth="3" />
       <circle cx="233" cy="135" r="62" fill="#2d3b46" stroke="#d7b77a" strokeWidth=".8" />
       <path d="M233 73a62 62 0 1 1 0 124c30-15 44-39 44-62s-14-47-44-62Z" fill="#efd59e" />
       <g fill="#d6b77d" opacity=".68">
@@ -51,7 +60,7 @@ function LunarChart() {
   );
 }
 
-export default function NightObservatoryCover({ date, username }: NightObservatoryCoverProps) {
+export default function NightObservatoryCover({ date, username, headingAs: Heading = 'h1' }: NightObservatoryCoverProps) {
   return (
     <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(5rem,35%)] items-center gap-1 pt-5 sm:grid-cols-[minmax(0,1fr)_minmax(0,42%)] sm:gap-5 sm:pt-6">
       <div className="min-w-0">
@@ -61,10 +70,10 @@ export default function NightObservatoryCover({ date, username }: NightObservato
         >
           {date.replaceAll('-', '.')}
         </time>
-        <h1 className="mt-2 text-[clamp(2.05rem,5.8vw,5.2rem)] leading-[1.05] font-black tracking-[-0.075em]">
+        <Heading className="mt-2 text-[clamp(2.05rem,5.8vw,5.2rem)] leading-[1.05] font-black tracking-[-0.075em]">
           <span className="block">밤의</span>
           <span className="block break-keep">관측 일지</span>
-        </h1>
+        </Heading>
         <p className="mt-3 line-clamp-2 text-sm leading-6 break-keep text-[#d2d4c8] [overflow-wrap:anywhere] sm:mt-5 sm:text-base">
           {username ? `${username}님의 하루를 기록해요.` : '하루의 작은 변화를 기록해요.'}
         </p>

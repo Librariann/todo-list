@@ -3,9 +3,16 @@ import { Moon, Sun, Sunrise, Sunset } from 'lucide-react';
 
 import type { TimeGreeting } from '@/app/hooks/useTimeGreeting';
 import type { MainTabType } from '@/app/types/navigation';
-import NightObservatoryCover from '@/app/components/home/NightObservatoryCover';
-import { CoastCover, StudioCover } from '@/app/components/home/TodaySkinCovers';
+import NightObservatoryCover, { LunarChart } from '@/app/components/home/NightObservatoryCover';
+import { CoastArtwork, CoastCover, StudioArtwork, StudioCover } from '@/app/components/home/TodaySkinCovers';
 import { TodayTheme } from '@/app/hooks/useTodayTheme';
+
+const sectionArtworks = {
+  [TodayTheme.Default]: null,
+  [TodayTheme.Night]: LunarChart,
+  [TodayTheme.Coast]: CoastArtwork,
+  [TodayTheme.Studio]: StudioArtwork,
+};
 
 interface HomeHeroProps {
   mainTab: MainTabType;
@@ -32,6 +39,7 @@ export default function HomeHero({
   const hasSectionCover = !isToday && theme !== TodayTheme.Default;
   const isNight = hasTodayCover && theme === TodayTheme.Night;
   const isCoast = hasTodayCover && theme === TodayTheme.Coast;
+  const SectionArtwork = hasSectionCover ? sectionArtworks[theme] : null;
 
   const GreetingIcon =
     greeting.period === 'morning'
@@ -67,7 +75,9 @@ export default function HomeHero({
           ? 'overflow-hidden bg-[#111c28] px-4 pt-3 pb-5 text-[#f8eed7] sm:px-8 sm:pt-5 sm:pb-7 lg:px-12'
           : hasTodayCover
             ? 'overflow-hidden px-4 pt-3 pb-5 sm:px-8 sm:pt-5 sm:pb-7 lg:px-12'
-            : 'relative flex min-h-[13rem] flex-col justify-end gap-5 px-3 pt-8 pb-5 @min-[28rem]/workspace:min-h-[15rem] @min-[28rem]/workspace:px-6 @min-[48rem]/workspace:px-8'
+            : hasSectionCover
+              ? 'relative grid min-h-[13rem] grid-cols-[minmax(0,1fr)_minmax(4.5rem,27%)] items-center gap-3 overflow-hidden px-3 py-6 @min-[28rem]/workspace:min-h-[15rem] @min-[28rem]/workspace:gap-5 @min-[28rem]/workspace:px-6 @min-[48rem]/workspace:px-8'
+              : 'relative flex min-h-[13rem] flex-col justify-end gap-5 px-3 pt-8 pb-5 @min-[28rem]/workspace:min-h-[15rem] @min-[28rem]/workspace:px-6 @min-[48rem]/workspace:px-8'
       }
     >
       <div className="relative z-10">
@@ -127,6 +137,11 @@ export default function HomeHero({
           </p>
         )}
       </div>
+      {SectionArtwork ? (
+        <div key={mainTab} aria-hidden="true" data-theme-section-artwork={theme} className="w-full min-w-0 max-w-84 justify-self-end [&_svg]:max-h-48">
+          <SectionArtwork />
+        </div>
+      ) : null}
     </div>
   );
 }

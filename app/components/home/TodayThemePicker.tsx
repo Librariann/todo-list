@@ -1,13 +1,17 @@
 'use client';
 
-import { ChevronDown, Disc3, Moon, Palette, Waves, type LucideIcon } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowUpRight, ChevronDown, Disc3, Moon, Palette, Store, Waves, type LucideIcon } from 'lucide-react';
 import { isTodayTheme, TodayTheme } from '@/app/hooks/useTodayTheme';
+import { themeCatalog } from '@/app/lib/themeCatalog';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
@@ -29,26 +33,20 @@ const themeOptions: Record<
       'rounded-full border-border bg-card text-foreground hover:bg-secondary focus-visible:outline-ring',
   },
   [TodayTheme.Night]: {
-    label: '밤하늘',
-    description: '달의 궤도를 담은 관측 일지',
+    ...themeCatalog[TodayTheme.Night],
     icon: Moon,
-    swatch: 'bg-[#19283f] text-[#f0d7a8]',
     button:
       'rounded-md border-[#8b795a] bg-[#253442] text-[#f8e8c9] hover:bg-[#394653] focus-visible:outline-[#edcf94]',
   },
   [TodayTheme.Coast]: {
-    label: '해안 산책',
-    description: '파도 옆에서 이어가는 기록',
+    ...themeCatalog[TodayTheme.Coast],
     icon: Waves,
-    swatch: 'bg-[#d9eff1] text-[#155d67]',
     button:
       'rounded-full border-[#86b4b9] bg-[#f1faf7] text-[#1a4c56] hover:bg-[#dceff0] focus-visible:outline-[#206573]',
   },
   [TodayTheme.Studio]: {
-    label: '리듬 스튜디오',
-    description: '한 트랙씩 채우는 오늘',
+    ...themeCatalog[TodayTheme.Studio],
     icon: Disc3,
-    swatch: 'bg-[#f5cf6a] text-[#31272a]',
     button:
       'rounded-none border-[#31272a] bg-[#31272a] text-[#fff3d4] hover:bg-[#513f43] focus-visible:outline-[#31272a]',
   },
@@ -80,8 +78,16 @@ export default function TodayThemePicker({ theme, onThemeChange }: TodayThemePic
         sideOffset={8}
         className="w-60 rounded-2xl p-2 motion-reduce:animate-none"
       >
+        <DropdownMenuItem asChild className="min-h-11 cursor-pointer gap-2 rounded-lg bg-secondary font-semibold text-foreground">
+          <Link href="/themes">
+            <Store aria-hidden="true" />
+            테마 상점 둘러보기
+            <ArrowUpRight aria-hidden="true" className="ml-auto" />
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuLabel className="pb-2 text-xs font-semibold text-muted-foreground">
-          오늘 화면 꾸미기
+          화면 테마 바꾸기
         </DropdownMenuLabel>
         <DropdownMenuRadioGroup value={theme} onValueChange={handleThemeChange}>
           {Object.values(TodayTheme).map((value) => {

@@ -1,0 +1,147 @@
+.nightStar {
+  opacity: .72;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.moonHalo {
+  opacity: .24;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.studioRecord {
+  transform-origin: 284px 136px;
+}
+
+.progress :global([data-slot='progress-indicator']) {
+  isolation: isolate;
+}
+
+:global([data-workspace-skin]) .progress :global([data-progress-spark]) {
+  display: none;
+}
+
+:global([data-workspace-skin]) .progress :global([data-slot='progress-indicator'][data-filled])::before,
+:global([data-workspace-skin]) .progress :global([data-slot='progress-indicator'][data-filled])::after {
+  position: absolute;
+  content: '';
+  pointer-events: none;
+}
+
+:global([data-workspace-skin]) .progress :global([data-slot='progress-indicator'][data-filled])::before {
+  inset: 0;
+  border-radius: inherit;
+}
+
+:global([data-workspace-skin='night']) .progress :global([data-slot='progress-indicator'][data-filled])::before {
+  background-image:
+    radial-gradient(circle at 12% 60%, #fff2cb 1px, transparent 2px),
+    radial-gradient(circle at 29% 30%, #fff2cb 1px, transparent 2px),
+    radial-gradient(circle at 47% 65%, #fff2cb 1px, transparent 2px),
+    radial-gradient(circle at 72% 35%, #fff2cb 1.4px, transparent 2.4px),
+    radial-gradient(circle at 91% 60%, #fff2cb 1px, transparent 2px);
+  opacity: .66;
+}
+
+:global(.dark [data-workspace-skin='night']) .progress :global([data-slot='progress-indicator'][data-filled])::before {
+  filter: brightness(.4);
+}
+
+:global([data-workspace-skin='night']) .progress :global([data-slot='progress-indicator'][data-filled])::after {
+  top: 50%;
+  right: 0;
+  width: 1rem;
+  height: 1rem;
+  transform: translateY(-50%);
+  clip-path: polygon(50% 0, 62% 35%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 35%);
+  background: var(--color-primary-foreground);
+}
+
+:global([data-workspace-skin='coast']) .progress :global([data-slot='progress-indicator'][data-filled])::before {
+  background-image: repeating-linear-gradient(-55deg, transparent 0 12px, var(--color-primary-foreground) 13px 14px, transparent 16px 21px);
+  opacity: .38;
+}
+
+:global([data-workspace-skin='coast']) .progress :global([data-slot='progress-indicator'][data-filled])::after {
+  top: 0;
+  right: .15rem;
+  width: .85rem;
+  height: .55rem;
+  border-top: 2px solid var(--color-primary-foreground);
+  border-radius: 60% 85% 0 0;
+  transform-origin: right center;
+}
+
+:global([data-workspace-skin='studio']) .progress :global([data-slot='progress-indicator'][data-filled])::before {
+  background-image: repeating-linear-gradient(90deg, transparent 0 7px, var(--color-primary-foreground) 8px 9px);
+  opacity: .38;
+}
+
+:global([data-workspace-skin='studio']) .progress :global([data-slot='progress-indicator'][data-filled])::after {
+  top: 50%;
+  right: .15rem;
+  width: .55rem;
+  height: .9rem;
+  transform: translateY(-50%);
+  border: 2px solid var(--color-primary-foreground);
+  border-radius: .18rem;
+  background: var(--color-primary);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .nightStar { animation: twinkle 2s ease-in-out 2; }
+  .nightStar:nth-child(2) { animation-delay: .4s; }
+  .nightStar:nth-child(3) { animation-delay: .8s; }
+  .moonHalo { animation: moonrise 4.6s ease-in-out; }
+  .coastFoam { animation: tide 4.8s ease-in-out; }
+  .studioRecord { animation: vinyl-turn 4.8s cubic-bezier(.2, .65, .4, 1); }
+
+  :global([data-workspace-skin='night']) .progress :global([data-slot='progress-indicator'][data-filled])::before { animation: star-line 2.1s ease-in-out 2; }
+  :global([data-workspace-skin='night']) .progress :global([data-slot='progress-indicator'][data-filled])::after { animation: star-tip 2.1s ease-in-out 2; }
+  :global([data-workspace-skin='coast']) .progress :global([data-slot='progress-indicator'][data-filled])::after { animation: crest 2.2s ease-in-out 2; }
+  :global([data-workspace-skin='studio']) .progress :global([data-slot='progress-indicator'][data-filled])::before { animation: meter 1.4s steps(4, end) 3; }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: .72; transform: scale(1); }
+  42% { opacity: 1; transform: scale(1.45); }
+  72% { opacity: .3; transform: scale(.85); }
+}
+
+@keyframes moonrise {
+  0%, 100% { opacity: .24; transform: scale(1); }
+  48% { opacity: .68; transform: scale(1.12); }
+}
+
+@keyframes tide {
+  0%, 100% { transform: translateX(0); }
+  38% { transform: translate(17px, -6px); }
+  74% { transform: translate(-6px, 3px); }
+}
+
+@keyframes vinyl-turn {
+  from { transform: rotate(-360deg); }
+  to { transform: rotate(0deg); }
+}
+
+@keyframes star-line {
+  0%, 100% { opacity: .66; }
+  40% { opacity: 1; }
+  68% { opacity: .36; }
+}
+
+@keyframes star-tip {
+  0%, 100% { transform: translateY(-50%) scale(1); }
+  46% { transform: translateY(-50%) scale(1.26); }
+}
+
+@keyframes crest {
+  0%, 100% { transform: translateY(0) scaleX(1); }
+  52% { transform: translateY(-3px) scaleX(1.32); }
+}
+
+@keyframes meter {
+  0%, 100% { opacity: .38; }
+  48% { opacity: .78; }
+}

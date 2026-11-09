@@ -16,6 +16,7 @@ function Progress({
   if (glow) {
     return (
       <div
+        data-slot="progress"
         role="progressbar"
         aria-valuenow={percentage}
         aria-valuemin={0}
@@ -23,11 +24,13 @@ function Progress({
         className={cn('relative w-full rounded-full bg-primary/20', className)}
       >
         <div
-          className="relative h-full rounded-full bg-primary transition-[width] duration-500"
+          data-slot="progress-indicator"
+          data-filled={percentage > 0 ? '' : undefined}
+          className="relative h-full rounded-full bg-primary transition-[width] duration-500 motion-reduce:transition-none"
           style={{ width: `${percentage}%` }}
         >
           {percentage > 1 && percentage < 100 && (
-            <div className="absolute right-0 top-1/2 h-2 w-2 -translate-y-1/2 translate-x-1/2 rounded-full bg-accent" />
+            <div data-progress-spark="" className="absolute right-0 top-1/2 h-2 w-2 -translate-y-1/2 translate-x-1/2 rounded-full bg-accent" />
           )}
         </div>
       </div>

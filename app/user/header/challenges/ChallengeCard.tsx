@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Challenge, ChallengeType } from '@/app/types/todo';
+import motionStyles from '@/app/components/home/ThemeMotion.module.css';
 
 interface ChallengeCardProps {
   challenge: Challenge;
@@ -76,7 +77,7 @@ export default function ChallengeCard({ challenge }: ChallengeCardProps) {
                 {challenge.currentCount} / {challenge.targetCount}
               </span>
             </div>
-            <Progress value={progress} className="h-2.5" glow />
+            <Progress value={progress} className={`h-2.5 ${motionStyles.progress}`} glow />
           </div>
 
           {/* 보상 상태 */}
