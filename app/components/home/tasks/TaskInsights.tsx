@@ -100,11 +100,11 @@ export default function TaskInsights({ activeTab }: TaskInsightsProps) {
   };
 
   return (
-    <aside className={`grid min-w-0 gap-4 ${showsCalendar ? '@min-[36rem]/insights:grid-cols-2' : ''}`}>
+    <aside data-workspace-part="instruments" className={`grid min-w-0 gap-4 ${showsCalendar ? '@min-[36rem]/insights:grid-cols-2' : ''}`}>
       {showsCalendar ? (
-        <section className="min-w-0 rounded-[1.75rem] bg-[#cfe6ed] p-3 text-[#294850] dark:bg-[oklch(0.4_0.055_225)] dark:text-foreground">
+        <section data-workspace-part="calendar" className="min-w-0 rounded-[1.75rem] bg-[#cfe6ed] p-3 text-[#294850] dark:bg-[oklch(0.4_0.055_225)] dark:text-foreground">
           <p className="text-xs font-bold text-[#3f6873] dark:text-foreground/70">날짜별 기록</p>
-          <div className="mt-4 rounded-2xl bg-[#fbf8ef]/80 p-1.5 text-[#26302a] dark:bg-card dark:text-foreground">
+          <div data-workspace-part="calendar-face" className="mt-4 rounded-2xl bg-[#fbf8ef]/80 p-1.5 text-[#26302a] dark:bg-card dark:text-foreground">
             <Calendar
               selectedDate={selectedDate}
               onDateSelect={handleDateSelect}
@@ -116,7 +116,7 @@ export default function TaskInsights({ activeTab }: TaskInsightsProps) {
         </section>
       ) : null}
 
-      <section className="rounded-[1.75rem] bg-[#f4d89e] p-6 text-[#3f3625] dark:bg-[oklch(0.45_0.08_75)] dark:text-foreground">
+      <section data-workspace-part="overview" className="rounded-[1.75rem] bg-[#f4d89e] p-6 text-[#3f3625] dark:bg-[oklch(0.45_0.08_75)] dark:text-foreground">
         <p className="text-xs font-bold text-[#765f31] dark:text-foreground/70">오늘 한눈에</p>
         <p className="friendly-heading mt-8 text-4xl font-bold tracking-[-0.06em]">
           {completedToday}개 완료
