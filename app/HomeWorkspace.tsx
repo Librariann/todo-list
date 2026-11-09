@@ -50,10 +50,9 @@ export default function HomeWorkspace() {
   const [mainTab, setMainTab] = useState<MainTabType>('tasks');
   const [taskTab, setTaskTab] = useState<TaskTabType>('habits');
   const { theme, selectTheme } = useTodayTheme(user?.id);
-  const workspaceTheme = mainTab === 'tasks' ? theme : TodayTheme.Default;
-  const isNightTheme = workspaceTheme === TodayTheme.Night;
-  const isStudioTheme = workspaceTheme === TodayTheme.Studio;
-  const extraSkin = workspaceTheme === TodayTheme.Coast || isStudioTheme;
+  const isNightTheme = theme === TodayTheme.Night;
+  const isStudioTheme = theme === TodayTheme.Studio;
+  const extraSkin = theme === TodayTheme.Coast || isStudioTheme;
   const skin = isNightTheme ? nightStyles : extraSkin ? skinStyles : undefined;
   const [createRequest, setCreateRequest] = useState<{
     type: TaskTabType;
@@ -176,15 +175,15 @@ export default function HomeWorkspace() {
   ) : null;
 
   return (
-    <div data-workspace-skin={extraSkin ? workspaceTheme : undefined} className={`min-h-dvh bg-[#d9e1d5] pl-[max(0.5rem,env(safe-area-inset-left))] pr-[max(0.5rem,env(safe-area-inset-right))] pt-2 pb-[calc(6rem+env(safe-area-inset-bottom))] dark:bg-background sm:pl-[max(1.5rem,env(safe-area-inset-left))] sm:pr-[max(1.5rem,env(safe-area-inset-right))] sm:pt-6 xl:pb-[max(1.5rem,env(safe-area-inset-bottom))] ${skin?.shell ?? ''}`}>
+    <div data-workspace-skin={skin ? theme : undefined} className={`min-h-dvh bg-[#d9e1d5] pl-[max(0.5rem,env(safe-area-inset-left))] pr-[max(0.5rem,env(safe-area-inset-right))] pt-2 pb-[calc(6rem+env(safe-area-inset-bottom))] dark:bg-background sm:pl-[max(1.5rem,env(safe-area-inset-left))] sm:pr-[max(1.5rem,env(safe-area-inset-right))] sm:pt-6 xl:pb-[max(1.5rem,env(safe-area-inset-bottom))] ${skin?.shell ?? ''} ${extraSkin ? skinStyles.palette : ''}`}>
       <div className={`mx-auto max-w-[1500px] overflow-hidden rounded-[2rem] bg-card shadow-[0_24px_70px_rgba(38,48,42,0.12)] ${skin?.frame ?? ''}`}>
         <Header mainTab={mainTab} onTabChange={setMainTab} />
         <NoticeBanner />
 
         <main id="main-content" className="page-reveal">
           <div
-            data-today-theme={skin ? workspaceTheme : undefined}
-            className={`overflow-hidden ${skin?.layout ?? (
+            data-today-theme={skin ? theme : undefined}
+            className={`overflow-hidden ${isNightTheme ? nightStyles.palette : ''} ${skin?.layout ?? (
               mainTab === 'tasks'
                 ? 'grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_18rem] xl:grid-cols-[minmax(0,1fr)_20rem]'
                 : ''
@@ -199,7 +198,7 @@ export default function HomeWorkspace() {
                     greeting={greeting}
                     username={user?.username}
                     actions={themePicker}
-                    theme={workspaceTheme}
+                    theme={theme}
                     themeDate={selectedDate}
                   />
                 </div>
@@ -256,12 +255,12 @@ export default function HomeWorkspace() {
                   ) : mainTab === 'challenges' ? (
                     <ChallengesPanel />
                   ) : (
-                    <RewardShop />
+                    <RewardShop themeScope={skin ? { name: theme, paletteClassName: skin.palette } : undefined} />
                   )}
                 </div>
               </div>
             </section>
-            {skin ? (
+            {mainTab === 'tasks' && skin ? (
               <details className={skin.summary}>
                 <summary>
                   이번 주의 기록 요약
