@@ -2,7 +2,15 @@
 
 import { Todo, TodoStatus } from '../types/todo';
 import { Button } from '@/components/ui/button';
-import { BadgeCheck, Bell, Check, Pencil, Trash2 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { BadgeCheck, Bell, Check, Menu, Pencil, Repeat, Trash2 } from 'lucide-react';
 import { getTodayDateString } from '../lib/dateUtils';
 
 interface SimpleTodoCardProps {
@@ -10,6 +18,8 @@ interface SimpleTodoCardProps {
   onStatusChange: (id: string, status: TodoStatus) => void;
   onDelete?: (id: string) => void;
   onEdit?: (todo: Todo) => void;
+  onRepeatChange?: (todo: Todo, repeatDaily: boolean) => void;
+  repeatSaving?: boolean;
   featured?: boolean;
 }
 
@@ -18,6 +28,8 @@ export default function SimpleTodoCard({
   onStatusChange,
   onDelete,
   onEdit,
+  onRepeatChange,
+  repeatSaving = false,
   featured = false,
 }: SimpleTodoCardProps) {
   const isDone = todo.status === TodoStatus.DONE;
@@ -25,6 +37,8 @@ export default function SimpleTodoCard({
   const isPastDate = todo.date < today;
   const isFutureDate = todo.date > today;
   const isCompletionLocked = isPastDate || isFutureDate;
+  const canRepeat = !isPastDate && Boolean(onRepeatChange);
+  const canEdit = !isPastDate && Boolean(onEdit);
   const completionLockReason = isPastDate
     ? '마감된 할 일은 상태를 변경할 수 없어요.'
     : '예정된 할 일은 해당 날짜에 완료할 수 있어요.';
@@ -101,19 +115,32 @@ export default function SimpleTodoCard({
             ) : featured && !isDone ? (
               <p className="mt-1 text-xs font-semibold text-primary">오늘의 우선순위</p>
             ) : null}
-            {!isDone && todo.reminderAt ? (
-              <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                <Bell aria-hidden="true" className="size-3 shrink-0" />
-                <time dateTime={todo.reminderAt}>
-                  {new Date(todo.reminderAt).toLocaleString('ko-KR', {
-                    month: 'numeric',
-                    day: 'numeric',
-                    hour: 'numeric',
-                    minute: '2-digit',
-                  })} 알림
-                </time>
-              </p>
-            ) : null}
+            <div className="empty:hidden mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+              {!isPastDate && todo.repeatDaily ? (
+                <span className="inline-flex items-center gap-1 font-semibold text-primary">
+                  <Repeat aria-hidden="true" className="size-3 shrink-0" />
+                  매일 반복
+                </span>
+              ) : null}
+              {!isPastDate && todo.repeatDaily && todo.repeatReminderTime ? (
+                <span className="inline-flex items-center gap-1 text-muted-foreground">
+                  <Bell aria-hidden="true" className="size-3 shrink-0" />
+                  매일 {todo.repeatReminderTime} 알림
+                </span>
+              ) : !isDone && todo.reminderAt ? (
+                <span className="inline-flex items-center gap-1 text-muted-foreground">
+                  <Bell aria-hidden="true" className="size-3 shrink-0" />
+                  <time dateTime={todo.reminderAt}>
+                    {new Date(todo.reminderAt).toLocaleString('ko-KR', {
+                      month: 'numeric',
+                      day: 'numeric',
+                      hour: 'numeric',
+                      minute: '2-digit',
+                    })} 알림
+                  </time>
+                </span>
+              ) : null}
+            </div>
           </div>
         </div>
 
@@ -138,28 +165,52 @@ export default function SimpleTodoCard({
               {todo.status === TodoStatus.IN_PROGRESS ? '진행 중' : '시작'}
             </button>
           ) : null}
-          {onEdit && !isPastDate && (
-            <Button
-              onClick={() => onEdit(todo)}
-              variant="ghost"
-              size="sm"
-              className="h-11 w-11 flex-shrink-0 p-0 text-muted-foreground hover:text-foreground"
-              aria-label={`${todo.title} 수정`}
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-          )}
-          {onDelete && (
-            <Button
-              onClick={() => onDelete(todo.id)}
-              variant="ghost"
-              size="sm"
-              className="h-11 w-11 flex-shrink-0 p-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
-              aria-label={`${todo.title} 삭제`}
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          )}
+          {canEdit || canRepeat || onDelete ? (
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="size-11 rounded-xl text-muted-foreground hover:text-foreground"
+                  aria-label={`${todo.title} 옵션`}
+                  aria-busy={repeatSaving || undefined}
+                >
+                  <Menu aria-hidden="true" className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-40 rounded-xl p-1.5">
+                {canEdit ? (
+                  <DropdownMenuItem className="min-h-11 cursor-pointer rounded-lg" disabled={repeatSaving} onSelect={() => onEdit?.(todo)}>
+                    <Pencil aria-hidden="true" /> 수정하기
+                  </DropdownMenuItem>
+                ) : null}
+                {canRepeat ? (
+                  <DropdownMenuCheckboxItem
+                    checked={todo.repeatDaily === true}
+                    disabled={repeatSaving}
+                    className="min-h-11 cursor-pointer rounded-lg"
+                    onCheckedChange={(checked) => onRepeatChange?.(todo, checked)}
+                  >
+                    <Repeat aria-hidden="true" /> 매일 반복
+                  </DropdownMenuCheckboxItem>
+                ) : null}
+                {onDelete ? (
+                  <>
+                    {canEdit || canRepeat ? <DropdownMenuSeparator /> : null}
+                    <DropdownMenuItem
+                      variant="destructive"
+                      className="min-h-11 cursor-pointer rounded-lg"
+                      disabled={repeatSaving}
+                      onSelect={() => onDelete(todo.id)}
+                    >
+                      <Trash2 aria-hidden="true" /> 삭제하기
+                    </DropdownMenuItem>
+                  </>
+                ) : null}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : null}
         </div>
       </div>
     </article>
