@@ -41,7 +41,11 @@ export default function CreateTodoModal({
 }: CreateTodoModalProps) {
   const isEditing = todo !== null;
   const canSetReminder = todo?.status !== TodoStatus.DONE;
-  const existingReminderAt = todo?.reminderAt ?? null;
+  const existingReminderAt = todo?.reminderAt ?? (
+    todo?.repeatDaily && todo.repeatReminderTime
+      ? new Date(`${todo.date}T${todo.repeatReminderTime}:00+09:00`).toISOString()
+      : null
+  );
   const [name, setName] = useState<string>('');
   const [reminderOption, setReminderOption] = useState<ReminderOption>('none');
   const [reminderDate, setReminderDate] = useState<string>('');
