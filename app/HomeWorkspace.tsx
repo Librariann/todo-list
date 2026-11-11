@@ -222,17 +222,15 @@ export default function HomeWorkspace() {
           >
             <section data-workspace-part="workspace" className="@container/workspace order-1 min-w-0 bg-[#fbf8ef] text-[#26302a] dark:bg-card dark:text-foreground">
               <div className="overflow-hidden">
-                <div data-tour="home-hero">
-                  <HomeHero
-                    mainTab={mainTab}
-                    selectedDateLabel={formatDate(selectedDate)}
-                    greeting={greeting}
-                    username={user?.username}
-                    actions={themePicker}
-                    theme={theme}
-                    themeDate={selectedDate}
-                  />
-                </div>
+                <HomeHero
+                  mainTab={mainTab}
+                  selectedDateLabel={formatDate(selectedDate)}
+                  greeting={greeting}
+                  username={user?.username}
+                  actions={themePicker}
+                  theme={theme}
+                  themeDate={selectedDate}
+                />
 
                 <div data-workspace-part="body" className="px-3 pt-5 pb-10 @min-[28rem]/workspace:px-6 @min-[48rem]/workspace:px-8 sm:pb-12">
                   {mainTab === 'tasks' ? (

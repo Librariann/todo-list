@@ -5,7 +5,6 @@ import {
   useLayoutEffect,
   useRef,
   useState,
-  type CSSProperties,
 } from 'react';
 import { createPortal } from 'react-dom';
 import { ArrowLeft, ArrowRight, Check, Repeat2, Target, X } from 'lucide-react';
@@ -29,6 +28,15 @@ interface SpotlightRect {
   width: number;
   height: number;
 }
+
+interface GuideLayout {
+  stepIndex: number;
+  spotlight: SpotlightRect | null;
+  panelTop: number;
+  panelLeft: number;
+}
+
+const panelGap = 12;
 
 const steps: TourStep[] = [
   {
@@ -83,12 +91,23 @@ function findVisibleTarget(selector: string): HTMLElement | null {
   );
 }
 
+function measureSpotlight(rect: DOMRect, viewport: DOMRect, padding: number): SpotlightRect | null {
+  const top = Math.max(viewport.top, rect.top - padding);
+  const left = Math.max(viewport.left, rect.left - padding);
+  const right = Math.min(viewport.right, rect.right + padding);
+  const bottom = Math.min(viewport.bottom, rect.bottom + padding);
+  if (right <= left || bottom <= top) return null;
+  return { top, left, width: right - left, height: bottom - top };
+}
+
 export default function GettingStartedGuide({ userId, onCreate }: GettingStartedGuideProps) {
-  const [stepIndex, setStepIndex] = useState(0);
-  const [visible, setVisible] = useState(false);
-  const [choosing, setChoosing] = useState(false);
-  const [spotlight, setSpotlight] = useState<SpotlightRect | null>(null);
+  const [stepIndex, setStepIndex] = useState<number>(0);
+  const [visible, setVisible] = useState<boolean>(false);
+  const [choosing, setChoosing] = useState<boolean>(false);
+  const [layout, setLayout] = useState<GuideLayout | null>(null);
   const nextButtonRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
   const storageKey = `growdo:onboarding:v2:${userId ?? 'user'}`;
   const step = steps[stepIndex];
 
@@ -109,41 +128,94 @@ export default function GettingStartedGuide({ userId, onCreate }: GettingStarted
   }, [storageKey, visible]);
 
   useLayoutEffect(() => {
-    if (!visible || choosing) return;
+    const panel = panelRef.current;
+    const safeViewport = viewportRef.current;
+    if (!visible || choosing || !panel || !safeViewport) return;
 
-    const target = findVisibleTarget(step.selector);
-    if (!target) {
-      setSpotlight(null);
-      return;
+    const main = document.getElementById('main-content');
+    const workspace = main?.parentElement;
+    let observedTarget: HTMLElement | null = null;
+    let frame = 0;
+
+    function scheduleLayout() {
+      if (!frame) frame = window.requestAnimationFrame(updateLayout);
     }
 
-    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const resizeObserver = new ResizeObserver(scheduleLayout);
+    const updateLayout = () => {
+      frame = 0;
+      const target = findVisibleTarget(step.selector);
+      const viewport = safeViewport.getBoundingClientRect();
+      const panelRect = panel.getBoundingClientRect();
+      const compact = viewport.width < 640;
+      const padding = compact ? 6 : 10;
+      let rect = target?.getBoundingClientRect();
 
-    const updateSpotlight = () => {
-      const currentTarget = findVisibleTarget(step.selector);
-      if (!currentTarget) return;
-      const rect = currentTarget.getBoundingClientRect();
-      const padding = window.innerWidth < 768 ? 7 : 10;
-      setSpotlight({
-        top: Math.max(8, rect.top - padding),
-        left: Math.max(8, rect.left - padding),
-        width: Math.min(window.innerWidth - 16, rect.width + padding * 2),
-        height: rect.height + padding * 2,
-      });
+      if (target !== observedTarget) {
+        if (observedTarget) resizeObserver.unobserve(observedTarget);
+        observedTarget = target;
+        if (target && rect) {
+          resizeObserver.observe(target);
+          const belowRoom = viewport.bottom - rect.bottom - padding;
+          const aboveRoom = rect.top - viewport.top - padding;
+          if (
+            rect.top < viewport.top ||
+            rect.bottom > viewport.bottom ||
+            Math.max(aboveRoom, belowRoom) < panelRect.height + panelGap
+          ) {
+            const groupHeight = rect.height + padding * 2 + panelGap + panelRect.height;
+            const targetTop = viewport.top + padding + Math.max(0, (viewport.height - groupHeight) / 2);
+            window.scrollBy({ top: rect.top - targetTop, behavior: 'instant' });
+            rect = target.getBoundingClientRect();
+          }
+        }
+      }
+
+      const spotlight = rect ? measureSpotlight(rect, viewport, padding) : null;
+      const maxTop = Math.max(viewport.top, viewport.bottom - panelRect.height);
+      const centeredLeft = viewport.left + (viewport.width - panelRect.width) / 2;
+      const centeredTop = (viewport.top + maxTop) / 2;
+      let panelTop = centeredTop;
+      let panelLeft = centeredLeft;
+
+      if (spotlight) {
+        const below = spotlight.top + spotlight.height + panelGap;
+        const above = spotlight.top - panelRect.height - panelGap;
+        if (below <= maxTop) panelTop = below;
+        else if (above >= viewport.top) panelTop = above;
+        else panelTop = below - maxTop <= viewport.top - above ? maxTop : viewport.top;
+        if (!compact) {
+          panelLeft = Math.max(viewport.left, Math.min(spotlight.left, viewport.right - panelRect.width));
+        }
+      }
+
+      setLayout({ stepIndex, spotlight, panelTop, panelLeft });
+      // The page entrance animates its position without changing its measured size.
+      if (main?.getAnimations().some((animation) => animation.playState === 'running')) {
+        scheduleLayout();
+      }
     };
 
-    const frame = window.requestAnimationFrame(updateSpotlight);
-    window.addEventListener('resize', updateSpotlight);
-    window.addEventListener('scroll', updateSpotlight, true);
+    resizeObserver.observe(panel);
+    resizeObserver.observe(safeViewport);
+    if (workspace) resizeObserver.observe(workspace);
+    // A notice or an asynchronously loaded section can appear after the first measurement.
+    const contentObserver = new MutationObserver(scheduleLayout);
+    if (workspace) contentObserver.observe(workspace, { childList: true, subtree: true });
+    updateLayout();
+    window.addEventListener('resize', scheduleLayout);
+    window.addEventListener('scroll', scheduleLayout, true);
     return () => {
       window.cancelAnimationFrame(frame);
-      window.removeEventListener('resize', updateSpotlight);
-      window.removeEventListener('scroll', updateSpotlight, true);
+      resizeObserver.disconnect();
+      contentObserver.disconnect();
+      window.removeEventListener('resize', scheduleLayout);
+      window.removeEventListener('scroll', scheduleLayout, true);
     };
-  }, [choosing, step.selector, visible]);
+  }, [choosing, step.selector, stepIndex, visible]);
 
   useEffect(() => {
-    if (visible) nextButtonRef.current?.focus();
+    if (visible) nextButtonRef.current?.focus({ preventScroll: true });
   }, [choosing, stepIndex, visible]);
 
   const finish = () => {
@@ -154,7 +226,6 @@ export default function GettingStartedGuide({ userId, onCreate }: GettingStarted
   const handleNext = () => {
     if (stepIndex === steps.length - 1) {
       setChoosing(true);
-      setSpotlight(null);
       return;
     }
     setStepIndex((current) => current + 1);
@@ -162,20 +233,8 @@ export default function GettingStartedGuide({ userId, onCreate }: GettingStarted
 
   if (!visible) return null;
 
-  const panelStyle: CSSProperties | undefined = spotlight
-    ? {
-        top:
-          typeof window !== 'undefined' && window.innerWidth >= 768
-            ? spotlight.top + spotlight.height + 18 < window.innerHeight - 260
-              ? spotlight.top + spotlight.height + 18
-              : Math.max(18, spotlight.top - 250)
-            : undefined,
-        left:
-          typeof window !== 'undefined' && window.innerWidth >= 768
-            ? Math.min(window.innerWidth - 390, Math.max(18, spotlight.left))
-            : undefined,
-      }
-    : undefined;
+  const currentLayout = layout?.stepIndex === stepIndex ? layout : null;
+  const spotlight = currentLayout?.spotlight;
 
   return createPortal(
     <div
@@ -184,19 +243,20 @@ export default function GettingStartedGuide({ userId, onCreate }: GettingStarted
       aria-modal="true"
       aria-label="GrowDo 시작 안내"
     >
+      <div
+        ref={viewportRef}
+        aria-hidden="true"
+        className="pointer-events-none absolute top-[max(1rem,env(safe-area-inset-top))] right-[max(1rem,env(safe-area-inset-right))] bottom-[max(1rem,env(safe-area-inset-bottom))] left-[max(1rem,env(safe-area-inset-left))]"
+      />
       {spotlight && !choosing ? (
         <div
-          className="pointer-events-none fixed z-[101] rounded-[1.4rem] ring-2 ring-[#8fe0a4] ring-offset-4 ring-offset-transparent motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300"
+          aria-hidden="true"
+          className="pointer-events-none fixed z-[101] rounded-2xl"
           style={{
-            top: spotlight.top,
-            left: spotlight.left,
-            width: spotlight.width,
-            height: spotlight.height,
-            boxShadow: '0 0 0 9999px rgba(12, 24, 17, 0.78)',
+            ...spotlight,
+            boxShadow: '0 0 0 2px #8fe0a4, 0 0 0 9999px rgba(12, 24, 17, 0.78)',
           }}
-        >
-          <span className="absolute -right-2 -top-2 size-4 rounded-full bg-[#87dca0] shadow-[0_0_0_6px_rgba(135,220,160,0.2)]" />
-        </div>
+        />
       ) : (
         <div className="absolute inset-0 bg-[rgba(12,24,17,0.84)]" />
       )}
@@ -204,7 +264,7 @@ export default function GettingStartedGuide({ userId, onCreate }: GettingStarted
       <button
         type="button"
         onClick={finish}
-        className="fixed right-4 top-4 z-[103] grid size-11 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:right-7 sm:top-7"
+        className="fixed right-[max(1rem,env(safe-area-inset-right))] top-[max(1rem,env(safe-area-inset-top))] z-[103] grid size-11 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
         aria-label="시작 안내 건너뛰기"
       >
         <X className="size-5" />
@@ -251,8 +311,9 @@ export default function GettingStartedGuide({ userId, onCreate }: GettingStarted
         </div>
       ) : (
         <section
-          className="fixed inset-x-4 bottom-[max(5.75rem,calc(env(safe-area-inset-bottom)+5rem))] z-[102] mx-auto max-w-sm rounded-[1.6rem] bg-[#f8f4e9] p-5 text-[#233129] shadow-[0_24px_80px_rgba(0,0,0,0.34)] dark:bg-[#203128] dark:text-[#f3f5ed] sm:inset-x-auto sm:bottom-auto sm:mx-0 sm:w-[23rem] sm:p-6"
-          style={panelStyle}
+          ref={panelRef}
+          className={`fixed z-[102] max-h-[calc(100dvh-max(1rem,env(safe-area-inset-top))-max(1rem,env(safe-area-inset-bottom)))] w-[calc(100%-max(1rem,env(safe-area-inset-left))-max(1rem,env(safe-area-inset-right)))] max-w-[23rem] overflow-y-auto rounded-[1.6rem] bg-[#f8f4e9] p-5 text-[#233129] shadow-[0_24px_80px_rgba(0,0,0,0.34)] dark:bg-[#203128] dark:text-[#f3f5ed] sm:p-6 ${currentLayout ? '' : 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'}`}
+          style={currentLayout ? { top: currentLayout.panelTop, left: currentLayout.panelLeft } : undefined}
         >
           <div className="flex items-center justify-between gap-4">
             <p className="text-xs font-bold tracking-[0.14em] text-[#318c50] dark:text-[#82d49a]">

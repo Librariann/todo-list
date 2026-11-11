@@ -80,7 +80,7 @@ export default function HomeHero({
               : 'relative flex min-h-[13rem] flex-col justify-end gap-5 px-3 pt-8 pb-5 @min-[28rem]/workspace:min-h-[15rem] @min-[28rem]/workspace:px-6 @min-[48rem]/workspace:px-8'
       }
     >
-      <div className="relative z-10">
+      <div data-tour={isToday ? 'home-hero' : undefined} className="relative z-10">
         <div
           data-workspace-part="cover-toolbar"
           className={`flex items-center justify-between gap-2 ${isNight ? 'border-b border-[#66727a] pb-3' : 'mb-3'}`}
