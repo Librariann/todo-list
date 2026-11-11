@@ -4,7 +4,6 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { TodoStatus, type Todo } from '@/app/types/todo';
-import Calendar from '@/app/components/Calendar';
 import TaskModalLayout from '../TaskModalLayout';
 import ReminderTimeFields from '../ReminderTimeFields';
 
@@ -13,16 +12,14 @@ export interface CreateTodoInput {
   reminderAt?: string | null;
 }
 
-type ReminderOption = 'none' | '10' | '60' | 'custom';
+type ReminderOption = 'none' | 'custom';
 
 const selectClassName =
   'min-h-11 w-full rounded-md border border-input bg-background px-3 text-base text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm';
 
-function toLocalDateTime(value: string): string {
-  const date = new Date(value);
-  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
-  return local.toISOString().slice(0, 16);
-}
+const reminderClock = new Intl.DateTimeFormat('ko-KR', {
+  timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+});
 
 interface CreateTodoModalProps {
   open: boolean;
@@ -41,34 +38,26 @@ export default function CreateTodoModal({
 }: CreateTodoModalProps) {
   const isEditing = todo !== null;
   const canSetReminder = todo?.status !== TodoStatus.DONE;
-  const existingReminderAt = todo?.reminderAt ?? (
-    todo?.repeatDaily && todo.repeatReminderTime
-      ? new Date(`${todo.date}T${todo.repeatReminderTime}:00+09:00`).toISOString()
-      : null
-  );
+  const savedReminderTime = todo?.reminderAt
+    ? reminderClock.format(new Date(todo.reminderAt))
+    : todo?.repeatReminderTime ?? null;
+  const savedTitle = todo?.title ?? '';
   const [name, setName] = useState<string>('');
   const [reminderOption, setReminderOption] = useState<ReminderOption>('none');
-  const [reminderDate, setReminderDate] = useState<string>('');
   const [reminderHour, setReminderHour] = useState<string>('');
   const [reminderMinute, setReminderMinute] = useState<string>('');
-  const [reminderMonth, setReminderMonth] = useState<Date>(() => new Date());
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
-    setName(todo?.title ?? '');
-    setReminderOption(existingReminderAt ? 'custom' : 'none');
-    const today = toLocalDateTime(new Date().toISOString()).slice(0, 10);
-    const savedTime = existingReminderAt ? toLocalDateTime(existingReminderAt) : null;
-    const date = savedTime?.slice(0, 10) ?? (selectedDate >= today ? selectedDate : today);
-    setReminderDate(date);
-    setReminderHour(savedTime?.slice(11, 13) ?? '');
-    setReminderMinute(savedTime?.slice(14, 16) ?? '');
-    const monthDate = date >= today ? date : today;
-    setReminderMonth(new Date(`${monthDate.slice(0, 7)}-01T00:00`));
+    const [hour = '', minute = ''] = savedReminderTime?.split(':') ?? [];
+    setName(savedTitle);
+    setReminderOption(savedReminderTime ? 'custom' : 'none');
+    setReminderHour(hour);
+    setReminderMinute(minute);
     setError(null);
-  }, [open, todo, existingReminderAt, selectedDate]);
+  }, [open, savedTitle, savedReminderTime, selectedDate]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -79,25 +68,14 @@ export default function CreateTodoModal({
     }
 
     let reminderAt: string | null | undefined;
-    const customTime = `${reminderDate}T${reminderHour}:${reminderMinute}`;
+    const customTime = `${reminderHour}:${reminderMinute}`;
     if (canSetReminder) {
       if (reminderOption === 'none') {
-        reminderAt = existingReminderAt ? null : undefined;
-      } else if (
-        reminderOption !== 'custom' ||
-        !existingReminderAt ||
-        customTime !== toLocalDateTime(existingReminderAt)
-      ) {
-        const now = Date.now();
-        const time = reminderOption === 'custom'
-          ? new Date(customTime)
-          : new Date(now + Number(reminderOption) * 60_000);
-        if (!Number.isFinite(time.getTime()) || time.getTime() <= now) {
+        reminderAt = savedReminderTime ? null : undefined;
+      } else if (customTime !== savedReminderTime) {
+        const time = new Date(`${selectedDate}T${customTime}:00+09:00`);
+        if (!Number.isFinite(time.getTime()) || time.getTime() <= Date.now()) {
           setError('지금보다 나중 시간으로 알림을 설정해주세요.');
-          return;
-        }
-        if (reminderOption === 'custom' && toLocalDateTime(time.toISOString()) !== customTime) {
-          setError('이 시간은 선택할 수 없어요. 다른 시간을 골라주세요.');
           return;
         }
         reminderAt = time.toISOString();
@@ -164,20 +142,10 @@ export default function CreateTodoModal({
             className={selectClassName}
           >
             <option value="none">알림 없음</option>
-            <option value="10">10분 뒤</option>
-            <option value="60">1시간 뒤</option>
-            <option value="custom">날짜와 시간 선택</option>
+            <option value="custom">시간 지정</option>
           </select>
           {reminderOption === 'custom' ? (
-            <fieldset className="min-w-0 space-y-2">
-              <legend className="text-sm font-medium">알림 날짜와 시간</legend>
-              <Calendar
-                selectedDate={reminderDate}
-                onDateSelect={setReminderDate}
-                currentMonth={reminderMonth}
-                onMonthChange={setReminderMonth}
-                minDate={toLocalDateTime(new Date().toISOString()).slice(0, 10)}
-              />
+            <fieldset className="min-w-0" aria-label="알림 시간 (한국 시간)">
               <ReminderTimeFields
                 id="todo-reminder"
                 hour={reminderHour}
@@ -188,9 +156,7 @@ export default function CreateTodoModal({
             </fieldset>
           ) : null}
           <p id="todo-reminder-help" className="text-xs text-muted-foreground">
-            {reminderOption === '10' || reminderOption === '60'
-              ? '저장한 시점부터 시간을 세고, 아직 완료하지 않았다면 한 번 알려드려요.'
-              : '시간을 정해두면 아직 완료하지 않은 할 일을 한 번 알려드려요.'}
+            할 일 당일, 설정한 시간(한국 시간)에 알려드려요.
           </p>
         </div>
       ) : null}

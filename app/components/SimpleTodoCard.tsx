@@ -132,6 +132,7 @@ export default function SimpleTodoCard({
                   <Bell aria-hidden="true" className="size-3 shrink-0" />
                   <time dateTime={todo.reminderAt}>
                     {new Date(todo.reminderAt).toLocaleString('ko-KR', {
+                      timeZone: 'Asia/Seoul',
                       month: 'numeric',
                       day: 'numeric',
                       hour: 'numeric',
