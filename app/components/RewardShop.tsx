@@ -15,7 +15,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import type { TodayTheme } from '@/app/hooks/useTodayTheme';
 import { calculateRewardPoint, fetchRewards, redeemReward } from '../lib/rewardsApi';
 import { useUserSummaryStore } from '../store/userSummaryStore';
 import { Reward, RewardType } from '../types/todo';
@@ -117,17 +116,16 @@ interface RewardShopProps {
   previewRewards?: Reward[];
   previewPoints?: number;
   previewOnly?: boolean;
-  themeScope?: { name: TodayTheme; paletteClassName: string };
+  themed?: boolean;
 }
 
 export default function RewardShop({
   previewRewards,
   previewPoints,
   previewOnly = false,
-  themeScope,
+  themed = false,
 }: RewardShopProps = {}) {
   const router = useRouter();
-  const themed = Boolean(themeScope);
   const [selectedReward, setSelectedReward] = useState<Reward | null>(null);
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -407,8 +405,7 @@ export default function RewardShop({
         }}
       >
         <DialogContent
-          data-workspace-skin={themeScope?.name}
-          className={`max-w-sm ${themeScope ? `${themeScope.paletteClassName} border-border bg-card text-foreground [--color-background:var(--color-card)] [--color-input:var(--color-border)]` : ''}`}
+          className="max-w-sm"
           showCloseButton={!isRedeeming}
           onEscapeKeyDown={(event) => isRedeeming && event.preventDefault()}
           onPointerDownOutside={(event) => isRedeeming && event.preventDefault()}

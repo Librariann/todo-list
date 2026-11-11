@@ -81,9 +81,9 @@ export default function NotificationSettingsForm() {
   };
 
   return (
-    <section className="mt-12 border-t border-stone-200/80 pt-10 dark:border-white/10">
+    <section className="mt-12 border-t border-stone-200/80 pt-10 dark:border-white/10 in-data-[workspace-skin]:border-border dark:in-data-[workspace-skin]:border-border">
       <div className="flex items-start gap-4">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#dfeadd] text-[#267345] dark:bg-primary/15 dark:text-primary">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#dfeadd] text-[#267345] dark:bg-primary/15 dark:text-primary in-data-[workspace-skin]:bg-primary/15 in-data-[workspace-skin]:text-primary">
           <BellRing className="h-5 w-5" aria-hidden="true" />
         </div>
         <div className="min-w-0">
@@ -98,7 +98,7 @@ export default function NotificationSettingsForm() {
       </div>
 
       {isLoading ? (
-        <div className="mt-7 h-40 animate-pulse rounded-[1.5rem] bg-[#eef0e7] dark:bg-muted" />
+        <div className="mt-7 h-40 animate-pulse rounded-[1.5rem] bg-[#eef0e7] dark:bg-muted in-data-[workspace-skin]:bg-muted" />
       ) : errorMessage && savedSettings === null ? (
         <div className="mt-7 border-y border-border py-6">
           <p role="alert" className="text-sm font-semibold text-destructive">
@@ -110,7 +110,7 @@ export default function NotificationSettingsForm() {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="mt-7 space-y-5">
-          <div className="flex min-h-20 items-center justify-between gap-3 rounded-[1.5rem] bg-[#eef0e7] px-4 py-4 dark:bg-muted sm:gap-5 sm:px-6">
+          <div className="flex min-h-20 items-center justify-between gap-3 rounded-[1.5rem] bg-[#eef0e7] px-4 py-4 dark:bg-muted in-data-[workspace-skin]:bg-muted sm:gap-5 sm:px-6">
             <Label htmlFor="push-enabled" className="min-w-0 flex-1 cursor-pointer flex-col items-start gap-1">
               <span className="whitespace-nowrap text-sm font-bold leading-5 text-foreground">알림 받기</span>
               <span id="push-enabled-description" className="break-keep text-xs font-normal leading-5 text-muted-foreground">
@@ -132,7 +132,7 @@ export default function NotificationSettingsForm() {
             }`}
           >
             <div className="flex gap-3">
-              <Clock3 className="mt-0.5 h-5 w-5 shrink-0 text-[#3f7652] dark:text-primary" aria-hidden="true" />
+              <Clock3 className="mt-0.5 h-5 w-5 shrink-0 text-[#3f7652] dark:text-primary in-data-[workspace-skin]:text-primary" aria-hidden="true" />
               <div>
                 <Label htmlFor="daily-reminder-time" className="text-sm font-bold">
                   매일 알림 시간

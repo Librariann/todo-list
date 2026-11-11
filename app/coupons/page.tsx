@@ -7,15 +7,22 @@ import { ArrowLeft, Check, ChevronDown, CircleCheck, Clock3, Store, Ticket } fro
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import ThemeToggleStandalone from '@/app/components/ThemeToggleStandalone';
+import { useActiveTodayTheme } from '@/app/components/TodayThemeProvider';
+import nightStyles from '@/app/components/home/NightObservatory.module.css';
+import skinStyles from '@/app/components/home/TodaySkins.module.css';
+import { TodayTheme } from '@/app/hooks/useTodayTheme';
 import {
   fetchOwnedRewards,
   markOwnedRewardUsed,
   type OwnedRewardApiResponse,
 } from '@/app/lib/rewardsApi';
 import { useAuthStore } from '@/app/store/authStore';
+import { cn } from '@/lib/utils';
 import PrivateCouponImage from './private-coupon-image';
 
 type CouponFilter = 'available' | 'used';
+
+const filterButtonClassName = 'min-h-10 rounded-full px-4 text-sm font-bold transition-colors in-data-[workspace-skin=night]:rounded-sm in-data-[workspace-skin=studio]:rounded-sm';
 
 const acquiredDateFormatter = new Intl.DateTimeFormat('ko-KR', {
   timeZone: 'Asia/Seoul',
@@ -36,6 +43,9 @@ export default function CouponsPage() {
   const router = useRouter();
   const isAuthenticated = useAuthStore((auth) => auth.isAuthenticated);
   const user = useAuthStore((auth) => auth.user);
+  const { theme } = useActiveTodayTheme();
+  const skin = theme === TodayTheme.Night ? nightStyles : theme !== TodayTheme.Default ? skinStyles : null;
+  const shellClasses = cn('min-h-screen bg-[#d9e1d5] dark:bg-background', skin?.shell);
   const [mounted, setMounted] = useState(false);
   const [coupons, setCoupons] = useState<OwnedRewardApiResponse[]>([]);
   const [filter, setFilter] = useState<CouponFilter>('available');
@@ -112,8 +122,11 @@ export default function CouponsPage() {
 
   if (!mounted || isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#d9e1d5] dark:bg-background">
-        <div className="text-center">
+      <div
+        data-workspace-skin={skin ? theme : undefined}
+        className={cn(shellClasses, 'flex items-center justify-center')}
+      >
+        <div className={cn('text-center', skin && 'rounded-xl border border-border bg-card px-6 py-5')}>
           <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-b-2 border-primary" />
           <p className="text-sm text-muted-foreground">쿠폰을 차곡차곡 꺼내고 있어요...</p>
         </div>
@@ -122,9 +135,13 @@ export default function CouponsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#d9e1d5] px-3 py-3 pb-8 dark:bg-background sm:px-6 sm:py-6">
-      <div className="mx-auto min-h-[calc(100vh-3rem)] max-w-[1280px] overflow-hidden rounded-[2rem] bg-card shadow-[0_24px_70px_rgba(38,48,42,0.12)]">
-        <header className="grid min-h-16 grid-cols-[44px_minmax(0,1fr)_44px] items-center border-b border-border px-5 sm:flex sm:min-h-20 sm:justify-between sm:px-8">
+    <div
+      data-workspace-skin={skin ? theme : undefined}
+      data-today-theme={skin ? theme : undefined}
+      className={cn(shellClasses, 'px-3 py-3 pb-8 sm:px-6 sm:py-6')}
+    >
+      <div className={cn('mx-auto min-h-[calc(100vh-3rem)] max-w-[1280px] overflow-hidden rounded-[2rem] bg-card shadow-[0_24px_70px_rgba(38,48,42,0.12)]', skin?.frame)}>
+        <header className="grid min-h-16 grid-cols-[44px_minmax(0,1fr)_44px] items-center border-b border-border bg-card px-5 text-foreground sm:flex sm:min-h-20 sm:justify-between sm:px-8">
           <Link
             href="/"
             aria-label="오늘로 돌아가기"
@@ -148,68 +165,69 @@ export default function CouponsPage() {
           </div>
         </header>
 
-        <main className="grid lg:grid-cols-[minmax(17rem,0.58fr)_minmax(0,1.42fr)]">
-          <aside className="bg-[#28342d] px-7 py-10 text-[#f7f3e9] sm:px-10 sm:py-12 lg:min-h-[720px] lg:px-12">
+        <main className={skin?.layout}>
+          <div className="grid lg:grid-cols-[minmax(17rem,0.58fr)_minmax(0,1.42fr)]">
+          <aside
+            data-workspace-part={skin ? 'cover' : undefined}
+            data-section-cover={skin ? '' : undefined}
+            className="bg-[#28342d] px-7 py-10 text-[#f7f3e9] sm:px-10 sm:py-12 lg:min-h-[720px] lg:px-12"
+          >
             <div className="flex h-full flex-col justify-between gap-16">
               <div>
-                <p className="text-xs font-bold tracking-[0.18em] text-[#a9c7b3]">MY COUPONS</p>
+                <p className={cn('text-xs font-bold tracking-[0.18em]', skin ? 'opacity-90' : 'text-[#a9c7b3]')}>MY COUPONS</p>
                 <h1 className="friendly-heading mt-4 text-4xl font-bold leading-[1.15] tracking-[-0.055em] sm:text-5xl">
                   모아둔 기쁨을
                   <br />
                   필요할 때 꺼내요.
                 </h1>
-                <p className="mt-5 max-w-sm text-sm leading-6 text-[#c9d5cd]">
+                <p className={cn('mt-5 max-w-sm text-sm leading-6', skin ? 'opacity-90' : 'text-[#c9d5cd]')}>
                   {user?.username || '사용자'}님이 포인트로 교환한 쿠폰을 한곳에 모아뒀어요.
                 </p>
               </div>
 
-              <div className="border-t border-white/15 pt-6">
+              <div className={cn('border-t pt-6', skin ? 'border-current/20' : 'border-white/15')}>
                 <div className="flex items-end justify-between gap-5">
                   <div>
-                    <span className="text-sm text-[#a9b8ae]">지금 쓸 수 있어요</span>
+                    <span className={cn('text-sm', skin ? 'opacity-90' : 'text-[#a9b8ae]')}>지금 쓸 수 있어요</span>
                     <strong className="friendly-heading mt-1 block text-5xl font-bold">
                       {availableCount}
                     </strong>
                   </div>
-                  <Ticket className="mb-1 h-9 w-9 text-[#a9c7b3]" strokeWidth={1.5} />
+                  <Ticket className={cn('mb-1 h-9 w-9', skin ? 'opacity-90' : 'text-[#a9c7b3]')} strokeWidth={1.5} />
                 </div>
-                <p className="mt-4 text-xs leading-5 text-[#a9b8ae]">
+                <p className={cn('mt-4 text-xs leading-5', skin ? 'opacity-90' : 'text-[#a9b8ae]')}>
                   매장에서 사용한 뒤에는 직접 사용 완료로 옮겨주세요.
                 </p>
               </div>
             </div>
           </aside>
 
-          <section className="bg-[#fbf8ef] px-5 py-9 dark:bg-card sm:px-9 sm:py-12 lg:px-12">
-            <div className="flex flex-col gap-5 border-b border-[#dfe3d8] pb-6 dark:border-border sm:flex-row sm:items-end sm:justify-between">
+          <section className={cn('px-5 py-9 sm:px-9 sm:py-12 lg:px-12', !skin && 'bg-[#fbf8ef] dark:bg-card')}>
+            <div className={cn('flex flex-col gap-5 border-b pb-6 sm:flex-row sm:items-end sm:justify-between', skin ? 'border-border' : 'border-[#dfe3d8] dark:border-border')}>
               <div>
-                <p className="text-xs font-bold tracking-[0.15em] text-[#2e8c54] dark:text-primary">
+                <p className={cn('text-xs font-bold tracking-[0.15em]', skin ? 'text-primary' : 'text-[#2e8c54] dark:text-primary')}>
                   쿠폰 보관함
                 </p>
                 <h2 className="friendly-heading mt-2 text-3xl font-bold tracking-[-0.045em]">
                   내 쿠폰
                 </h2>
               </div>
-              <div className="flex w-fit rounded-full bg-[#e9ecdf] p-1 dark:bg-muted">
+              <div className={cn('flex w-fit rounded-full p-1 in-data-[workspace-skin=night]:rounded-md in-data-[workspace-skin=studio]:rounded-md', skin ? 'bg-muted' : 'bg-[#e9ecdf] dark:bg-muted')}>
                 <button
                   type="button"
                   onClick={() => setFilter('available')}
-                  className={`min-h-10 rounded-full px-4 text-sm font-bold transition-colors ${
-                    filter === 'available'
-                      ? 'bg-[#fbf8ef] text-[#216c40] shadow-sm dark:bg-card dark:text-primary'
-                      : 'text-muted-foreground'
-                  }`}
+                  aria-pressed={filter === 'available'}
+                  className={cn(filterButtonClassName,
+                    filter === 'available' ? skin ? 'bg-card text-primary shadow-sm' : 'bg-[#fbf8ef] text-[#216c40] shadow-sm dark:bg-card dark:text-primary' : 'text-muted-foreground')}
                 >
                   사용 가능 {availableCount}
                 </button>
                 <button
                   type="button"
                   onClick={() => setFilter('used')}
-                  className={`min-h-10 rounded-full px-4 text-sm font-bold transition-colors ${
-                    filter === 'used'
-                      ? 'bg-[#fbf8ef] text-foreground shadow-sm dark:bg-card'
-                      : 'text-muted-foreground'
-                  }`}
+                  aria-pressed={filter === 'used'}
+                  className={cn(filterButtonClassName,
+                    filter === 'used' ? skin ? 'bg-card text-primary shadow-sm' : 'bg-[#fbf8ef] text-foreground shadow-sm dark:bg-card' : 'text-muted-foreground')}
                 >
                   사용 완료·만료 {usedCount}
                 </button>
@@ -227,7 +245,7 @@ export default function CouponsPage() {
             ) : visibleCoupons.length === 0 ? (
               <div className="py-20 sm:py-24">
                 <div className="max-w-md">
-                  <Ticket className="h-8 w-8 text-[#7da58a]" strokeWidth={1.5} />
+                  <Ticket className={cn('h-8 w-8', skin ? 'text-primary' : 'text-[#7da58a]')} strokeWidth={1.5} />
                   <h3 className="friendly-heading mt-5 text-2xl font-bold">
                     {filter === 'available'
                       ? '아직 꺼내볼 쿠폰이 없어요.'
@@ -259,11 +277,14 @@ export default function CouponsPage() {
                   return (
                     <article
                       key={coupon.id}
-                      className={`overflow-hidden rounded-[1.4rem] border transition-colors ${
-                        isUnavailable
-                          ? 'border-stone-200 bg-stone-100/65 dark:border-border dark:bg-muted/45'
-                          : 'border-[#cddbc9] bg-[#fffdf7] dark:border-primary/20 dark:bg-card'
-                      }`}
+                      className={cn(
+                        'overflow-hidden rounded-[1.4rem] border transition-colors in-data-[workspace-skin=night]:rounded-md in-data-[workspace-skin=studio]:rounded-lg',
+                        skin
+                          ? isUnavailable ? 'border-border bg-muted' : 'border-border bg-card hover:border-primary/65'
+                          : isUnavailable
+                            ? 'border-stone-200 bg-stone-100/65 dark:border-border dark:bg-muted/45'
+                            : 'border-[#cddbc9] bg-[#fffdf7] dark:border-primary/20 dark:bg-card'
+                      )}
                     >
                       <button
                         type="button"
@@ -278,11 +299,15 @@ export default function CouponsPage() {
                           <span
                             role={coupon.imageUrl ? 'img' : undefined}
                             aria-label={coupon.imageUrl ? `${coupon.name} 상품 이미지` : undefined}
-                            className={`flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden bg-cover bg-center ${
-                              isUnavailable
-                                ? 'rounded-2xl bg-stone-200 text-stone-500 grayscale dark:bg-background'
-                                : 'rounded-2xl bg-[#e4eddf] text-[#216c40] dark:bg-secondary dark:text-primary'
-                            }`}
+                            className={cn(
+                              'flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-cover bg-center in-data-[workspace-skin=night]:rounded-md in-data-[workspace-skin=studio]:rounded-md',
+                              skin
+                                ? isUnavailable ? 'bg-card text-muted-foreground' : 'bg-secondary text-primary'
+                                : isUnavailable
+                                  ? 'bg-stone-200 text-stone-500 dark:bg-background'
+                                  : 'bg-[#e4eddf] text-[#216c40] dark:bg-secondary dark:text-primary',
+                              isUnavailable && coupon.imageUrl && 'grayscale'
+                            )}
                             style={
                               coupon.imageUrl
                                 ? {
@@ -307,13 +332,13 @@ export default function CouponsPage() {
                           </span>
                         </span>
 
-                        <span className="relative flex items-center justify-between gap-3 border-t border-dashed border-stone-300 px-5 py-4 sm:border-l sm:border-t-0 dark:border-border">
+                        <span className={cn('relative flex items-center justify-between gap-3 border-t border-dashed px-5 py-4 sm:border-l sm:border-t-0', skin ? 'border-border' : 'border-stone-300 dark:border-border')}>
                           <span>
                             <span
                               className={`block text-xs font-bold ${
                                 isUnavailable
                                   ? 'text-muted-foreground'
-                                  : 'text-[#2e8c54] dark:text-primary'
+                                  : skin ? 'text-primary' : 'text-[#2e8c54] dark:text-primary'
                               }`}
                             >
                               {coupon.isUsed ? '사용 완료' : isExpired ? '기간 만료' : '사용 가능'}
@@ -336,7 +361,7 @@ export default function CouponsPage() {
                         }`}
                       >
                         <div className="overflow-hidden">
-                          <div className="border-t border-stone-200 px-5 py-5 dark:border-border sm:px-6">
+                          <div className={cn('border-t px-5 py-5 sm:px-6', skin ? 'border-border' : 'border-stone-200 dark:border-border')}>
                             <dl className="grid gap-4 text-sm sm:grid-cols-2">
                               <div>
                                 <dt className="text-xs text-muted-foreground">교환한 날</dt>
@@ -361,7 +386,7 @@ export default function CouponsPage() {
                             </dl>
 
                             {!isUnavailable ? (
-                              <div className="mt-5 rounded-2xl bg-[#eef0e7] px-4 py-4 dark:bg-muted">
+                              <div className={cn('mt-5 rounded-2xl p-4 in-data-[workspace-skin=night]:rounded-md in-data-[workspace-skin=studio]:rounded-lg', skin ? 'bg-muted' : 'bg-[#eef0e7] dark:bg-muted')}>
                                 {coupon.couponImageUrl || coupon.couponCode ? (
                                   <div>
                                     <p className="text-sm font-bold">매장에서 보여주세요</p>
@@ -379,7 +404,7 @@ export default function CouponsPage() {
                                   </div>
                                 ) : (
                                   <div className="flex gap-3">
-                                    <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-[#6f8074]" />
+                                    <Clock3 className={cn('mt-0.5 h-4 w-4 shrink-0', skin ? 'text-muted-foreground' : 'text-[#6f8074]')} />
                                     <div>
                                       <p className="text-sm font-bold">
                                         쿠폰 발급 정보를 준비 중이에요
@@ -407,7 +432,7 @@ export default function CouponsPage() {
                             ) : null}
 
                             {isConfirming ? (
-                              <div className="mt-5 flex flex-col gap-4 rounded-2xl bg-[#f6eadb] px-4 py-4 dark:bg-[oklch(0.29_0.035_55)] sm:flex-row sm:items-center sm:justify-between">
+                              <div className={cn('mt-5 flex flex-col gap-4 rounded-2xl p-4 in-data-[workspace-skin=night]:rounded-md in-data-[workspace-skin=studio]:rounded-lg sm:flex-row sm:items-center sm:justify-between', skin ? 'bg-secondary' : 'bg-[#f6eadb] dark:bg-[oklch(0.29_0.035_55)]')}>
                                 <div>
                                   <p className="text-sm font-bold">이 쿠폰을 사용했나요?</p>
                                   <p className="mt-1 text-xs text-muted-foreground">
@@ -442,6 +467,7 @@ export default function CouponsPage() {
               </div>
             )}
           </section>
+          </div>
         </main>
       </div>
     </div>

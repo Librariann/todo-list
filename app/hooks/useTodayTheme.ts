@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export enum TodayTheme {
   Default = 'default',
@@ -37,7 +37,7 @@ export function useTodayTheme(userId?: number) {
     }
   }, [storageKey]);
 
-  const selectTheme = (nextTheme: TodayTheme) => {
+  const selectTheme = useCallback((nextTheme: TodayTheme) => {
     setPreference({ storageKey, theme: nextTheme });
     if (!storageKey) return;
 
@@ -46,7 +46,7 @@ export function useTodayTheme(userId?: number) {
     } catch {
       // Keep the selection for the current session even if it cannot be saved.
     }
-  };
+  }, [storageKey]);
 
   return { theme, selectTheme };
 }

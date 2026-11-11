@@ -174,7 +174,7 @@ export default function ProfileForm({ profile, onSubmit }: ProfileFormProps) {
             aria-live="polite"
             className={`mt-1 min-h-5 text-xs font-semibold ${
               nicknameAvailability === 'available'
-                ? 'text-[#25834b] dark:text-[#68d391]'
+                ? 'text-[#25834b] dark:text-[#68d391] in-data-[workspace-skin]:text-primary dark:in-data-[workspace-skin]:text-primary'
                 : nicknameAvailability === 'unavailable'
                   ? 'text-destructive'
                   : 'text-muted-foreground'
@@ -229,7 +229,7 @@ export default function ProfileForm({ profile, onSubmit }: ProfileFormProps) {
         </div>
       </div>
 
-      <div className="rounded-[1.4rem] bg-[#eef0e7] px-5 py-4 dark:bg-muted">
+      <div className="rounded-[1.4rem] bg-[#eef0e7] px-5 py-4 dark:bg-muted in-data-[workspace-skin]:bg-muted">
         <p className="text-xs font-bold tracking-[0.12em] text-muted-foreground">로그인 이메일</p>
         <p className="mt-2 break-all text-sm font-semibold text-foreground">{profile.email}</p>
         <p className="mt-1 text-xs leading-5 text-muted-foreground">

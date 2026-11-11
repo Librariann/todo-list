@@ -93,7 +93,7 @@ export default function PrivateCouponImage({ imagePath, alt }: PrivateCouponImag
           onDragStart={(event) => event.preventDefault()}
           className="pointer-events-none max-h-80 w-full select-none object-contain"
         />
-        <span className="absolute bottom-3 right-3 hidden min-h-10 items-center gap-1.5 rounded-full bg-[#25372d]/90 px-3 text-xs font-bold text-[#f8f5ec] shadow-sm group-hover:flex group-focus-visible:flex sm:flex sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:group-focus-visible:opacity-100">
+        <span className="absolute bottom-3 right-3 hidden min-h-10 items-center gap-1.5 rounded-full bg-primary px-3 text-xs font-bold text-primary-foreground shadow-sm group-hover:flex group-focus-visible:flex sm:flex sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:group-focus-visible:opacity-100">
           <Maximize2 className="h-3.5 w-3.5" />
           크게 보기
         </span>

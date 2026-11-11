@@ -86,7 +86,7 @@ export default function ConfirmModal({
           </p>
         ) : null}
 
-        <DialogFooter className="mt-5 border-t border-stone-200/80 px-6 py-4 sm:grid sm:grid-cols-2 dark:border-white/10">
+        <DialogFooter className="mt-5 border-t border-border px-6 py-4 sm:grid sm:grid-cols-2">
           <Button
             type="button"
             variant="outline"

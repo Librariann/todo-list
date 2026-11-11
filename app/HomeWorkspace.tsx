@@ -18,7 +18,8 @@ import LoginPage from './login/page';
 import type { MainTabType, TaskTabType } from './types/navigation';
 import { formatDate, getTodayDateString } from './lib/dateUtils';
 import { useTimeGreeting } from './hooks/useTimeGreeting';
-import { TodayTheme, useTodayTheme } from '@/app/hooks/useTodayTheme';
+import { TodayTheme } from '@/app/hooks/useTodayTheme';
+import { useActiveTodayTheme } from '@/app/components/TodayThemeProvider';
 import { useUserSummaryStore } from './store/userSummaryStore';
 import { useCalendarStore } from './store/calendarStore';
 import { useGoalsStore } from './store/goalsStore';
@@ -49,7 +50,7 @@ export default function HomeWorkspace() {
 
   const [mainTab, setMainTab] = useState<MainTabType>('tasks');
   const [taskTab, setTaskTab] = useState<TaskTabType>('habits');
-  const { theme, selectTheme } = useTodayTheme(user?.id);
+  const { theme, selectTheme } = useActiveTodayTheme();
   const isNightTheme = theme === TodayTheme.Night;
   const isStudioTheme = theme === TodayTheme.Studio;
   const extraSkin = theme === TodayTheme.Coast || isStudioTheme;
@@ -284,7 +285,7 @@ export default function HomeWorkspace() {
                   ) : mainTab === 'challenges' ? (
                     <ChallengesPanel />
                   ) : (
-                    <RewardShop themeScope={skin ? { name: theme, paletteClassName: skin.palette } : undefined} />
+                    <RewardShop themed={Boolean(skin)} />
                   )}
                 </div>
               </div>

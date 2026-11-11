@@ -14,12 +14,16 @@ import {
 } from '@/app/lib/nativeBridge';
 import { useAuthStore } from '@/app/store/authStore';
 import NativeWidgetSync from '@/app/components/NativeWidgetSync';
+import TodayThemeProvider from '@/app/components/TodayThemeProvider';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const isAuthenticated = useAuthStore((auth) => auth.isAuthenticated);
+  const userId = useAuthStore((auth) => auth.user?.id);
   const nativeNavigationReadyRef = useRef<boolean>(false);
+  const usesTodayTheme = pathname === '/' || pathname === '/coupons' || pathname === '/profile'
+    || pathname === '/themes' || pathname === '/notice' || pathname.startsWith('/notice/');
 
   useEffect(() => {
     const primeAudio = () => primeAchievementSound();
@@ -80,7 +84,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   }, [pathname, router]);
 
   return (
-    <>
+    <TodayThemeProvider enabled={isAuthenticated && usesTodayTheme} userId={userId}>
       <NativeWidgetSync />
       {children}
       <Toaster
@@ -95,6 +99,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           left: 16,
         }}
       />
-    </>
+    </TodayThemeProvider>
   );
 }

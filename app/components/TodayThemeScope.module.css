@@ -1,0 +1,47 @@
+.scope {
+  --color-background: var(--active-theme-surface);
+  --color-popover: var(--color-card);
+  --color-popover-foreground: var(--color-card-foreground);
+  --color-input: var(--color-border);
+  --active-theme-cover-muted: color-mix(in oklch, var(--active-theme-cover-foreground) 76%, var(--active-theme-cover));
+}
+
+.scope[data-workspace-skin='night'] {
+  --active-theme-shell: #121a23;
+  --active-theme-surface: var(--observatory-desk);
+  --active-theme-cover: #111c28;
+  --active-theme-cover-foreground: #f8eed7;
+  --active-theme-detail: #b4945e;
+  --active-theme-overlay-radius: 0.5rem;
+}
+
+.scope[data-workspace-skin='coast'] {
+  --active-theme-shell: var(--skin-outer);
+  --active-theme-surface: var(--skin-desk);
+  --active-theme-cover: var(--skin-cover);
+  --active-theme-cover-foreground: var(--skin-cover-text);
+  --active-theme-detail: var(--coast-water-near);
+  --active-theme-overlay-radius: 1.25rem;
+}
+
+.scope[data-workspace-skin='studio'] {
+  --active-theme-shell: var(--skin-outer);
+  --active-theme-surface: var(--skin-desk);
+  --active-theme-cover: var(--skin-cover);
+  --active-theme-cover-foreground: var(--skin-cover-text);
+  --active-theme-detail: var(--skin-cover);
+  --active-theme-overlay-radius: 0.25rem;
+}
+
+.scope[data-slot='dialog-content'] {
+  border-color: var(--color-border);
+  border-top: 2px solid var(--active-theme-detail);
+  border-radius: var(--active-theme-overlay-radius);
+  background-color: var(--color-card);
+  color: var(--color-card-foreground);
+}
+
+.scope:is([data-slot='dropdown-menu-content'], [data-slot='select-content']) {
+  border-color: var(--color-border);
+  border-radius: var(--active-theme-overlay-radius);
+}

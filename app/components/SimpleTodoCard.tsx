@@ -18,6 +18,7 @@ interface SimpleTodoCardProps {
   onStatusChange: (id: string, status: TodoStatus) => void;
   onDelete?: (id: string) => void;
   onEdit?: (todo: Todo) => void;
+  onEditReminder?: (todo: Todo) => void;
   onRepeatChange?: (todo: Todo, repeatDaily: boolean) => void;
   repeatSaving?: boolean;
   featured?: boolean;
@@ -28,6 +29,7 @@ export default function SimpleTodoCard({
   onStatusChange,
   onDelete,
   onEdit,
+  onEditReminder,
   onRepeatChange,
   repeatSaving = false,
   featured = false,
@@ -39,6 +41,8 @@ export default function SimpleTodoCard({
   const isCompletionLocked = isPastDate || isFutureDate;
   const canRepeat = !isPastDate && Boolean(onRepeatChange);
   const canEdit = !isPastDate && Boolean(onEdit);
+  const canEditReminder = !isPastDate && !isDone && Boolean(onEditReminder);
+  const hasEditableActions = canEdit || canEditReminder || canRepeat;
   const completionLockReason = isPastDate
     ? '마감된 할 일은 상태를 변경할 수 없어요.'
     : '예정된 할 일은 해당 날짜에 완료할 수 있어요.';
@@ -166,7 +170,7 @@ export default function SimpleTodoCard({
               {todo.status === TodoStatus.IN_PROGRESS ? '진행 중' : '시작'}
             </button>
           ) : null}
-          {canEdit || canRepeat || onDelete ? (
+          {hasEditableActions || onDelete ? (
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -186,6 +190,11 @@ export default function SimpleTodoCard({
                     <Pencil aria-hidden="true" /> 수정하기
                   </DropdownMenuItem>
                 ) : null}
+                {canEditReminder ? (
+                  <DropdownMenuItem className="min-h-11 cursor-pointer rounded-lg" disabled={repeatSaving} onSelect={() => onEditReminder?.(todo)}>
+                    <Bell aria-hidden="true" /> 알림 설정
+                  </DropdownMenuItem>
+                ) : null}
                 {canRepeat ? (
                   <DropdownMenuCheckboxItem
                     checked={todo.repeatDaily === true}
@@ -198,7 +207,7 @@ export default function SimpleTodoCard({
                 ) : null}
                 {onDelete ? (
                   <>
-                    {canEdit || canRepeat ? <DropdownMenuSeparator /> : null}
+                    {hasEditableActions ? <DropdownMenuSeparator /> : null}
                     <DropdownMenuItem
                       variant="destructive"
                       className="min-h-11 cursor-pointer rounded-lg"

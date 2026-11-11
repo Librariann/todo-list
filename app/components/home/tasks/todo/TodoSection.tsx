@@ -15,7 +15,7 @@ import { useCalendarStore } from '@/app/store/calendarStore';
 import { useUserSummaryStore } from '@/app/store/userSummaryStore';
 import { useAuthStore } from '@/app/store/authStore';
 import { toast } from 'sonner';
-import CreateTodoModal, { type CreateTodoInput } from './CreateTodoModal';
+import TodoFormModal, { type TodoForm, type TodoFormInput } from './TodoFormModal';
 import ConfirmModal from '@/app/components/ConfirmModal';
 import { useTodosStore } from '@/app/store/todosStore';
 import { getAwardedPoints, notifyChallengeAchievements } from '@/app/lib/challengeNotifications';
@@ -28,9 +28,8 @@ interface TodoSectionProps {
 
 export default function TodoSection({ createRequestKey }: TodoSectionProps) {
   const isAuthenticated = useAuthStore((auth) => auth.isAuthenticated);
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [form, setForm] = useState<TodoForm | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Todo | null>(null);
-  const [editTarget, setEditTarget] = useState<Todo | null>(null);
   const [savingRepeatIds, setSavingRepeatIds] = useState<string[]>([]);
   const selectedDate = useCalendarStore((calendar) => calendar.selectedDate);
   const invalidateCalendarMarks = useCalendarStore((calendar) => calendar.invalidateMarks);
@@ -71,24 +70,28 @@ export default function TodoSection({ createRequestKey }: TodoSectionProps) {
 
   useEffect(() => {
     if (createRequestKey === undefined || !canCreate) return;
-    setEditTarget(null);
-    setIsCreateOpen(true);
+    setForm({ mode: 'create' });
   }, [canCreate, createRequestKey]);
 
-  const handleSubmitTodo = async (input: CreateTodoInput) => {
-    if (editTarget) {
-      const updated = await updateTodo(editTarget.id, { name: input.name, reminderAt: input.reminderAt });
-      setTodosForDate(editTarget.date, (previousTodos) =>
-        previousTodos.map((todo) => (todo.id === updated.id ? updated : todo))
-      );
-      toast.success('할 일을 수정했어요.');
+  const handleSubmitTodo = async (input: TodoFormInput) => {
+    if (input.mode === 'create') {
+      const created = await createTodo(input.name, selectedDate, input.reminderAt);
+      setTodosForDate(selectedDate, (previousTodos) => [created, ...previousTodos]);
+      invalidateCalendarMarks();
+      toast.success('할 일을 추가했어요.');
       return;
     }
 
-    const created = await createTodo(input.name, selectedDate, input.reminderAt);
-    setTodosForDate(selectedDate, (previousTodos) => [created, ...previousTodos]);
-    invalidateCalendarMarks();
-    toast.success('할 일을 추가했어요.');
+    if (!form || form.mode !== input.mode) return;
+    const target = form.todo;
+    const updated = await updateTodo(target.id, input.mode === 'edit'
+      ? { name: input.name }
+      : { reminderAt: input.reminderAt });
+    setTodosForDate(target.date, (previousTodos) =>
+      previousTodos.map((todo) => (todo.id === updated.id ? updated : todo))
+    );
+    toast.success(input.mode === 'edit' ? '할 일을 수정했어요.'
+      : input.reminderAt ? '알림 시간을 저장했어요.' : '알림을 껐어요.');
   };
 
   const handleRepeatChange = async (todo: Todo, repeatDaily: boolean) => {
@@ -185,7 +188,7 @@ export default function TodoSection({ createRequestKey }: TodoSectionProps) {
                 : '앞으로 필요한 일을 미리 준비해보세요.'
           }
           addLabel="할 일 추가"
-          onAdd={() => setIsCreateOpen(true)}
+          onAdd={() => setForm({ mode: 'create' })}
           showAdd={canCreate}
         />
         <div className="space-y-3">
@@ -218,7 +221,8 @@ export default function TodoSection({ createRequestKey }: TodoSectionProps) {
                     featured={index === 0}
                     onStatusChange={handleTodoStatusChange}
                     onDelete={() => setDeleteTarget(todo)}
-                    onEdit={setEditTarget}
+                    onEdit={(target) => setForm({ mode: 'edit', todo: target })}
+                    onEditReminder={(target) => setForm({ mode: 'reminder', todo: target })}
                     onRepeatChange={handleRepeatChange}
                     repeatSaving={savingRepeatIds.includes(todo.id)}
                   />
@@ -229,15 +233,10 @@ export default function TodoSection({ createRequestKey }: TodoSectionProps) {
         </div>
       </div>
 
-      <CreateTodoModal
-        open={isCreateOpen || editTarget !== null}
-        selectedDate={editTarget?.date ?? selectedDate}
-        todo={editTarget}
-        onOpenChange={(open) => {
-          if (open) return;
-          setIsCreateOpen(false);
-          setEditTarget(null);
-        }}
+      <TodoFormModal
+        form={form}
+        selectedDate={selectedDate}
+        onClose={() => setForm(null)}
         onSubmit={handleSubmitTodo}
       />
 

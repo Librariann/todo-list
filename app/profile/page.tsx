@@ -85,7 +85,7 @@ export default function ProfilePage() {
 
   if (!mounted || isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#d9e1d5] dark:bg-background">
+      <div className="flex min-h-screen items-center justify-center bg-[var(--active-theme-shell,#d9e1d5)] dark:bg-[var(--active-theme-shell,var(--color-background))]">
         <div className="text-center">
           <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-b-2 border-primary" />
           <p className="text-sm text-muted-foreground">내 자리를 준비하고 있어요...</p>
@@ -96,7 +96,7 @@ export default function ProfilePage() {
 
   if (!profile || loadError) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#d9e1d5] px-5 dark:bg-background">
+      <div className="flex min-h-screen items-center justify-center bg-[var(--active-theme-shell,#d9e1d5)] px-5 dark:bg-[var(--active-theme-shell,var(--color-background))]">
         <div className="max-w-md text-center">
           <h1 className="friendly-heading text-3xl font-bold">정보를 불러오지 못했어요</h1>
           <p className="mt-3 text-sm text-muted-foreground">{loadError}</p>
@@ -112,8 +112,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#d9e1d5] px-3 py-3 dark:bg-background sm:px-6 sm:py-6">
-      <div className="mx-auto max-w-[1280px] overflow-hidden rounded-[2rem] bg-card shadow-[0_24px_70px_rgba(38,48,42,0.12)]">
+    <div className="min-h-screen bg-[var(--active-theme-shell,#d9e1d5)] px-3 py-3 text-foreground dark:bg-[var(--active-theme-shell,var(--color-background))] sm:px-6 sm:py-6">
+      <div className="mx-auto max-w-[1280px] overflow-hidden rounded-[2rem] bg-card shadow-[0_24px_70px_rgba(38,48,42,0.12)] in-data-[workspace-skin]:border in-data-[workspace-skin]:border-border in-data-[workspace-skin]:shadow-none in-data-[workspace-skin=night]:rounded-lg in-data-[workspace-skin=coast]:rounded-[1.25rem] in-data-[workspace-skin=studio]:rounded-none">
         <header className="grid min-h-16 grid-cols-[44px_minmax(0,1fr)_44px] items-center border-b border-border px-5 sm:flex sm:min-h-20 sm:justify-between sm:px-8">
           <Link
             href="/"
@@ -139,29 +139,29 @@ export default function ProfilePage() {
         </header>
 
         <main className="grid lg:grid-cols-[minmax(18rem,0.72fr)_minmax(0,1.28fr)]">
-          <aside className="relative overflow-hidden bg-[#28342d] px-7 py-10 text-[#f7f3e9] sm:px-10 sm:py-14 lg:min-h-[680px] lg:px-12">
+          <aside className="relative overflow-hidden bg-[var(--active-theme-cover,#28342d)] px-7 py-10 text-[color:var(--active-theme-cover-foreground,#f7f3e9)] sm:px-10 sm:py-14 lg:min-h-[680px] lg:px-12">
             <div className="relative z-10 flex h-full flex-col justify-between gap-14">
               <div>
-                <p className="mt-8 text-xs font-bold tracking-[0.18em] text-[#a9c7b3]">MY PLACE</p>
+                <p className="mt-8 text-xs font-bold tracking-[0.18em] text-[color:var(--active-theme-cover-muted,#a9c7b3)]">MY PLACE</p>
                 <h2 className="friendly-heading mt-3 text-4xl font-bold leading-tight tracking-[-0.055em]">
                   {profile.nickname}님의
                   <br />
                   작은 자리
                 </h2>
-                <p className="mt-5 max-w-sm text-sm leading-6 text-[#c9d5cd]">
+                <p className="mt-5 max-w-sm text-sm leading-6 text-[color:var(--active-theme-cover-muted,#c9d5cd)]">
                   편안하게 불릴 이름을 정하고, 내 일상을 위한 기본 정보를 관리해요.
                 </p>
               </div>
 
-              <dl className="space-y-4 border-t border-white/15 pt-6 text-sm">
+              <dl className="space-y-4 border-t border-white/15 pt-6 text-sm in-data-[workspace-skin]:border-current/15">
                 <div className="flex items-center justify-between gap-4">
-                  <dt className="text-[#a9b8ae]">계정 유형</dt>
+                  <dt className="text-[color:var(--active-theme-cover-muted,#a9b8ae)]">계정 유형</dt>
                   <dd className="font-semibold">
                     {profile.role === 'ADMIN' ? '관리자' : '일반 사용자'}
                   </dd>
                 </div>
                 <div className="flex items-center justify-between gap-4">
-                  <dt className="text-[#a9b8ae]">함께한 날</dt>
+                  <dt className="text-[color:var(--active-theme-cover-muted,#a9b8ae)]">함께한 날</dt>
                   <dd className="font-semibold">
                     {joinedDateFormatter.format(new Date(profile.createdAt))}
                   </dd>
@@ -170,12 +170,12 @@ export default function ProfilePage() {
             </div>
           </aside>
 
-          <section className="bg-[#fbf8ef] px-6 py-10 dark:bg-card sm:px-10 sm:py-14 lg:px-14">
+          <section className="bg-[var(--active-theme-surface,#fbf8ef)] px-6 py-10 dark:bg-[var(--active-theme-surface,var(--color-card))] sm:px-10 sm:py-14 lg:px-14">
             <ProfileForm profile={profile} onSubmit={handleUpdate} />
 
             <NotificationSettingsForm />
 
-            <div className="mt-12 border-t border-stone-200/80 pt-8 dark:border-white/10">
+            <div className="mt-12 border-t border-stone-200/80 pt-8 dark:border-white/10 in-data-[workspace-skin]:border-border dark:in-data-[workspace-skin]:border-border">
               <h3 className="text-sm font-semibold text-foreground">회원 탈퇴</h3>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
                 계정과 함께 할 일, 습관, 목표, 포인트, 쿠폰이 모두 영구 삭제돼요. 삭제한 뒤에는
