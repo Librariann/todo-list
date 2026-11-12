@@ -12,6 +12,7 @@ export interface NativeNotificationDestination {
   screen: NativeNotificationScreen;
   date?: string;
   entityId?: string;
+  action?: 'create';
 }
 
 export interface NativeWidgetSnapshot {
@@ -88,7 +89,9 @@ function parseNotificationMessage(value: unknown): NativeNotificationMessage | n
     message.source !== NATIVE_SOURCE ||
     message.type !== 'OPEN_NOTIFICATION' ||
     !destination ||
-    !NOTIFICATION_SCREENS.has(destination.screen)
+    !NOTIFICATION_SCREENS.has(destination.screen) ||
+    (destination.action !== undefined &&
+      (destination.action !== 'create' || destination.screen !== 'todos'))
   ) {
     return null;
   }
