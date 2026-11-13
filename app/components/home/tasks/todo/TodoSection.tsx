@@ -70,7 +70,7 @@ export default function TodoSection({ createRequestKey }: TodoSectionProps) {
 
   useEffect(() => {
     if (createRequestKey === undefined || !canCreate) return;
-    setForm({ mode: 'create' });
+    setForm((current) => current?.mode === 'create' ? current : { mode: 'create' });
   }, [canCreate, createRequestKey]);
 
   const handleSubmitTodo = async (input: TodoFormInput) => {
