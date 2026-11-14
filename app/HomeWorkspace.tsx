@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useAuthStore } from './store/authStore';
 import StatsPanel from './components/StatsPanel';
 import RewardShop from './components/RewardShop';
@@ -50,6 +50,7 @@ export default function HomeWorkspace() {
 
   const [mainTab, setMainTab] = useState<MainTabType>('tasks');
   const [taskTab, setTaskTab] = useState<TaskTabType>('habits');
+  const [openedFromShortcut, setOpenedFromShortcut] = useState<boolean>(false);
   const { theme, selectTheme } = useActiveTodayTheme();
   const isNightTheme = theme === TodayTheme.Night;
   const isStudioTheme = theme === TodayTheme.Studio;
@@ -68,18 +69,18 @@ export default function HomeWorkspace() {
   const resetTodos = useTodosStore((state) => state.resetTodos);
   const resetChallenges = useChallengesStore((state) => state.resetChallenges);
 
-  const handleOnboardingCreate = (type: TaskTabType) => {
+  const openCreateForm = useCallback((type: TaskTabType) => {
     setMainTab('tasks');
     setTaskTab(type);
     setSelectedDate(getTodayDateString());
-    setCreateRequest({ type, key: Date.now() });
+    setCreateRequest((current) => ({ type, key: (current?.key ?? 0) + 1 }));
     window.requestAnimationFrame(() => {
       document.getElementById('task-workspace')?.scrollIntoView({
         behavior: 'smooth',
         block: 'start',
       });
     });
-  };
+  }, [setSelectedDate]);
 
   /*
   const handleRecommendationAccepted = (recommendation: Recommendation): void => {
@@ -98,7 +99,14 @@ export default function HomeWorkspace() {
   */
 
   useEffect(() => {
+    if (!mounted || !isAuthenticated) return;
+
     const openNotificationDestination = (destination: NativeNotificationDestination) => {
+      if (destination.action === 'create') {
+        setOpenedFromShortcut(true);
+        openCreateForm('todos');
+        return;
+      }
       if (destination.date) setSelectedDate(destination.date);
 
       if (
@@ -133,7 +141,7 @@ export default function HomeWorkspace() {
       unsubscribe();
       window.removeEventListener('growdo:native-home', handleNativeHome);
     };
-  }, [setSelectedDate]);
+  }, [isAuthenticated, mounted, openCreateForm, setSelectedDate]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -236,10 +244,9 @@ export default function HomeWorkspace() {
                 <div data-workspace-part="body" className="px-3 pt-5 pb-10 @min-[28rem]/workspace:px-6 @min-[48rem]/workspace:px-8 sm:pb-12">
                   {mainTab === 'tasks' ? (
                     <div id="task-workspace" data-workspace-part="notebook" className="@container/tasks min-w-0 scroll-mt-6">
-                      <GettingStartedGuide
-                        userId={user?.id}
-                        onCreate={handleOnboardingCreate}
-                      />
+                      {!openedFromShortcut ? (
+                        <GettingStartedGuide userId={user?.id} onCreate={openCreateForm} />
+                      ) : null}
                       {/* 운영 추천 API가 준비될 때까지 추천 영역을 숨깁니다.
                       {user ? (
                         <RecommendationsPanel
